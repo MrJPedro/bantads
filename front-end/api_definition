@@ -1,0 +1,941 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/RAZERANTHOM/bantads/1.0.2
+info:
+  version: 1.0.2
+  title: bantads
+  description: API do Back-end do Bantads
+paths:
+  /reboot:
+    get:
+      tags:
+        - Inicialização
+      description: inicia o banco de dados
+      responses:
+        '200':
+          description: Banco de dados criado conforme especificação
+  /login:
+    post:
+      tags:
+        - Login
+      description: efetua o login do usuário
+      responses:
+        '200':
+          description: Login efetuado com sucesso
+        '401':
+          description: Usuário/Senha incorretos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInfo'
+  /logout:
+    post:
+      tags:
+        - Login
+      description: efetua o logout do usuário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout efetuado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+  /clientes:
+    get:
+      tags:
+        - Clientes
+      description: consulta todos os clientes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filtro
+          in: query
+          required: false
+          description: |+
+            Define qual tipo de busca será feita.
+               - _para_aprovar_: (GERENTE) busca os clientes que aguardam aprovação
+               - _adm_relatorio_clientes_: (ADMINISTRADOR) busca todos os clientes para tirar o relatório, com dados de cliente, conta e gerente
+               - _melhores_clientes_: (GERENTE) busca os 3 melhores clientes
+               - (sem filtro): (GERENTE) busca todos os clientes com conta
+          schema:
+            type: string
+            enum: [para_aprovar, adm_relatorio_clientes, melhores_clientes]
+      responses:
+        '200':
+          description: Clientes retornados com sucesso
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ParaAprovarResponse'
+                  - $ref: '#/components/schemas/RelatorioClientesResponse'
+                  - $ref: '#/components/schemas/TodosClientesResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+    post:
+      tags:
+        - Clientes
+      description: autocadastro de cliente
+      responses:
+        '201':
+          description: Cliente autocadastrado
+        '400':
+          description: Erro inserindo cliente
+        '409':
+          description: Cliente já cadastrado ou aguardando aprovação, CPF duplicado
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutocadastroInfo'
+  /clientes/{cpf}:
+    get:
+      tags:
+        - Clientes
+      description: Consulta um cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usuário consultado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadosClienteResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+        '404':
+          description: Usuário não encontrado
+    put:
+      tags:
+        - Clientes
+      description: altera os dados de perfil de cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Perfil do cliente alterado com sucesso
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilInfo'
+  /clientes/{cpf}/aprovar:
+    post:
+      tags:
+        - Clientes
+      description: aprova o cliente com o cpf passado
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          description: CPF do cliente a ser aprovado
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cliente aprovado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContaResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+  /clientes/{cpf}/rejeitar:
+    post:
+      tags:
+        - Clientes
+      description: rejeita o cliente com o cpf passado
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          description: CPF do cliente a ser rejeitado
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo:
+                  type: string
+                  example: "Usuário não é interessante para o banco"
+      responses:
+        '200':
+          description: Cliente rejeitado com sucesso
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+
+
+  /contas/{numero}/saldo:
+    get:
+      tags:
+        - Contas
+      description: retorna o saldo da conta
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          description: Número da conta
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Saldo retornado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaldoResponse'
+        '400' :
+          description: Filtro Não Existe
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+        '404':
+          description: Clientes não encontradas
+  /contas/{numero}/depositar:
+    post:
+      tags:
+        - Contas
+      description: deposita um valor na conta do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          description: Número da conta
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                valor:
+                  type: number
+                  format: double
+                  description: Valor a ser depositado
+                  example: 51.44
+      responses:
+        '200':
+          description: Depósito efetuado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperacaoResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+  /contas/{numero}/sacar:
+    post:
+      tags:
+        - Contas
+      description: Saca um valor da conta do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          description: Número da conta
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                valor:
+                  type: number
+                  format: double
+                  description: Valor a ser sacado
+                  example: 51.44
+      responses:
+        '200':
+          description: Saque efetuado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperacaoResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+  /contas/{numero}/transferir:
+    post:
+      tags:
+        - Contas
+      description: Saca um valor da conta do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          description: Número da conta
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destino:
+                  type: string
+                  example: "0123"
+                  description: Conta destino da transferência
+                valor:
+                  type: number
+                  format: double
+                  description: Valor a ser transferido
+                  example: 51.44
+      responses:
+        '200':
+          description: Transferência efetuada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferenciaResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+  /contas/{numero}/extrato:
+    get:
+      tags:
+        - Contas
+      description: Retorna o extrado da conta
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          description: Número da conta
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transferência efetuada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtratoResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+  /gerentes:
+    get:
+      tags:
+        - Gerentes
+      description: Busca todos os gerentes cadastrados
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: numero
+          in: query
+          required: false
+          description: |
+            Se é para retornar todos os gerentes ou se a consulta é para dashboard
+            - *dashboard* : retorna os dados para montar o dashboard do gerente
+            - sem filtro : retorna todos os dados de gerentes
+          schema:
+            type: string
+            enum: [dashboard]
+      responses:
+        '200':
+          description: Retorna a lista de gerentes
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DashboardResponse'
+                  - $ref: '#/components/schemas/GerentesResponse'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+    post:
+      tags:
+        - Gerentes
+      description: | 
+        Inserção de Gerentes.
+        <br>Permissões:
+        - ADMINISTRADOR
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DadoGerenteInsercao'
+      responses:
+        '200':
+          description: Gerente inserido com sucesso
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/DadoGerente'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+  /gerentes/{cpf}:
+    get:
+      tags:
+        - Gerentes
+      description: | 
+        Consulta um gerente.
+        <br>Permissões:
+        - ADMINISTRADOR
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          description: CPF do gerente a ser consultado
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gerente encontrado e dados retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadoGerente'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+        '404':
+          description: Gerente não encontrado
+    delete:
+      tags:
+        - Gerentes
+      description: | 
+        Remove um gerente.
+        <br>Permissões:
+        - ADMINISTRADOR
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          description: CPF do gerente a ser removido
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gerente encontrado e removido com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadoGerente'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+        '404':
+          description: Gerente não encontrado
+    put:
+      tags:
+        - Gerentes
+      description: | 
+        Atualiza os dados de um gerente.
+        <br>Permissões:
+        - ADMINISTRADOR
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cpf
+          in: path
+          required: true
+          description: CPF do gerente a ser atualizado
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DadoGerenteAtualizacao'
+      responses:
+        '200':
+          description: Gerente encontrado e alterado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadoGerente'
+        '401':
+          $ref: '#/components/responses/ErroNaoLogado'
+        '403':
+          $ref: '#/components/responses/ErroProibido'
+        '404':
+          description: Gerente não encontrado
+
+
+components:
+  securitySchemes:
+    bearerAuth: 
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    ErroNaoLogado:
+      description: O usuário não está logado
+    ErroProibido:
+      description: O usuário não tem permissão para efetuar esta operação
+  schemas:
+    AutocadastroInfo:
+      type: object
+      properties:
+        cpf:
+          type: string
+        email:
+          type: string
+        nome:
+          type: string
+        telefone:
+          type: string
+        salario:
+          type: number
+          format: double
+        endereco:
+          type: string
+        CEP:
+          type: string
+        cidade:
+          type: string
+        estado:
+          type: string
+    LoginInfo:
+      type: object
+      properties:
+        login:
+          type: string
+        senha:
+          type: string
+    LogoutResponse:
+      type: object
+      properties:
+        cpf:
+          type: string
+        nome:
+          type: string
+        email:
+          type: string
+        tipo:
+          type: string
+    SaldoResponse:
+      type: object
+      properties:
+        cliente:
+          type: string
+          example: "76179646090"
+        conta:
+          type: string
+          example: "0556"
+        saldo:
+          type: number
+          format: double
+          example: 1506.88
+    PerfilInfo:
+      type: object
+      properties:
+        nome:
+          type: string
+          example: "Crysthôncio"
+        email:
+          type: string
+          example: "crys@bantads.com.br"
+        salario:
+          type: number
+          format: double
+          example: 1506.88
+        endereco:
+          type: string
+          example: "Rua das Palmeiras, 500"
+        CEP:
+          type: string
+          example: "80000000"
+        cidade:
+          type: string
+          example: "Curitiba"
+        estado:
+          type: string
+          example: "PR"
+    ContaResponse:
+      type: object
+      properties:
+        cliente:
+          type: string
+          example: "76179646090"
+        numero:
+          type: string
+          example: "0114"
+        saldo:
+          type: number
+          format: double
+          example: 2000.0
+        limite:
+          type: number
+          format: double
+          example: 1000.0
+        gerente:
+          type: string
+          example: "98574307084"
+        criacao:
+          type: string
+          example: "2025-08-01T10:22:45-03:00"
+    TodosClientesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClienteResponse'
+    ParaAprovarResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClienteParaAprovarResponse'
+    RelatorioClientesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/DadosClienteResponse'
+    ClienteResponse:
+      type: object
+      properties:
+        cpf:
+          type: string
+          example: "12912861012"
+        nome:
+          type: string
+          example: "Catharyna"
+        email:
+          type: string
+          example: "cli1@bantads.com.br"
+        telefone:
+          type: string
+          example: "(41) 9 9999-8989"
+        endereco:
+          type: string
+          example: "Rua X, nr 10"
+        cidade:
+          type: string
+          example: "Curitiba"
+        estado:
+          type: string
+          example: "PR"
+        conta:
+          type: string
+          example: "1291"
+        saldo:
+          type: number
+          format: double
+          example: 800.0
+        limite:
+          type: number
+          format: double
+          example: 5000.0
+    ClienteParaAprovarResponse:
+      type: object
+      properties:
+        cpf:
+          type: string
+          example: "12912861012"
+        nome:
+          type: string
+          example: "Catharyna"
+        email:
+          type: string
+          example: "cli1@bantads.com.br"
+        salario:
+          type: number
+          format: double
+          example: 5000.0
+        endereco:
+          type: string
+          example: "Rua X, nr 10"
+        cidade:
+          type: string
+          example: "Curitiba"
+        estado:
+          type: string
+          example: "PR"
+    DadosClienteResponse:
+      type: object
+      properties:
+        cpf:
+          type: string
+          example: "12912861012"
+        nome:
+          type: string
+          example: "Catharyna"
+        telefone:
+          type: string
+          example: "(41) 9 9999-8989"
+        email:
+          type: string
+          example: "cli1@bantads.com.br"
+        endereco:
+          type: string
+          example: "Rua X, nr 10"
+        cidade:
+          type: string
+          example: "Curitib"
+        estado:
+          type: string
+          example: "PR"
+        salario:
+          type: number
+          format: double
+          example: 800.0
+        conta:
+          type: string
+          example: "1291"
+        saldo:
+          type: string
+          example: "1291"
+        limite:
+          type: number
+          format: double
+          example: 5000.0
+        gerente:
+          type: string
+          example: "98574307084"
+        gerente_nome:
+          type: string
+          example: "Geniéve"
+        gerente_email:
+          type: string
+          example: "ger1@bantads.com.br"
+    OperacaoResponse:
+      type: object
+      properties:
+        conta:
+          type: string
+          example: "1291"
+        data:
+          type: string
+          example: "2025-08-01T10:22:45-03:00"
+        saldo:
+          type: number
+          format: double
+          example: 1044.23
+    TransferenciaResponse:
+      type: object
+      properties:
+        conta:
+          type: string
+          example: "1291"
+        data:
+          type: string
+          example: "2025-08-01T10:22:45-03:00"
+        destino:
+          type: string
+          example: "4321"
+        saldo:
+          type: number
+          format: double
+          example: 1044.23
+        valor:
+          type: number
+          format: double
+          example: 87.12
+    ExtratoResponse:
+      type: object
+      properties:
+        conta:
+          type: string
+          description: Número da conta
+          example: "8722"
+        saldo:
+          type: number
+          format: double
+          description: Saldo final da conta
+          example: 1933.32
+        movimentacoes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemExtratoResponse'
+    ItemExtratoResponse:
+      type: object
+      properties:
+        data:
+          type: string
+          description: Data da movimentação
+          example: "2025-08-01T10:22:45-03:00"
+        tipo:
+          type: string
+          description: Tipo da movimentação
+          enum: [saque, depósito, transferência]
+        origem:
+          type: string
+          description: Conta origem dos valores
+          example: "8872"
+        destino:
+          type: string
+          description: Conta destino dos valores
+          example: "9961"
+        valor:
+          type: number
+          format: double
+          example: 972.22
+    DashboardResponse:
+      type: array
+      items:
+          $ref: '#/components/schemas/ItemDashboardResponse'
+    GerentesResponse:
+      type: array
+      items:
+          $ref: '#/components/schemas/DadoGerente'
+    ItemDashboardResponse:
+      type: object
+      properties:
+        gerente:
+          $ref: '#/components/schemas/DadoGerente'
+        clientes:
+          type: array
+          items: 
+            $ref: '#/components/schemas/DadoConta'
+        saldo_positivo:
+          type: number
+          format: double
+          description: Saldo positivo das suas contas
+          example: 89123.22
+        saldo_negativo:
+          type: number
+          format: double
+          description: Saldo negativo das suas contas
+          example: -982.35
+
+    DadoConta:
+      type: object
+      properties:
+        cliente:
+          type: string
+          description: CPF do cliente
+          example: "40501740066"
+        numero:
+          type: string
+          description: Número da conta
+          example: "7811"
+        saldo:
+          type: number
+          format: double
+          description: Saldo da conta
+          example: 1099.21
+        limite:
+          type: number
+          format: double
+          description: Limite da conta
+          example: 5000.0
+        gerente:
+          type: string
+          description: CPF do gerente
+          example: "23862179060"
+        criacao:
+          type: string
+          description: Data da Criação da conta
+          example: "2025-08-01T16:27:48-03:00"
+    DadoGerente:
+      type: object
+      properties:
+        cpf:
+          type: string
+          description: CPF do gerente
+          example: "40501740066"
+        nome: 
+          type: string
+          description: Nome do gerente
+          example: "Geniéve"
+        email: 
+          type: string
+          description: Email do gerente
+          example: "ger1@bantads.com.br"
+        tipo: 
+          type: string
+          description: Tipo do gerente
+          example: "ADMINISTRADOR"
+    DadoGerenteInsercao:
+      type: object
+      properties:
+        cpf:
+          type: string
+          description: CPF do gerente
+          example: "40501740066"
+        nome: 
+          type: string
+          description: Nome do gerente
+          example: "Geniéve"
+        email: 
+          type: string
+          description: Email do gerente
+          example: "ger1@bantads.com.br"
+        tipo: 
+          type: string
+          description: Tipo do gerente
+          example: "ADMINISTRADOR"
+        senha:
+          type: string
+          description: Senha do novo gerente
+          example: "tads"
+    DadoGerenteAtualizacao:
+      type: object
+      properties:
+        nome: 
+          type: string
+          description: Nome do gerente
+          example: "Geniéve"
+        email: 
+          type: string
+          description: Email do gerente
+          example: "ger1@bantads.com.br"
+        senha:
+          type: string
+          description: Senha do novo gerente
+          example: "tads"
