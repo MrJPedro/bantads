@@ -1,0 +1,250 @@
+{
+  "clientes": [
+    {
+      "id": 1,
+      "cpf": "12912861012",
+      "nome": "Catharyna",
+      "email": "cli1@bantads.com.br",
+      "telefone": "(41) 9 9999-8989",
+      "salario": 5000.00,
+      "endereco": "Rua X, nr 10",
+      "CEP": "80000000",
+      "cidade": "Curitiba",
+      "estado": "PR",
+      "status": "APROVADO",
+      "gerente_cpf": "40501740066"
+    },
+    {
+      "id": 2,
+      "cpf": "76179646090",
+      "nome": "Crysthôncio",
+      "email": "crys@bantads.com.br",
+      "telefone": "(41) 9 8888-7777",
+      "salario": 8500.00,
+      "endereco": "Rua das Palmeiras, 500",
+      "CEP": "80010000",
+      "cidade": "Curitiba",
+      "estado": "PR",
+      "status": "APROVADO",
+      "gerente_cpf": "40501740066"
+    },
+    {
+      "id": 3,
+      "cpf": "98765432100",
+      "nome": "Fernanda Oliveira",
+      "email": "fernanda@bantads.com.br",
+      "telefone": "(11) 9 7777-6666",
+      "salario": 12000.00,
+      "endereco": "Av Paulista, 1000",
+      "CEP": "01310100",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "status": "APROVADO",
+      "gerente_cpf": "23862179060"
+    },
+    {
+      "id": 4,
+      "cpf": "11122233344",
+      "nome": "Ricardo Santos",
+      "email": "ricardo@bantads.com.br",
+      "telefone": "(21) 9 6666-5555",
+      "salario": 3200.00,
+      "endereco": "Rua do Ouvidor, 120",
+      "CEP": "20040020",
+      "cidade": "Rio de Janeiro",
+      "estado": "RJ",
+      "status": "PENDENTE",
+      "gerente_cpf": "40501740066"
+    },
+    {
+      "id": 5,
+      "cpf": "55566677788",
+      "nome": "Juliana Costa",
+      "email": "juliana@bantads.com.br",
+      "telefone": "(31) 9 5555-4444",
+      "salario": 7800.00,
+      "endereco": "Rua da Bahia, 300",
+      "CEP": "30160011",
+      "cidade": "Belo Horizonte",
+      "estado": "MG",
+      "status": "PENDENTE",
+      "gerente_cpf": "23862179060"
+    }
+  ],
+  "contas": [
+    {
+      "id": 1,
+      "numero": "0556",
+      "cliente": "76179646090",
+      "saldo": 1506.88,
+      "limite": 5000.00,
+      "gerente": "40501740066",
+      "criacao": "2025-08-01T10:22:45-03:00"
+    },
+    {
+      "id": 2,
+      "numero": "1291",
+      "cliente": "12912861012",
+      "saldo": 800.00,
+      "limite": 5000.00,
+      "gerente": "40501740066",
+      "criacao": "2025-07-15T14:30:00-03:00"
+    },
+    {
+      "id": 3,
+      "numero": "7811",
+      "cliente": "98765432100",
+      "saldo": 15320.50,
+      "limite": 10000.00,
+      "gerente": "23862179060",
+      "criacao": "2025-06-20T09:15:30-03:00"
+    }
+  ],
+  "movimentacoes": [
+    {
+      "id": 1,
+      "conta": "0556",
+      "data": "2025-08-01T10:22:45-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "0556",
+      "valor": 2000.00
+    },
+    {
+      "id": 2,
+      "conta": "0556",
+      "data": "2025-08-02T14:10:00-03:00",
+      "tipo": "saque",
+      "origem": "0556",
+      "destino": null,
+      "valor": 200.00
+    },
+    {
+      "id": 3,
+      "conta": "0556",
+      "data": "2025-08-03T09:30:00-03:00",
+      "tipo": "transferência",
+      "origem": "0556",
+      "destino": "1291",
+      "valor": 293.12
+    },
+    {
+      "id": 4,
+      "conta": "1291",
+      "data": "2025-07-15T14:30:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "1291",
+      "valor": 500.00
+    },
+    {
+      "id": 5,
+      "conta": "1291",
+      "data": "2025-08-03T09:30:00-03:00",
+      "tipo": "transferência",
+      "origem": "0556",
+      "destino": "1291",
+      "valor": 293.12
+    },
+    {
+      "id": 6,
+      "conta": "7811",
+      "data": "2025-06-20T09:15:30-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "7811",
+      "valor": 10000.00
+    },
+    {
+      "id": 7,
+      "conta": "7811",
+      "data": "2025-07-01T11:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "7811",
+      "valor": 5320.50
+    }
+  ],
+  "gerentes": [
+    {
+      "id": 1,
+      "cpf": "40501740066",
+      "nome": "Geniéve",
+      "email": "ger1@bantads.com.br",
+      "tipo": "GERENTE",
+      "senha": "tads"
+    },
+    {
+      "id": 2,
+      "cpf": "23862179060",
+      "nome": "Cláudio Mendes",
+      "email": "ger2@bantads.com.br",
+      "tipo": "GERENTE",
+      "senha": "tads"
+    },
+    {
+      "id": 3,
+      "cpf": "98574307084",
+      "nome": "Admin Master",
+      "email": "admin@bantads.com.br",
+      "tipo": "ADMINISTRADOR",
+      "senha": "admin"
+    }
+  ],
+  "usuarios": [
+    {
+      "id": 1,
+      "login": "cli1@bantads.com.br",
+      "senha": "tads",
+      "cpf": "12912861012",
+      "nome": "Catharyna",
+      "email": "cli1@bantads.com.br",
+      "tipo": "CLIENTE"
+    },
+    {
+      "id": 2,
+      "login": "crys@bantads.com.br",
+      "senha": "tads",
+      "cpf": "76179646090",
+      "nome": "Crysthôncio",
+      "email": "crys@bantads.com.br",
+      "tipo": "CLIENTE"
+    },
+    {
+      "id": 3,
+      "login": "fernanda@bantads.com.br",
+      "senha": "tads",
+      "cpf": "98765432100",
+      "nome": "Fernanda Oliveira",
+      "email": "fernanda@bantads.com.br",
+      "tipo": "CLIENTE"
+    },
+    {
+      "id": 4,
+      "login": "ger1@bantads.com.br",
+      "senha": "tads",
+      "cpf": "40501740066",
+      "nome": "Geniéve",
+      "email": "ger1@bantads.com.br",
+      "tipo": "GERENTE"
+    },
+    {
+      "id": 5,
+      "login": "ger2@bantads.com.br",
+      "senha": "tads",
+      "cpf": "23862179060",
+      "nome": "Cláudio Mendes",
+      "email": "ger2@bantads.com.br",
+      "tipo": "GERENTE"
+    },
+    {
+      "id": 6,
+      "login": "admin@bantads.com.br",
+      "senha": "admin",
+      "cpf": "98574307084",
+      "nome": "Admin Master",
+      "email": "admin@bantads.com.br",
+      "tipo": "ADMINISTRADOR"
+    }
+  ]
+}
