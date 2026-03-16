@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Login } from './login';
+import { TelaInicialGerente } from './tela-inicial-gerente';
 
-describe('Login', () => {
-  let component: Login;
-  let fixture: ComponentFixture<Login>;
+describe('TelaInicialGerente', () => {
+  let component: TelaInicialGerente;
+  let fixture: ComponentFixture<TelaInicialGerente>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Login],
+      imports: [TelaInicialGerente],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Login);
+    fixture = TestBed.createComponent(TelaInicialGerente);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

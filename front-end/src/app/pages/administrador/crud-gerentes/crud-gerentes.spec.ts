@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Login } from './login';
+import { CrudGerentes } from './crud-gerentes';
 
-describe('Login', () => {
-  let component: Login;
-  let fixture: ComponentFixture<Login>;
+describe('CrudGerentes', () => {
+  let component: CrudGerentes;
+  let fixture: ComponentFixture<CrudGerentes>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Login],
+      imports: [CrudGerentes],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Login);
+    fixture = TestBed.createComponent(CrudGerentes);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

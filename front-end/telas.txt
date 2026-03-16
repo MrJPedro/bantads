@@ -19,4 +19,4 @@ GERENTE
 ADMINISTRADOR
   R15: Tela Inicial Administrador
     R16: Relatório de Clientes
-    R(17..20): CRUD de Gerentes 
+    R(17..20): CRUD de Gerentes
