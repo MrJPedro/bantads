@@ -1,0 +1,9 @@
+Dockerfile
+.dockerignore
+node_modules
+.gitignore
+
+telas.txt
+README.md
+api_definition
+.editorconfig

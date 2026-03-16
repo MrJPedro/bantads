@@ -63,7 +63,10 @@
               "buildTarget": "front-end:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "port": 8080
+          }
         },
         "test": {
           "builder": "@angular/build:unit-test"
