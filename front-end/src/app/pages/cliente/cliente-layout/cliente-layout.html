@@ -1,2 +1,31 @@
-<p>cliente-layout works!</p>
-<router-outlet></router-outlet>
+<div class="flex min-h-screen bg-slate-50">
+    <aside class="w-64 bg-white border-r border-gray-200 fixed h-full hidden md:block">
+        <div class="p-6 flex items-center gap-2 border-b border-gray-100">
+            <i class="pi pi-building text-blue-600 text-2xl"></i>
+            <span class="text-xl font-bold text-gray-800">BANTADS</span>
+        </div>
+        <nav class="p-4 flex flex-col gap-2">
+            <div class="text-xs font-bold text-gray-400 uppercase p-2">Menu</div>
+            <a class="flex items-center p-3 rounded-lg bg-blue-50 text-blue-700 font-medium">
+                <i class="pi pi-home mr-3"></i> Início
+            </a>
+            <a class="flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                <i class="pi pi-users mr-3"></i> Conta
+            </a>
+        </nav>
+    </aside>
+
+    <div class="flex-1 md:ml-64 flex flex-col">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-10">
+            <div class="font-medium text-gray-500">Dashboard</div>
+            <div class="flex items-center gap-4">
+                <i class="pi pi-bell text-gray-400"></i>
+                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">G</div>
+            </div>
+        </header>
+
+        <main class="p-8">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>
