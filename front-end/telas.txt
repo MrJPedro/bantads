@@ -1,0 +1,22 @@
+CLIENTE
+  R01: Autocadastro
+  R02: Login
+  R03: Tela Inicial Cliente
+    R04: Alteração de Perfil
+    R05: Depositar
+    R06: Saque
+    R07: Transferência
+    R08: Consulta de extrato
+
+GERENTE
+  R09: Tela Inicial Gerente
+    R10: Aprovar Cliente
+    R11: Rejeitar Cliente
+    R12: Consultar Todos os Clientes
+    R13: Consultar Cliente
+    R14: Consultar 3 Melhores Clientes
+
+ADMINISTRADOR
+  R15: Tela Inicial Administrador
+    R16: Relatório de Clientes
+    R(17..20): CRUD de Gerentes
