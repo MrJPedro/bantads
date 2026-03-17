@@ -25,6 +25,31 @@ function decodeToken(req) {
   }
 }
 
+function requireAuth(req, res) {
+  const user = decodeToken(req);
+  if (!user) {
+    res.status(401).json({ erro: "O usuário não está logado" });
+    return null;
+  }
+  return user;
+}
+
+function requireRole(res, user, ...roles) {
+  if (!roles.includes(user.tipo)) {
+    res.status(403).json({ erro: "O usuário não tem permissão para efetuar esta operação" });
+    return false;
+  }
+  return true;
+}
+
+function requireAccountOwner(req, res, db, user, conta) {
+  if (user.tipo === "CLIENTE" && conta.cliente !== user.cpf) {
+    res.status(403).json({ erro: "O usuário não tem permissão para efetuar esta operação" });
+    return false;
+  }
+  return true;
+}
+
 
 // POST /login
 
@@ -58,12 +83,14 @@ server.post("/login", (req, res) => {
 // POST /logout
 
 server.post("/logout", (req, res) => {
-  const user = decodeToken(req);
-  if (!user) return res.status(401).json({ erro: "O usuário não está logado" });
+  const user = requireAuth(req, res);
+  if (!user) return;
+
+  const dbUser = router.db.get("usuarios").find({ cpf: user.cpf }).value();
   return res.status(200).json({
     cpf: user.cpf,
-    nome: user.nome || "",
-    email: user.email || "",
+    nome: dbUser ? dbUser.nome : "",
+    email: dbUser ? dbUser.email : "",
     tipo: user.tipo,
   });
 });
@@ -138,13 +165,13 @@ server.post("/clientes", (req, res) => {
 server.get("/clientes", (req, res) => {
   const db = router.db;
   const filtro = req.query.filtro;
-  const user = decodeToken(req);
+  const user = requireAuth(req, res);
+  if (!user) return;
 
   if (filtro === "para_aprovar") {
+    if (!requireRole(res, user, "GERENTE")) return;
     let pendentes = db.get("clientes").filter({ status: "PENDENTE" }).value();
-    if (user && user.tipo === "GERENTE") {
-      pendentes = pendentes.filter((c) => c.gerente_cpf === user.cpf);
-    }
+    pendentes = pendentes.filter((c) => c.gerente_cpf === user.cpf);
     const result = pendentes.map((c) => ({
       cpf: c.cpf,
       nome: c.nome,
@@ -158,6 +185,7 @@ server.get("/clientes", (req, res) => {
   }
 
   if (filtro === "adm_relatorio_clientes") {
+    if (!requireRole(res, user, "ADMINISTRADOR")) return;
     const clientes = db.get("clientes").filter({ status: "APROVADO" }).value();
     const result = clientes.map((c) => {
       const conta = db.get("contas").find({ cliente: c.cpf }).value() || {};
@@ -183,10 +211,9 @@ server.get("/clientes", (req, res) => {
   }
 
   if (filtro === "melhores_clientes") {
+    if (!requireRole(res, user, "GERENTE")) return;
     let contas = db.get("contas").value();
-    if (user && user.tipo === "GERENTE") {
-      contas = contas.filter((ct) => ct.gerente === user.cpf);
-    }
+    contas = contas.filter((ct) => ct.gerente === user.cpf);
     contas.sort((a, b) => b.saldo - a.saldo);
     const top3 = contas.slice(0, 3);
     const result = top3.map((ct) => {
@@ -207,10 +234,9 @@ server.get("/clientes", (req, res) => {
     return res.status(200).json(result);
   }
 
+  if (!requireRole(res, user, "GERENTE")) return;
   let contas = db.get("contas").value();
-  if (user && user.tipo === "GERENTE") {
-    contas = contas.filter((ct) => ct.gerente === user.cpf);
-  }
+  contas = contas.filter((ct) => ct.gerente === user.cpf);
   const result = contas.map((ct) => {
     const c = db.get("clientes").find({ cpf: ct.cliente }).value() || {};
     return {
@@ -233,6 +259,9 @@ server.get("/clientes", (req, res) => {
 // GET /clientes/:cpf
 
 server.get("/clientes/:cpf", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const c = db.get("clientes").find({ cpf: req.params.cpf }).value();
   if (!c) return res.status(404).json({ erro: "Usuário não encontrado" });
@@ -262,6 +291,9 @@ server.get("/clientes/:cpf", (req, res) => {
 // PUT /clientes/:cpf
 
 server.put("/clientes/:cpf", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const c = db.get("clientes").find({ cpf: req.params.cpf }).value();
   if (!c) return res.status(404).json({ erro: "Cliente não encontrado" });
@@ -280,6 +312,10 @@ server.put("/clientes/:cpf", (req, res) => {
 // POST /clientes/:cpf/aprovar
 
 server.post("/clientes/:cpf/aprovar", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  if (!requireRole(res, user, "GERENTE")) return;
+
   const db = router.db;
   const c = db.get("clientes").find({ cpf: req.params.cpf }).value();
   if (!c) return res.status(404).json({ erro: "Cliente não encontrado" });
@@ -312,6 +348,10 @@ server.post("/clientes/:cpf/aprovar", (req, res) => {
 // POST /clientes/:cpf/rejeitar
 
 server.post("/clientes/:cpf/rejeitar", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  if (!requireRole(res, user, "GERENTE")) return;
+
   const db = router.db;
   const c = db.get("clientes").find({ cpf: req.params.cpf }).value();
   if (!c) return res.status(404).json({ erro: "Cliente não encontrado" });
@@ -325,9 +365,13 @@ server.post("/clientes/:cpf/rejeitar", (req, res) => {
 // GET /contas/:numero/saldo
 
 server.get("/contas/:numero/saldo", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const conta = db.get("contas").find({ numero: req.params.numero }).value();
   if (!conta) return res.status(404).json({ erro: "Conta não encontrada" });
+  if (!requireAccountOwner(req, res, db, user, conta)) return;
 
   return res.status(200).json({
     cliente: conta.cliente,
@@ -340,12 +384,17 @@ server.get("/contas/:numero/saldo", (req, res) => {
 // POST /contas/:numero/depositar
 
 server.post("/contas/:numero/depositar", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const conta = db.get("contas").find({ numero: req.params.numero });
   const contaVal = conta.value();
   if (!contaVal) return res.status(404).json({ erro: "Conta não encontrada" });
+  if (!requireAccountOwner(req, res, db, user, contaVal)) return;
 
   const valor = req.body.valor;
+  if (!valor || valor <= 0) return res.status(400).json({ erro: "Valor deve ser maior que zero" });
   const novoSaldo = contaVal.saldo + valor;
   conta.assign({ saldo: novoSaldo }).write();
 
@@ -361,12 +410,17 @@ server.post("/contas/:numero/depositar", (req, res) => {
 // POST /contas/:numero/sacar
 
 server.post("/contas/:numero/sacar", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const conta = db.get("contas").find({ numero: req.params.numero });
   const contaVal = conta.value();
   if (!contaVal) return res.status(404).json({ erro: "Conta não encontrada" });
+  if (!requireAccountOwner(req, res, db, user, contaVal)) return;
 
   const valor = req.body.valor;
+  if (!valor || valor <= 0) return res.status(400).json({ erro: "Valor deve ser maior que zero" });
   const limiteDisponivel = contaVal.saldo + contaVal.limite;
   if (valor > limiteDisponivel) {
     return res.status(400).json({ erro: "Saldo insuficiente" });
@@ -387,16 +441,21 @@ server.post("/contas/:numero/sacar", (req, res) => {
 // POST /contas/:numero/transferir
 
 server.post("/contas/:numero/transferir", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const contaOrigem = db.get("contas").find({ numero: req.params.numero });
   const origemVal = contaOrigem.value();
   if (!origemVal) return res.status(404).json({ erro: "Conta origem não encontrada" });
+  if (!requireAccountOwner(req, res, db, user, origemVal)) return;
 
   const contaDestino = db.get("contas").find({ numero: req.body.destino });
   const destinoVal = contaDestino.value();
   if (!destinoVal) return res.status(404).json({ erro: "Conta destino não encontrada" });
 
   const valor = req.body.valor;
+  if (!valor || valor <= 0) return res.status(400).json({ erro: "Valor deve ser maior que zero" });
   const limiteDisponivel = origemVal.saldo + origemVal.limite;
   if (valor > limiteDisponivel) {
     return res.status(400).json({ erro: "Saldo insuficiente" });
@@ -428,9 +487,13 @@ server.post("/contas/:numero/transferir", (req, res) => {
 // GET /contas/:numero/extrato
 
 server.get("/contas/:numero/extrato", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const conta = db.get("contas").find({ numero: req.params.numero }).value();
   if (!conta) return res.status(404).json({ erro: "Conta não encontrada" });
+  if (!requireAccountOwner(req, res, db, user, conta)) return;
 
   const movimentacoes = db.get("movimentacoes").filter({ conta: conta.numero }).value();
 
@@ -451,6 +514,9 @@ server.get("/contas/:numero/extrato", (req, res) => {
 // GET /gerentes
 
 server.get("/gerentes", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+
   const db = router.db;
   const filtro = req.query.numero;
 
@@ -487,6 +553,10 @@ server.get("/gerentes", (req, res) => {
 // GET /gerentes/:cpf
 
 server.get("/gerentes/:cpf", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  if (!requireRole(res, user, "ADMINISTRADOR")) return;
+
   const db = router.db;
   const g = db.get("gerentes").find({ cpf: req.params.cpf }).value();
   if (!g) return res.status(404).json({ erro: "Gerente não encontrado" });
@@ -497,6 +567,10 @@ server.get("/gerentes/:cpf", (req, res) => {
 // POST /gerentes  - inserção
 
 server.post("/gerentes", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  if (!requireRole(res, user, "ADMINISTRADOR")) return;
+
   const db = router.db;
   const body = req.body;
 
@@ -523,6 +597,10 @@ server.post("/gerentes", (req, res) => {
 // PUT /gerentes/:cpf  - atualização
 
 server.put("/gerentes/:cpf", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  if (!requireRole(res, user, "ADMINISTRADOR")) return;
+
   const db = router.db;
   const g = db.get("gerentes").find({ cpf: req.params.cpf });
   if (!g.value()) return res.status(404).json({ erro: "Gerente não encontrado" });
@@ -541,6 +619,10 @@ server.put("/gerentes/:cpf", (req, res) => {
 // DELETE /gerentes/:cpf
 
 server.delete("/gerentes/:cpf", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  if (!requireRole(res, user, "ADMINISTRADOR")) return;
+
   const db = router.db;
   const g = db.get("gerentes").find({ cpf: req.params.cpf }).value();
   if (!g) return res.status(404).json({ erro: "Gerente não encontrado" });
