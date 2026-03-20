@@ -4,7 +4,7 @@
     <h2 class="text-2xl font-bold mb-6">Meus clientes</h2>
 
     <p-table
-        [value]="clientes()"
+        [value]="clientesFiltrados()"
         [rows]="10"
         [paginator]="true"
         responsiveLayout="scroll"
@@ -12,7 +12,13 @@
         [sortField]="sortField"
         [sortOrder]="sortOrder"
     >
-        
+        <ng-template #caption>
+            <app-barra-pesquisa
+                [placeholder]="'Pesquisar por CPF ou nome...'"
+                [value]="termoBusca()"
+                (pesquisar)="aoPesquisar($event)">
+            </app-barra-pesquisa>
+        </ng-template>
         <ng-template #header>
             <tr>
                 <th>CPF</th>
