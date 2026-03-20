@@ -29,6 +29,7 @@ export class TelaInicialGerente implements OnInit {
     clientes = signal<ClienteParaAprovarResponse[]>([]);
     
     dialogRecusa: boolean = false;
+    dialogAceita: boolean = false;
     
     clienteSelecionado?: ClienteParaAprovarResponse;
     
@@ -48,14 +49,25 @@ export class TelaInicialGerente implements OnInit {
     }
 
     aprovar(cliente: ClienteParaAprovarResponse) {
-        this.clientes.set(this.clientes().filter(c => c.cpf !== cliente.cpf));
-        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente aprovado com sucesso' });
+        this.clienteSelecionado = cliente;
+        this.dialogAceita = true;
     }
 
     rejeitar(cliente: ClienteParaAprovarResponse) {
         this.clienteSelecionado = cliente;
         this.motivoRecusa = '';
         this.dialogRecusa = true;
+    }
+
+    fecharDialogAceite() {
+        this.dialogAceita = false;
+        this.clienteSelecionado = undefined;
+    }
+
+    fecharDialogRecusa() {
+        this.dialogRecusa = false;
+        this.clienteSelecionado = undefined;
+        this.motivoRecusa = '';
     }
 
     confirmarRecusa() {
@@ -69,4 +81,21 @@ export class TelaInicialGerente implements OnInit {
         });
     }
 }
+
+    confirmarAceite() {
+        if (this.clienteSelecionado) {
+            this.clientes.set(
+                this.clientes().filter(c => c.cpf !== this.clienteSelecionado?.cpf)
+            );
+
+            this.dialogAceita = false;
+            this.clienteSelecionado = undefined;
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Aceito',
+                detail: 'Cadastro aprovado'
+            });
+        }
+    }
 }

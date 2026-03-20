@@ -70,7 +70,36 @@
     </div>
 
     <ng-template #footer>
-        <p-button label="Cancelar" icon="pi pi-times" text (onClick)="dialogRecusa = false" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="success" text (onClick)="dialogRecusa = false" />
         <p-button label="Confirmar Recusa" icon="pi pi-check" severity="danger" (onClick)="confirmarRecusa()" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog
+    [(visible)]="dialogAceita"
+    [style]="{ width: '450px' }"
+    header="Confirmar Aceite"
+    [modal]="true"
+>
+    <div class="flex flex-col gap-4">
+        <span>
+            Confirma o aceite do cadastro de
+            <b>{{ clienteSelecionado?.nome }}</b>?
+        </span>
+    </div>
+
+    <ng-template #footer>
+        <p-button
+            label="Cancelar"
+            icon="pi pi-times"
+            severity="danger"
+            (onClick)="dialogAceita = false"
+        />
+        <p-button
+            label="Confirmar Aceite"
+            icon="pi pi-check"
+            severity="success"
+            (onClick)="confirmarAceite()"
+        />
     </ng-template>
 </p-dialog>
