@@ -1,1 +1,38 @@
-<p>consultar-clientes works!</p>
+<p-toast />
+
+<div class="card">
+    <h2 class="text-2xl font-bold mb-6">Meus clientes</h2>
+
+    <p-table
+        [value]="clientes()"
+        [rows]="10"
+        [paginator]="true"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-gridlines"
+        [sortField]="sortField"
+        [sortOrder]="sortOrder"
+    >
+        
+        <ng-template #header>
+            <tr>
+                <th pColumn="cpf">CPF</th>
+                <th pSortableColumn="nome">Nome <p-sortIcon field="nome" /></th>
+                <th pSortableColumn="cidade">Cidade</th>
+                <th pSortableColumn="estado">Estado</th>
+                <th pSortableColumn="saldo">Saldo</th>
+                <th pSortableColumn="limite">Limite <p-sortIcon field="limite" /></th>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-cliente>
+            <tr>
+                <td>{{ cliente.cpf }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.cidade }}</td>
+                <td>{{ cliente.estado }}</td>
+                <td>{{ cliente.saldo | currency: 'BRL' }}</td>
+                <td>{{ cliente.limite | currency: 'BRL' }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

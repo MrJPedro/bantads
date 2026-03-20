@@ -6,6 +6,7 @@ import { Autocadastro } from './pages/cliente/autocadastro/autocadastro';
 import { TelaInicialCliente } from './pages/cliente/tela-inicial-cliente/tela-inicial-cliente';
 import { GerenteLayout } from './pages/gerente/gerente-layout/gerente-layout';
 import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-inicial-gerente';
+import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -49,6 +50,10 @@ export const routes: Routes = [
       {
         path: 'tela-inicial',
         component: TelaInicialGerente
+      },
+      {
+        path: 'consultar-clientes',
+        component: ConsultarClientes
       }
     ]
   }
