@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @Component({
   selector: 'app-barra-pesquisa',
@@ -14,7 +15,8 @@ import { InputIconModule } from 'primeng/inputicon';
     FormsModule,
     InputTextModule,
     IconFieldModule,
-    InputIconModule
+    InputIconModule,
+    NgxMaskDirective
   ],
   templateUrl: './barra-pesquisa.html',
   styleUrl: './barra-pesquisa.css'
@@ -24,6 +26,8 @@ export class BarraPesquisa {
   @Input() value = '';
   @Input() disabled = false;
   @Input() largura = '100%';
+  @Input() icone = 'pi pi-search';
+  @Input() mask = '';
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() pesquisar = new EventEmitter<string>();

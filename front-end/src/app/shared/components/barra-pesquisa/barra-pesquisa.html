@@ -1,12 +1,13 @@
 <div [style.width]="largura" class="w-full">
   <div class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-200">
     <div class="flex items-center gap-2">
-      <i class="pi pi-search text-gray-400"></i>
+      <i [ngClass]="[icone, 'text-gray-400']"></i>
 
       <input
         type="text"
         pInputText
         [ngModel]="value"
+        [mask]="mask"
         (ngModelChange)="onInputChange($event)"
         [placeholder]="placeholder"
         [disabled]="disabled"
