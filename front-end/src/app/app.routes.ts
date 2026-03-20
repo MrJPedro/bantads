@@ -7,6 +7,8 @@ import { TelaInicialCliente } from './pages/cliente/tela-inicial-cliente/tela-in
 import { GerenteLayout } from './pages/gerente/gerente-layout/gerente-layout';
 import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-inicial-gerente';
 import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
+import { ConsultarClienteIndividual } from './pages/gerente/consultar-cliente-individual/consultar-cliente-individual';
+import { ConsultarClientesMelhores } from './pages/gerente/consultar-clientes-melhores/consultar-clientes-melhores';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -54,6 +56,14 @@ export const routes: Routes = [
       {
         path: 'consultar-clientes',
         component: ConsultarClientes
+      },
+      {
+        path: 'consultar-cliente-individual',
+        component: ConsultarClienteIndividual
+      },
+      {
+        path: 'consultar-clientes-melhores',
+        component: ConsultarClientesMelhores
       }
     ]
   }

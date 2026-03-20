@@ -6,11 +6,17 @@
         </div>
         <nav class="p-4 flex flex-col gap-2">
             <div class="text-xs font-bold text-gray-400 uppercase p-2">Menu</div>
-            <a routerLink="/gerente/tela-inicial" routerLinkActive="bg-blue-200" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+            <a routerLink="/gerente/tela-inicial" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
                 <i class="pi pi-home mr-3"></i> Início
             </a>
-            <a routerLink="/gerente/consultar-clientes" routerLinkActive="bg-blue-200" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
-                <i class="pi pi-users mr-3"></i> Clientes
+            <a routerLink="/gerente/consultar-clientes" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+                <i class="pi pi-users mr-3"></i> Meus clientes
+            </a>
+            <a routerLink="/gerente/consultar-cliente-individual" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+                <i class="pi pi-user mr-3"></i> Consultar cliente
+            </a>
+            <a routerLink="/gerente/consultar-clientes-melhores" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+                <i class="pi pi-trophy mr-3"></i> Melhores clientes
             </a>
         </nav>
     </aside>
@@ -20,7 +26,9 @@
             <div class="font-medium text-gray-500"></div>
             <div class="flex items-center gap-4">
                 <i class="pi pi-bell text-gray-400"></i>
-                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">G</div>
+                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                    <i class="pi pi-user"></i>
+                </div>
             </div>
         </header>
 
