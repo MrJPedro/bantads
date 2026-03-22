@@ -1,5 +1,5 @@
 export interface ItemExtratoResponse {
-    daat: string
+    data: string
     tipo: string
     origem: string
     destino: string

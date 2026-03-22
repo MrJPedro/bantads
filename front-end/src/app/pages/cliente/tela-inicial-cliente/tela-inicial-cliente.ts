@@ -1,5 +1,5 @@
 import { Router } from '@angular/router';
-import { SaldoResponde } from '../../../DTO/conta/saldo-responde';
+import { SaldoResponde } from '../../../dto/conta/saldo-responde';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-aprovar-response';
+import { ClienteParaAprovarResponse } from '../../../dto/cliente/cliente-para-aprovar-response.dto';
 
 @Component({
     selector: 'app-tela-inicial-cliente',

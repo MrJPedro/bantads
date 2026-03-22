@@ -1,4 +1,4 @@
-import { DadoGerente } from "../gerente/dado-gerente";
+import { DadoGerente } from "../gerente/dado-gerente.dto";
 import { DadoConta } from "./dado-conta";
 
 export interface ItemDashBoardResponse {

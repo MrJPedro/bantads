@@ -1,0 +1,6 @@
+export * from './dado-gerente-atualizacao.dto'
+export * from './dado-gerente-insercao.dto'
+export * from './dado-gerente.dto'
+export * from './dashboard-response.dto'
+export * from './item-extrato-response.dto'
+export * from './gerentes-response.dto'

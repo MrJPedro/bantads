@@ -7,7 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-aprovar-response';
+import { ClienteParaAprovarResponse } from '../../../dto/cliente/cliente-para-aprovar-response.dto';
 
 @Component({
     selector: 'app-tela-inicial-gerente',

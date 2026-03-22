@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { AutocadastroInfo } from '../DTO/cliente/autocadastro-info';
+import { AutocadastroInfo } from '../dto/cliente/autocadastro-info';
 import { Observable } from 'rxjs';
 
 
