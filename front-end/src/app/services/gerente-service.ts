@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 
-import * as DTO from '../dto/gerente'
-import { ClienteResponse } from '../dto/cliente';
+import * as DTO from '../DTO/gerente'
+import { ClienteResponse } from '../DTO/cliente';
 
 const API_URL = "http://localhost:8080"
 
@@ -27,7 +27,11 @@ export class Gerente {
   clistesParaAprovar(filtro: string): Observable<ClienteResponse>{
     filtro = "para_aprovar"
     return this.httpClient.get<ClienteResponse>(
-      API_URL + "/clientes", { filtro }, this.httpOptions
+      API_URL + "/clientes",
+      {
+       ...this.httpOptions, 
+        params: { filtro }  
+      }
     )
   }
 
@@ -63,7 +67,11 @@ export class Gerente {
   melhoresClientes(filtro: string): Observable<ClienteResponse>{
     filtro = "melhores_clientes"
     return this.httpClient.get<ClienteResponse>(
-      API_URL + "/clientes", { filtro }, this.httpOptions
+      API_URL + "/clientes",
+      {
+        ...this.httpOptions, 
+        params: { filtro } 
+      }
     )
   }  
 }

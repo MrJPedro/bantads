@@ -1,4 +1,4 @@
-import { ItemExtratoResponse } from "../gerente/item-extrato-response"
+import { ItemExtratoResponse } from "../gerente/item-extrato-response.dto"
 
 export interface ExtratoResponse {
     conta: string

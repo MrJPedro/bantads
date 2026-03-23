@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 
-import * as DTO from '../dto/cliente'
+import * as DTO from '../DTO/cliente'
 
 
 const API_URL = "http://localhost:8080"
@@ -54,7 +54,11 @@ export class Cliente {
   //   R08: Consulta de extrato
   consultaExtrato(cpf: string, dataInicio: string, dataFim: string): Observable<DTO.ClienteResponse> {
     return this.httpClient.get<DTO.ClienteResponse>(
-      API_URL + "/contas/" + cpf + "/extrato", { dataInicio, dataFim }, this.httpOptions
+      API_URL + "/contas/" + cpf + "/extrato",
+      {
+        ...this.httpOptions, 
+        params: { dataInicio, dataFim } 
+      }
     )
   }
 }
