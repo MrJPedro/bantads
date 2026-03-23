@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
   selector: 'app-barra-pesquisa',
@@ -28,21 +28,31 @@ export class BarraPesquisa {
   @Input() largura = '100%';
   @Input() icone = 'pi pi-search';
   @Input() mask = '';
+  @Input() pesquisarAoDigitar = true;
+  valorDigitado = '';
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() pesquisar = new EventEmitter<string>();
   @Output() limpar = new EventEmitter<void>();
-
-  onInputChange(valor: string) {
-    this.value = valor;
-    this.valueChange.emit(valor);
-    this.pesquisar.emit(valor);
-  }
 
   limparCampo() {
     this.value = '';
     this.valueChange.emit('');
     this.pesquisar.emit('');
     this.limpar.emit();
+  }
+
+  aoDigitar(valor: string) {
+    this.valorDigitado = valor;
+
+    if (this.pesquisarAoDigitar) {
+      this.pesquisar.emit(valor);
+    }
+  }
+
+  aoPressionarEnter() {
+    if (!this.pesquisarAoDigitar) {
+      this.pesquisar.emit(this.valorDigitado);
+    }
   }
 }

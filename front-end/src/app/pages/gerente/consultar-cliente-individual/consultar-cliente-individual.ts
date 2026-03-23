@@ -1,4 +1,4 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -35,27 +35,43 @@ export class ConsultarClienteIndividual implements OnInit {
 
     sortField = 'nome';
     sortOrder = 1;
-
+    jaPesquisou = signal(false);
     private somenteNumeros(valor: string): string {
     return (valor || '').replace(/\D/g, '');
 }
-
-    clientesFiltrados = computed(() => {
-        const termo = this.somenteNumeros(this.termoBusca());
-
-        if (!termo) {
-            return this.clientes();
-        }
-
-        const clienteEncontrado = this.clientes().find((cliente) =>
-        this.somenteNumeros(cliente.cpf).includes(termo)
-    );
-
-        return clienteEncontrado ? [clienteEncontrado] : [];
-    });
+    resultadoBusca = signal<any[]>([]);
+    constructor(private messageService: MessageService) {}
 
     aoPesquisar(valor: string) {
+    this.jaPesquisou.set(true);
     this.termoBusca.set(valor);
+    const cpfLimpo = this.somenteNumeros(valor);
+
+    if (cpfLimpo.length !== 11) {
+        this.resultadoBusca.set([]);
+
+        this.messageService.add({
+            severity: 'warn',
+            summary: 'CPF incompleto',
+            detail: 'Digite os 11 dígitos do CPF para pesquisar.'
+        });
+
+        return;
+    }
+
+    const clienteEncontrado = this.clientes().find(
+        (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
+    );
+
+    this.resultadoBusca.set(clienteEncontrado ? [clienteEncontrado] : []);
+
+    if (!clienteEncontrado) {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Nenhum resultado',
+            detail: 'Nenhum funcionário encontrado para o CPF informado.'
+        });
+    }
 }
     mockDados() {
         this.clientes.set([
@@ -63,10 +79,12 @@ export class ConsultarClienteIndividual implements OnInit {
                 cpf: '123.456.789-00',
                 nome: 'Ricardo Silva',
                 email: 'ricardo@email.com',
+                telefone: '98765-4321',
                 salario: 3500.00,
                 endereco: 'Rua A',
                 cidade: 'Curitiba',
                 estado: 'PR',
+                conta: '1234',
                 saldo: 300.00,
                 limite: 10500.00
             },
@@ -74,10 +92,12 @@ export class ConsultarClienteIndividual implements OnInit {
                 cpf: '987.654.321-11',
                 nome: 'Ana Souza',
                 email: 'ana@email.com',
+                telefone: '98765-4321',
                 salario: 1500.00,
                 endereco: 'Rua B',
                 cidade: 'Pinhais',
                 estado: 'PR',
+                conta: '4321',
                 saldo: 4500.00,
                 limite: 9500.00
             }
