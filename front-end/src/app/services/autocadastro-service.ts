@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { AutocadastroInfo } from '../DTO/cliente/autocadastro-info.dto';
+import { AutocadastroInfo } from '../dto/cliente/autocadastro-info.dto';
 import { Observable } from 'rxjs';
 
 
-const API_URL = "http://localhost:8080"
+const API_URL = "http://localhost:3001"
 
 @Injectable({
   providedIn: 'root',

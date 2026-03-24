@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { LoginInfo } from '../DTO/auth/login-info';
+import { LoginInfo } from '../dto/auth/login-info';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-const API_URL = "http://localhost:8080"
+const API_URL = "http://localhost:3001"
 
 @Injectable({
   providedIn: 'root',

@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 
-import * as DTO from '../DTO/gerente'
-import { ClienteResponse } from '../DTO/cliente';
+import * as DTO from '../dto/gerente'
+import { ClienteResponse } from '../dto/cliente';
 
-const API_URL = "http://localhost:8080"
+const API_URL = "http://localhost:3001"
 
 @Injectable({
   providedIn: 'root'
