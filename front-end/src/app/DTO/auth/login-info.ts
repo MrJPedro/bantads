@@ -6,5 +6,5 @@ export interface LoginInfo {
     // do protótipop, será estudado como implementar autenticação
     // com Tokens JWT, mas ainda assim talvez seja necessário manter
     // esse atributo para o token JWT
-    token: string
+    //token: string
 }

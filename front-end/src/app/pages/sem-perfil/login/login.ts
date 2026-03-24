@@ -14,6 +14,10 @@ import { InputTextModule } from 'primeng/inputtext';
 })
 export class Login {
 
+  credenciais = {email:'', senha:''}
+
+  readonly LS_KEY = "Usuario_logado"
+
   constructor(
     private authService: AuthService
   ) {}
@@ -25,15 +29,40 @@ export class Login {
 
 
 
-
   login(/* Referência ao formulário */) {
-    // Obtém o formulário como argumento
-    // Valida e formata os valores inseridos no formulário
+    // if(formulário é válido){
+        const {email, senha} = this.credenciais;
+        this.authService.login(email, senha).subscribe({
+          next: response => {
+            if(response.status == 401) {
+              // Usuário/Senha incorretos
+            } else if (response.status == 200){
+              // Login efetuado com sucesso
+              // Utilizar LocalStorage para armazenar usuário logado
+            } else {
+              // Comportamento inesperado
+              console.log(response)
+            }
+          },
+          error: err => {
+            // Capturar erro
+            console.log(err)
+          }
+        })
+    //}
   }
 
   logout() {
-    // Depois comento o fluxo...
-    this.authService.logout();
+    /* Ainda não estamos utilizando tokens
+    this.authService.logout().subscribe({
+      next: response => {
+        //
+      },
+      err: response => {
+        //
+        console.log(response)
+      }
+    })*/
   }
     checked1 = signal<boolean>(true);
 }

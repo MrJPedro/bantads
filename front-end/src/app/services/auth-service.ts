@@ -1,47 +1,42 @@
 import { Injectable } from '@angular/core';
 import { LoginInfo } from '../DTO/auth/login-info';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-
-const API_URL = "http://localhost:8080"
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { API_URL } from '../DTO/api/api';
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class AuthService {
-  
-  private httpOptions = {
+
+  private readonly httpOptionsComBody = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
-    })
-  }
+    }),
+    observe: 'response'
+  } as const
 
   constructor(
     private httpClient: HttpClient
   ) {}
 
-  login(login: LoginInfo) {
+  login(login: string, senha: string) {
     
-    let body: LoginInfo = login
+    let body: LoginInfo = {login, senha}
 
     return this.httpClient.post(
       API_URL + "/login",
-      body,
-      this.httpOptions
+      JSON.stringify(body),
+      this.httpOptionsComBody
     )
   }
 
   logout() {
-    // Obtém token do LocalStorage
-    // token = LocalStorage[token]
-    let token: string = ""
-
-    let body: string = token
 
     return this.httpClient.post(
       API_URL + "/logout",
-      body,
-      this.httpOptions
+      null,
+      this.httpOptionsComBody
     )
   }
 }
