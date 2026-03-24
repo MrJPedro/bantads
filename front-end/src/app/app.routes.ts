@@ -9,6 +9,7 @@ import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-in
 import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
 import { ConsultarClienteIndividual } from './pages/gerente/consultar-cliente-individual/consultar-cliente-individual';
 import { ConsultarClientesMelhores } from './pages/gerente/consultar-clientes-melhores/consultar-clientes-melhores';
+import { Perfil } from './pages/cliente/perfil/perfil';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -41,6 +42,11 @@ export const routes: Routes = [
       {
         path: 'tela-inicial',
         component: TelaInicialCliente
+      },
+
+      {
+        path: 'perfil',
+        component: Perfil
       }
     ]
   },

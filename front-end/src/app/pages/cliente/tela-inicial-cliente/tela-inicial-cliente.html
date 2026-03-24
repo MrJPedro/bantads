@@ -14,6 +14,18 @@
             <p class="m-0">
                 {{ conta().cliente }} - Conta: {{ conta().conta }}
             </p>
+            
         </p-card>
+            <nav class="p-4 flex flex-col gap-2">
+                <a routerLink="/cliente/transferir" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+                    <i class="pi pi-arrow-up-right mr-3"></i> Tranferir
+                </a>
+                <a routerLink="/cliente/depositar" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+                    <i class="pi pi-arrow-down-left mr-3"></i> Depositar
+                </a>
+                <a routerLink="/cliente/sacar" routerLinkActive="bg-blue-200 font-medium" class="flex items-center p-3 rounded-lg hover:bg-blue-400">
+                    <i class="pi pi-wallet mr-3"></i> Sacar
+                </a>
+            </nav>
     </div>
 </div>

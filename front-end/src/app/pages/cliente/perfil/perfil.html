@@ -1,1 +1,107 @@
-<p>perfil works!</p>
+<div class="form-container">
+  <p-card header="Alterar Dados do Perfil" [style]="{ width: '100%', maxWidth: '800px' }">
+    <form (ngSubmit)="salvarPerfil()">
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nome">Nome Completo</label>
+          <input 
+            pInputText 
+            id="nome" 
+            name="nome" 
+            type="text" 
+            [(ngModel)]="perfil.nome" 
+            required 
+            placeholder="Ex: Maria da Silva" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input 
+            pInputText 
+            id="email" 
+            name="email" 
+            type="email" 
+            [(ngModel)]="perfil.email" 
+            required 
+            placeholder="exemplo@email.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="cpf">CPF</label>
+          <p-inputMask 
+            id="cpf" 
+            name="cpf" 
+            mask="999.999.999-99" 
+            [(ngModel)]="perfil.cpf" 
+            [unmask]="true" 
+            placeholder="000.000.000-00">
+          </p-inputMask>
+        </div>
+
+        <div class="form-group">
+          <label for="telefone">Telefone / Celular</label>
+          <p-inputMask 
+            id="telefone" 
+            name="telefone" 
+            mask="(99) 99999-9999" 
+            [(ngModel)]="perfil.telefone" 
+            [unmask]="true" 
+            placeholder="(00) 00000-0000">
+          </p-inputMask>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="endereco">Endereço</label>
+          <input 
+            pInputText 
+            id="endereco" 
+            name="endereco" 
+            type="text" 
+            [(ngModel)]="perfil.endereco" 
+            placeholder="Ex: Rua das Flores, 123" />
+        </div>
+
+        <div class="form-group">
+          <label for="estado">Estado</label>
+          <input 
+            pInputText 
+            id="estado" 
+            name="estado" 
+            type="text" 
+            [(ngModel)]="perfil.estado" 
+            placeholder="Ex: SP, RJ, PR..." />
+        </div>
+
+        <div class="form-group">
+          <label for="salario">Salário</label>
+          <p-inputNumber 
+            id="salario" 
+            name="salario" 
+            [(ngModel)]="perfil.salario" 
+            mode="currency" 
+            currency="BRL" 
+            locale="pt-BR" 
+            placeholder="R$ 0,00"> 
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <p-button 
+          label="Cancelar" 
+          icon="pi pi-times" 
+          severity="secondary" 
+          [outlined]="true" 
+          (onClick)="cancelar()">
+        </p-button>
+        <p-button 
+          label="Salvar Alterações" 
+          icon="pi pi-check" 
+          type="submit">
+        </p-button>
+      </div>
+
+    </form>
+  </p-card>
+</div>
