@@ -1,1 +1,157 @@
-<p>landing-page works!</p>
+<main class="landing-shell">
+	<header class="top-nav section-wrap" aria-label="Navegação principal">
+		<div class="brand-block">
+			<span class="brand-mark" aria-hidden="true">B</span>
+			<div>
+				<strong>Bantads</strong>
+			</div>
+		</div>
+
+		<nav aria-label="Links da landing page">
+			<a href="#beneficios">Benefícios</a>
+			<a href="#depoimentos">Depoimentos</a>
+			<a href="#conta">Conta Digital</a>
+		</nav>
+
+		<button
+			pButton
+			type="button"
+			label="Entrar"
+			[outlined]="true"
+			(click)="navigateToLogin()"
+		></button>
+	</header>
+
+	<section class="hero section-wrap">
+		<div class="hero-copy">
+			<h1>Bantads, onde o seu dinheiro encontra velocidade e clareza.</h1>
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ut
+				arcu nec augue posuere faucibus. Donec feugiat, sem id accumsan
+				bibendum, lorem ipsum fringilla elit, et volutpat nunc massa vel est.
+			</p>
+
+			<div class="hero-actions">
+				<button
+					pButton
+					type="button"
+					label="Abrir Conta"
+					icon="pi pi-user-plus"
+					iconPos="right"
+					[raised]="true"
+					(click)="navigateToRegister()"
+				></button>
+			</div>
+
+			<small class="hero-note"
+				>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis tempor
+				odio sed dui malesuada feugiat.</small
+			>
+		</div>
+
+		<div class="hero-media" role="img" aria-label="Placeholder de dashboard do banco">
+			<div class="media-frame">
+				<div class="mock-toolbar">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+				<div class="mock-content">
+					<h3>Placeholder da Interface</h3>
+					<p>
+						Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque
+						in mauris ac velit suscipit faucibus.
+					</p>
+					<div class="mock-chart" aria-hidden="true"></div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="section-wrap stats-grid" aria-label="Métricas principais">
+		<p-card>
+			<ng-template #title>+ 500 mil</ng-template>
+			<ng-template #subtitle>Contas ativas</ng-template>
+		</p-card>
+
+		<p-card>
+			<ng-template #title>98,7%</ng-template>
+			<ng-template #subtitle>Satisfação média</ng-template>
+		</p-card>
+
+		<p-card>
+			<ng-template #title>24/7</ng-template>
+			<ng-template #subtitle>Suporte digital</ng-template>
+		</p-card>
+
+		<p-card>
+			<ng-template #title>R$ 0</ng-template>
+			<ng-template #subtitle>Taxa de abertura</ng-template>
+		</p-card>
+	</section>
+
+	<section class="section-wrap" id="beneficios">
+		<header class="section-head">
+			<h2>Uma experiência financeira simples e premium</h2>
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sed
+				dolor in neque sodales varius nec quis dui.
+			</p>
+		</header>
+
+		<div class="feature-grid">
+			@for (feature of features; track feature.title) {
+				<p-card class="feature-card">
+					<div class="feature-icon">
+						<i [class]="feature.icon" aria-hidden="true"></i>
+					</div>
+					<h3>{{ feature.title }}</h3>
+					<p>{{ feature.text }}</p>
+				</p-card>
+			}
+		</div>
+	</section>
+
+	<section class="section-wrap testimonial-wrap" id="depoimentos">
+		<header class="section-head">
+			<h2>Quem usa Bantads, recomenda</h2>
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut placerat
+				efficitur sapien, vel pretium massa tincidunt et.
+			</p>
+		</header>
+
+		<div class="testimonial-grid">
+			@for (item of testimonials; track item.name) {
+				<p-card class="testimonial-card">
+					<p>
+						"{{ item.text }}"
+					</p>
+					<p-divider></p-divider>
+					<strong>{{ item.name }}</strong>
+					<span>{{ item.role }}</span>
+				</p-card>
+			}
+		</div>
+	</section>
+
+	<section class="section-wrap cta-box" aria-label="Chamada para ação final">
+		<div>
+			<h2>Pronto para transformar a sua rotina financeira?</h2>
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer non
+				magna viverra, dapibus lectus quis, rutrum lorem.
+			</p>
+		</div>
+
+		<button
+			pButton
+			type="button"
+			label="Começar agora"
+			icon="pi pi-arrow-right"
+			iconPos="right"
+			[raised]="true"
+			(click)="navigateToRegister()"
+		></button>
+	</section>
+</main>

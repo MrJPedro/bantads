@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 
-import * as DTO from '../dto/cliente'
+import * as DTO from '../DTO/cliente'
 
 
 const API_URL = "http://localhost:3001"

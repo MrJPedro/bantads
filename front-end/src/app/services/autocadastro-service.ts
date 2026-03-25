@@ -1,7 +1,6 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { AutocadastroInfo } from '../dto/cliente/autocadastro-info.dto';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { AutocadastroInfo } from '../DTO/cliente/autocadastro-info.dto';
 
 
 const API_URL = "http://localhost:3001"
