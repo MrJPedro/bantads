@@ -29,15 +29,16 @@ export const routes: Routes = [
     component: Login
   },
 
+  {
+    path: 'autocadastro',
+    component: Autocadastro
+      },
+
   //Cliente
   {
     path: 'cliente',
     component: ClienteLayout,
     children: [
-      {
-        path: 'autocadastro',
-        component: Autocadastro
-      },
 
       {
         path: 'tela-inicial',
