@@ -9,6 +9,10 @@ import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-in
 import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
 import { ConsultarClienteIndividual } from './pages/gerente/consultar-cliente-individual/consultar-cliente-individual';
 import { ConsultarClientesMelhores } from './pages/gerente/consultar-clientes-melhores/consultar-clientes-melhores';
+import { AdministradorLayout } from './pages/administrador/administrador-layout/administrador-layout';
+import { TelaInicialAdministrador } from './pages/administrador/tela-inicial-administrador/tela-inicial-administrador';
+import { RelatorioClientes } from './pages/administrador/relatorio-clientes/relatorio-clientes';
+import { CrudGerentes } from './pages/administrador/crud-gerentes/crud-gerentes';
 import { Perfil } from './pages/cliente/perfil/perfil';
 
 export const routes: Routes = [
@@ -51,7 +55,7 @@ export const routes: Routes = [
       }
     ]
   },
-  //gerente
+  //Gerente
   {
     path: 'gerente',
     component: GerenteLayout,
@@ -71,6 +75,26 @@ export const routes: Routes = [
       {
         path: 'consultar-clientes-melhores',
         component: ConsultarClientesMelhores
+      }
+    ]
+  },
+  //Administrador
+  {
+    path: 'administrador',
+    component: AdministradorLayout,
+    children: [
+      {
+        path: 'tela-inicial',
+        component: TelaInicialAdministrador
+      },
+
+      { path: 'relatorio-clientes',
+        component: RelatorioClientes
+      },
+
+      {
+        path: 'gerenciar-gerentes',
+        component: CrudGerentes
       }
     ]
   }
