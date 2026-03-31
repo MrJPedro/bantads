@@ -11,35 +11,79 @@ import { API_URL } from '../DTO/api/api';
 
 export class AuthService {
 
-  private readonly httpOptionsComBody = {
+  private readonly users = [
+      {
+        login: 'joao@mail.com',
+        senha: 'joaopass'
+      },
+      {
+        login: 'kauan@mail.com',
+        senha: 'kauanpass'
+      },
+      {
+        login: 'thiago@mail.com',
+        senha: 'thiagopass'
+      }
+    ]
+
+  /*private readonly httpOptionsComBody = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
     }),
     observe: 'response'
-  } as const
+  } as const*/
 
   constructor(
     private httpClient: HttpClient
   ) {}
 
-  login(login: string, senha: string) {
+  login(login: string, senha: string): boolean {
     
-    let body: LoginInfo = {login, senha}
+
+    const credencial = this.users.find(
+      u => u.login === login && u.senha === senha
+    );
+          
+    if(!credencial) {
+      return false
+    }
+
+    localStorage.setItem("Usuario_logado", credencial.login)
+    return true
+
+    /*let body: LoginInfo = {login, senha}
 
     return this.httpClient.post(
       API_URL + "/login", 
       JSON.stringify(body),
       this.httpOptionsComBody
-    )
+    )*/
   }
 
   logout() {
 
-    return this.httpClient.post(
+    const usuarioLogado = localStorage.getItem("Usuario_logado")
+
+    if (!usuarioLogado) {
+      console.warn("Não há usuário logado!!")
+      return
+    }
+
+    localStorage.removeItem("Usuario_logado")
+
+    /*return this.httpClient.post(
       API_URL + "/logout",
       null,
       this.httpOptionsComBody
-    )
+    )*/
+  }
+
+  loginEstaLogado(login: string): boolean{
+    const usuarioLogado = localStorage.getItem("Usuario_logado")
+    if(login === usuarioLogado){
+      return true
+    }
+    return false
   }
 
   getUsuario() {
