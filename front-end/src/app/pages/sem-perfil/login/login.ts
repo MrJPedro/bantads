@@ -26,23 +26,15 @@ export class Login {
   login(/* Referência ao formulário */) {
     // if(formulário é válido){
         const {email, senha} = this.credenciais;
-        this.authService.login(email, senha).subscribe({
-          next: response => {
-            if(response.status == 401) {
-              // Usuário/Senha incorretos
-            } else if (response.status == 200){
-              // Login efetuado com sucesso
-              // Utilizar LocalStorage para armazenar usuário logado
-            } else {  
-              // Comportamento inesperado
-              console.log(response)
-            }
-          },
-          error: err => {
-            // Capturar erro
-            console.log(err)
-          }
-        })
+        const loginEfetuado = this.authService.login(email, senha);
+
+        if (!loginEfetuado) {
+          // Usuário/Senha incorretos
+          return;
+        }
+
+        // Login efetuado com sucesso
+        // Utilizar LocalStorage para armazenar usuário logado
     //}
   }
 
