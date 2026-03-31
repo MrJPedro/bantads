@@ -1,5 +1,5 @@
 import { Router } from '@angular/router';
-import { SaldoResponde } from '../../../DTO/conta/saldo-responde';
+import { SaldoResponse } from '../../../DTO/conta/saldo-response';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,8 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-aprovar-response.dto';
+import { Cliente } from '../../../services/cliente-service';
+import { AuthService } from '../../../services/auth-service';
 
 @Component({
     selector: 'app-tela-inicial-cliente',
@@ -28,17 +29,48 @@ import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-ap
 })
 export class TelaInicialCliente {
 
-  conta = signal<SaldoResponde>({} as SaldoResponde);
+  conta = signal<SaldoResponse>({} as SaldoResponse);
 
   cor = signal(this.conta().saldo >= 0.0 ? 'green' : 'red');
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private clienteService: Cliente,
+    private authService: AuthService
+) {}
 
   ngOnInit() {
-        this.mockDados();
+        // this.mockDados();
+        this.carregarSaldo();
   }
 
-  mockDados() {
+    carregarSaldo(){
+  
+        this.clienteService.saldo(this.authService.getCpf()).subscribe({
+            next: (saldo: SaldoResponse) => {
+  
+                // se encontrou
+                this.conta.set(saldo);
+            },
+  
+            error: (err) => {
+                console.error(err);
+  
+                this.conta.set({
+                    cliente: "",
+                    conta: "",
+                    saldo: 0
+                    } as SaldoResponse);
+  
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Conta não encontrada ou erro no servidor.'
+                });
+            }
+        });
+      }
+/*  mockDados() {
         this.conta.set({ 
           ...this.conta(), 
           cliente: 'Ricardo Silva', 
@@ -46,6 +78,6 @@ export class TelaInicialCliente {
           saldo: 1500.00 });
 
         this.cor.set(this.conta().saldo >= 0.0 ? 'green' : 'red');
-    }
+    } */
 
 }

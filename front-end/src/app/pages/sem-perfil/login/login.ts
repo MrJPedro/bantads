@@ -23,12 +23,6 @@ export class Login {
   ) {}
 
 
-
-
-
-
-
-
   login(/* Referência ao formulário */) {
     // if(formulário é válido){
         const {email, senha} = this.credenciais;
@@ -39,7 +33,7 @@ export class Login {
             } else if (response.status == 200){
               // Login efetuado com sucesso
               // Utilizar LocalStorage para armazenar usuário logado
-            } else {
+            } else {  
               // Comportamento inesperado
               console.log(response)
             }

@@ -3,6 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import * as DTO from '../DTO/cliente'
+import { SaldoResponse } from '../DTO/conta/saldo-response';
+import { TransferenciaResponse } from '../DTO/conta/transferencia-response';
+import { OperacaoResponse } from '../DTO/conta/operacao-response';
 
 
 const API_URL = "http://localhost:3001"
@@ -20,7 +23,7 @@ export class Cliente {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
     })
-  }
+  } 
 
   // R04: Alteração de Perfil
   updatePerfil (CPF: string, novos: DTO.PerfilInfo): Observable<DTO.ClienteResponse>{
@@ -31,22 +34,22 @@ export class Cliente {
   }
 
   // R05: Depositar
-  depositar(cpf: string, valor: number): Observable<DTO.ClienteResponse> {
-    return this.httpClient.post<DTO.ClienteResponse>(
+  depositar(cpf: string, valor: number): Observable<OperacaoResponse> {
+    return this.httpClient.post<OperacaoResponse>(
       API_URL + "/contas/" + cpf + "/depositar", { valor }, this.httpOptions
     )
   }
 
   // R06: Saque
-  sacar(cpf: string, valor: number): Observable<DTO.ClienteResponse> {
-    return this.httpClient.post<DTO.ClienteResponse>(
+  sacar(cpf: string, valor: number): Observable<OperacaoResponse> {
+    return this.httpClient.post<OperacaoResponse>(
       API_URL + "/contas/" + cpf + "/sacar", { valor }, this.httpOptions
     )
   }
 
   // R07: Transferência
-  transferir(cpf: string, valor: number, destino: string): Observable<DTO.ClienteResponse> {
-    return this.httpClient.post<DTO.ClienteResponse>(
+  transferir(cpf: string, valor: number, destino: string): Observable<TransferenciaResponse> {
+    return this.httpClient.post<TransferenciaResponse>(
       API_URL + "/contas/" + cpf + "/depositar", { destino, valor }, this.httpOptions
     )
   }
@@ -59,6 +62,12 @@ export class Cliente {
         ...this.httpOptions, 
         params: { dataInicio, dataFim } 
       }
+    )
+  }
+  
+  saldo(cpf: string): Observable<SaldoResponse> {
+    return this.httpClient.post<SaldoResponse>(
+      API_URL + "/contas/" + cpf + "/saldo", this.httpOptions
     )
   }
 }

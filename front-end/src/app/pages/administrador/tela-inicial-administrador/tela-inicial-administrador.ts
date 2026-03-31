@@ -8,6 +8,9 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { GerenteDashboard } from '../../../DTO/administrador/gerente-dashboard.dto';
+import { AdministradorService } from '../../../services/administrador-service';
+import { DashboardResponse } from '../../../DTO/gerente';
+import { ItemDashBoardResponse } from '../../../DTO/conta/item-dash-board-response';
 
 @Component({
   selector: 'app-tela-inicial-administrador',
@@ -27,17 +30,43 @@ import { GerenteDashboard } from '../../../DTO/administrador/gerente-dashboard.d
 
 export class TelaInicialAdministrador implements OnInit {
 
-  gerentes = signal<GerenteDashboard[]>([]);
+  gerentes = signal<DashboardResponse>([]);
 
-  gerenteSelecionado?: GerenteDashboard;
+  gerenteSelecionado?: ItemDashBoardResponse;
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private administradorService: AdministradorService
+  ) {}
 
   ngOnInit(){
-    this.mockDados();
+    // this.mockDados();
+    this.carregarGerentes();
   }
 
-  mockDados(){
+  carregarGerentes(){
+
+      this.administradorService.consultarTodosGerentes().subscribe({
+          next: (gerente: DashboardResponse) => {
+
+              // se encontrou
+              this.gerentes.set(gerente);
+          },
+
+          error: (err) => {
+              console.error(err);
+
+              this.gerentes.set([]);
+
+              this.messageService.add({
+                  severity: 'error',
+                  summary: 'Erro',
+                  detail: 'Gerentes não encontrados ou erro no servidor.'
+              });
+          }
+      });
+    }
+/*  mockDados(){
     this.gerentes.set([
       {
         nome: 'Ana',
@@ -64,5 +93,5 @@ export class TelaInicialAdministrador implements OnInit {
         somaNegativa: 9128.98
       },
     ].sort((a, b) => b.somaPositiva - a.somaPositiva));
-  }
+  } */
 }

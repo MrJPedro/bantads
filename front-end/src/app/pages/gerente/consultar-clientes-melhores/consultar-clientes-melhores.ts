@@ -6,6 +6,8 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
+import { Gerente } from '../../../services/gerente-service';
+import { TodosClientesResponse } from '../../../DTO/cliente';
 
 @Component({
     selector: 'app-consultar-clientes-melhores',
@@ -22,7 +24,16 @@ import { MessageService } from 'primeng/api';
     providers: [MessageService],
     templateUrl: './consultar-clientes-melhores.html'
 })
+
+
+
 export class ConsultarClientesMelhores implements OnInit {
+
+    constructor(
+        private gerenteService: Gerente,
+        private messageService: MessageService
+    ) {}
+
     clientes = signal<any[]>([]);
     clientesExibidos = computed(() =>
     [...this.clientes()]
@@ -31,11 +42,34 @@ export class ConsultarClientesMelhores implements OnInit {
 );
 
     ngOnInit() {
-        this.mockDados();
+        // this.mockDados();
+        this.carregarClientes();
     }
 
-    
-    mockDados() {
+    carregarClientes(){
+        
+        this.gerenteService.melhoresClientes().subscribe({
+            next: (clientes: TodosClientesResponse) => {
+
+                // se encontrou
+                this.clientes.set(clientes);
+            },
+
+            error: (err) => {
+                console.error(err);
+
+                this.clientes.set([]);
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Clientes não encontrados ou erro no servidor.'
+                });
+            }
+        });
+    }
+
+/*    mockDados() { 
         this.clientes.set([
             {
                 cpf: '123.456.789-00',
@@ -78,5 +112,5 @@ export class ConsultarClientesMelhores implements OnInit {
                 saldo: 7000.00
             }
         ]);
-    }
+    } */
 }

@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import * as DTO from '../DTO/gerente'
-import { ClienteResponse } from '../DTO/cliente';
+import { ClienteParaAprovarResponse, ClienteResponse, ParaAprovarResponse, TodosClientesResponse } from '../DTO/cliente';
 
 const API_URL = "http://localhost:3001"
 
@@ -24,9 +24,9 @@ export class Gerente {
   }
 
   //  R03: Tela Inicial Cliente
-  clistesParaAprovar(filtro: string): Observable<ClienteResponse>{
-    filtro = "para_aprovar"
-    return this.httpClient.get<ClienteResponse>(
+  clientesParaAprovar(): Observable<ParaAprovarResponse>{
+    var filtro = "para_aprovar"
+    return this.httpClient.get<ParaAprovarResponse>(
       API_URL + "/clientes",
       {
        ...this.httpOptions, 
@@ -48,10 +48,10 @@ export class Gerente {
       API_URL + "/clientes/" + cpf + "/rejeitar", this.httpOptions
     )
   }
-
+ 
   //  R12: Consultar Todos os Clientes
-    consultarTodosClientes(): Observable<ClienteResponse>{
-    return this.httpClient.get<ClienteResponse>(
+    consultarTodosClientesGer(): Observable<TodosClientesResponse>{
+    return this.httpClient.get<TodosClientesResponse>(
       API_URL + "/clientes", this.httpOptions
     )
   }
@@ -64,9 +64,9 @@ export class Gerente {
   }
   
   // R14: Consultar 3 Melhores Clientes
-  melhoresClientes(filtro: string): Observable<ClienteResponse>{
-    filtro = "melhores_clientes"
-    return this.httpClient.get<ClienteResponse>(
+  melhoresClientes(): Observable<TodosClientesResponse>{
+    var filtro = "melhores_clientes"
+    return this.httpClient.get<TodosClientesResponse>(
       API_URL + "/clientes",
       {
         ...this.httpOptions, 

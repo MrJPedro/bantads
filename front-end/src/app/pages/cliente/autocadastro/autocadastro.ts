@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { Dialog } from "primeng/dialog";
-import { AutocadastroInfo } from './../../../DTO/cliente/autocadastro-info.dto';
+import { AutocadastroInfo } from '../../../DTO/cliente/autocadastro-info.dto';
 import { AutocadastroService } from '../../../services/autocadastro-service'
 import { CepService } from '../../../services/cep-service';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';

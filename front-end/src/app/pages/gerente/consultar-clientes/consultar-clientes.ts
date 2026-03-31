@@ -8,6 +8,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
+import { Gerente } from '../../../services/gerente-service';
+import { TodosClientesResponse } from '../../../DTO/cliente';
 
 @Component({
     selector: 'app-consultar-clientes',
@@ -26,17 +28,47 @@ import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-p
     templateUrl: './consultar-clientes.html'
 })
 export class ConsultarClientes implements OnInit {
+    
+    ngOnInit() {
+        this.carregarClientes();
+    }
+
+    constructor(
+        private gerenteService: Gerente,
+        private messageService: MessageService
+    ) {}
+    
     clientes = signal<any[]>([]);
     termoBusca = signal('');
-
-    ngOnInit() {
-        this.mockDados();
-    }
 
     sortField = 'nome';
     sortOrder = 1;
 
+    carregarClientes(){
+
+        this.gerenteService.consultarTodosClientesGer().subscribe({
+            next: (clientes: TodosClientesResponse) => {
+
+                // se encontrou
+                this.clientes.set(clientes);
+            },
+
+            error: (err) => {
+                console.error(err);
+
+                this.clientes.set([]);
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Clientes não encontrados ou erro no servidor.'
+                });
+            }
+        });
+    }
+
     clientesFiltrados = computed(() => {
+
         const termo = this.termoBusca().trim().toLowerCase();
 
         if (!termo) {
@@ -47,12 +79,12 @@ export class ConsultarClientes implements OnInit {
             cliente.nome.toLowerCase().includes(termo) ||
             cliente.cpf.toLowerCase().includes(termo)
         );
-    });
+    }); 
 
     aoPesquisar(valor: string) {
     this.termoBusca.set(valor);
 }
-    mockDados() {
+/*  mockDados() {
         this.clientes.set([
             {
                 cpf: '123.456.789-00',
@@ -77,5 +109,5 @@ export class ConsultarClientes implements OnInit {
                 limite: 9500.00
             }
         ]);
-    }
+    } */
 }

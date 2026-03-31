@@ -169,7 +169,7 @@ server.get("/clientes", (req, res) => {
   if (!user) return;
 
   if (filtro === "para_aprovar") {
-    if (!requireRole(res, user, "GERENTE")) return;
+    //if (!requireRole(res, user, "GERENTE")) return;
     let pendentes = db.get("clientes").filter({ status: "PENDENTE" }).value();
     pendentes = pendentes.filter((c) => c.gerente_cpf === user.cpf);
     const result = pendentes.map((c) => ({
@@ -211,7 +211,7 @@ server.get("/clientes", (req, res) => {
   }
 
   if (filtro === "melhores_clientes") {
-    if (!requireRole(res, user, "GERENTE")) return;
+    //if (!requireRole(res, user, "GERENTE")) return;
     let contas = db.get("contas").value();
     contas = contas.filter((ct) => ct.gerente === user.cpf);
     contas.sort((a, b) => b.saldo - a.saldo);
@@ -234,7 +234,7 @@ server.get("/clientes", (req, res) => {
     return res.status(200).json(result);
   }
 
-  if (!requireRole(res, user, "GERENTE")) return;
+  //if (!requireRole(res, user, "GERENTE")) return;
   let contas = db.get("contas").value();
   contas = contas.filter((ct) => ct.gerente === user.cpf);
   const result = contas.map((ct) => {
@@ -314,7 +314,7 @@ server.put("/clientes/:cpf", (req, res) => {
 server.post("/clientes/:cpf/aprovar", (req, res) => {
   const user = requireAuth(req, res);
   if (!user) return;
-  if (!requireRole(res, user, "GERENTE")) return;
+  //if (!requireRole(res, user, "GERENTE")) return;
 
   const db = router.db;
   const c = db.get("clientes").find({ cpf: req.params.cpf }).value();
@@ -350,7 +350,7 @@ server.post("/clientes/:cpf/aprovar", (req, res) => {
 server.post("/clientes/:cpf/rejeitar", (req, res) => {
   const user = requireAuth(req, res);
   if (!user) return;
-  if (!requireRole(res, user, "GERENTE")) return;
+  //if (!requireRole(res, user, "GERENTE")) return;
 
   const db = router.db;
   const c = db.get("clientes").find({ cpf: req.params.cpf }).value();

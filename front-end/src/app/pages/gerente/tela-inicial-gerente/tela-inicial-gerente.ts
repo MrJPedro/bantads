@@ -8,6 +8,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-aprovar-response.dto';
+import { Gerente } from '../../../services/gerente-service';
+import { ParaAprovarResponse } from '../../../DTO/cliente';
 
 @Component({
     selector: 'app-tela-inicial-gerente',
@@ -35,10 +37,14 @@ export class TelaInicialGerente implements OnInit {
     
     motivoRecusa: string = '';
 
-    constructor(private messageService: MessageService) {}
+    constructor(
+        private messageService: MessageService,
+        private gerenteService: Gerente
+    ) {}
 
     ngOnInit() {
-        this.mockDados();
+        // this.mockDados();
+        this.carregarClientes();
     }
 
     mockDados() {
@@ -97,5 +103,29 @@ export class TelaInicialGerente implements OnInit {
                 detail: 'Cadastro aprovado'
             });
         }
+    }
+
+    carregarClientes(){
+        
+        this.gerenteService.clientesParaAprovar().subscribe({
+            next: (clientes: ParaAprovarResponse) => {
+
+                // se encontrou
+                this.clientes.set(clientes);
+            },
+
+            error: (err) => {
+                console.error(err);
+
+                this.clientes.set([]);
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Clientes não encontrados ou erro no servidor.'
+                });
+            }
+        });
+
     }
 }

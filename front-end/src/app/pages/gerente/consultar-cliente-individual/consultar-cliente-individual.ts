@@ -8,6 +8,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
+import { ClienteResponse } from '../../../DTO/cliente';
+import { Gerente } from '../../../services/gerente-service';
 
 @Component({
     selector: 'app-consultar-cliente-individual',
@@ -26,39 +28,67 @@ import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-p
     templateUrl: './consultar-cliente-individual.html'
 })
 export class ConsultarClienteIndividual implements OnInit {
-    clientes = signal<any[]>([]);
-    termoBusca = signal('');
+
+    // clientes = signal<any[]>([]);
 
     ngOnInit() {
-        this.mockDados();
+    //    this.mockDados();
     }
 
     sortField = 'nome';
     sortOrder = 1;
+
+    termoBusca = signal('');
     jaPesquisou = signal(false);
+    resultadoBusca = signal<any[]>([]);
+
     private somenteNumeros(valor: string): string {
     return (valor || '').replace(/\D/g, '');
-}
-    resultadoBusca = signal<any[]>([]);
-    constructor(private messageService: MessageService) {}
-
-    aoPesquisar(valor: string) {
-    this.jaPesquisou.set(true);
-    this.termoBusca.set(valor);
-    const cpfLimpo = this.somenteNumeros(valor);
-
-    if (cpfLimpo.length !== 11) {
-        this.resultadoBusca.set([]);
-
-        this.messageService.add({
-            severity: 'warn',
-            summary: 'CPF incompleto',
-            detail: 'Digite os 11 dígitos do CPF para pesquisar.'
-        });
-
-        return;
     }
 
+    constructor(
+        private messageService: MessageService,
+        private gerenteService: Gerente
+    ) {}
+
+    aoPesquisar(valor: string) {
+        this.jaPesquisou.set(true);
+        this.termoBusca.set(valor);
+        const cpfLimpo = this.somenteNumeros(valor);
+
+        if (cpfLimpo.length !== 11) {
+            this.resultadoBusca.set([]);
+
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'CPF incompleto',
+                detail: 'Digite os 11 dígitos do CPF para pesquisar.'
+            });
+
+            return;
+        }
+
+        this.gerenteService.consultarCliente(cpfLimpo).subscribe({
+            next: (cliente: ClienteResponse) => {
+
+                // se encontrou
+                this.resultadoBusca.set([cliente]);
+            },
+
+            error: (err) => {
+                console.error(err);
+
+                this.resultadoBusca.set([]);
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Cliente não encontrado ou erro no servidor.'
+                });
+            }
+        });
+    }
+/*
     const clienteEncontrado = this.clientes().find(
         (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
     );
@@ -73,7 +103,10 @@ export class ConsultarClienteIndividual implements OnInit {
         });
     }
 }
-    mockDados() {
+
+*/
+
+ /*   mockDados() {
         this.clientes.set([
             {
                 cpf: '123.456.789-00',
@@ -102,5 +135,6 @@ export class ConsultarClienteIndividual implements OnInit {
                 limite: 9500.00
             }
         ]);
-    }
+    } */
+        
 }

@@ -27,7 +27,7 @@ export class AuthService {
     let body: LoginInfo = {login, senha}
 
     return this.httpClient.post(
-      API_URL + "/login",
+      API_URL + "/login", 
       JSON.stringify(body),
       this.httpOptionsComBody
     )
@@ -41,68 +41,14 @@ export class AuthService {
       this.httpOptionsComBody
     )
   }
+
+  getUsuario() {
+    const user = localStorage.getItem("Usuario_logado");
+    return user ? JSON.parse(user) : null;
+  }
+
+  getCpf() {
+    return this.getUsuario()?.cpf;
+  }
 }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //

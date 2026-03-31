@@ -8,6 +8,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ClienteRelatorio } from '../../../DTO/administrador/cliente-relatorio.dto';
+import { AdministradorService } from '../../../services/administrador-service';
+import { DadosClienteResponse, RelatorioClientesResponse, TodosClientesResponse } from '../../../DTO/cliente';
 
 @Component({
   selector: 'app-relatorio-clientes',
@@ -27,17 +29,43 @@ import { ClienteRelatorio } from '../../../DTO/administrador/cliente-relatorio.d
 
 export class RelatorioClientes implements OnInit {
 
-  clientes = signal<ClienteRelatorio[]>([]);
+  clientes = signal<RelatorioClientesResponse>([]);
 
-  clienteSelecionado?: ClienteRelatorio;
+  clienteSelecionado?: DadosClienteResponse;
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private administradorService: AdministradorService
+  ) {}
 
   ngOnInit(){
-    this.mockDados();
+    // this.mockDados(); 
+    this.carregarClientes();
   }
 
-  mockDados(){
+  carregarClientes(){
+
+      this.administradorService.consultarTodosClientesAdm().subscribe({
+          next: (clientes: RelatorioClientesResponse) => {
+
+              // se encontrou
+              this.clientes.set(clientes);
+          },
+
+          error: (err) => {
+              console.error(err);
+
+              this.clientes.set([]);
+
+              this.messageService.add({
+                  severity: 'error',
+                  summary: 'Erro',
+                  detail: 'Clientes não encontrados ou erro no servidor.'
+              });
+          }
+      });
+    }
+/*  mockDados(){
     this.clientes.set([
       {
         cpf: '123.456.789-00',
@@ -73,5 +101,5 @@ export class RelatorioClientes implements OnInit {
         cpfGerente: '000.000.000-00'
       },
     ].sort((a, b) => a.nome.localeCompare(b.nome)));
-  }
+  } */
 }
