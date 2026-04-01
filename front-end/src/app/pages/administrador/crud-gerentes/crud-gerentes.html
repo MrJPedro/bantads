@@ -22,6 +22,7 @@
 							(input)="aoPesquisar($any($event.target).value)" />
 					</p-iconfield>
 					<p-button
+            class="w-xl"
 						label="Novo gerente"
 						icon="pi pi-plus"
 						(onClick)="abrirNovoGerente()" />
@@ -79,12 +80,13 @@
 	[modal]="true"
 	[draggable]="false"
 	[closable]="true"
+  [resizable]="false"
 	[style]="{ width: 'min(92vw, 34rem)' }"
 	[header]="modoEdicao() ? 'Editar gerente' : 'Novo gerente'"
 	(onHide)="fecharDialogFormulario()">
 
-	<form [formGroup]="formularioGerente" class="flex flex-column gap-3">
-		<div class="flex flex-column gap-1">
+	<form [formGroup]="formularioGerente" class="flex flex-col gap-3 w-full">
+		<div class="flex flex-col gap-1 w-full">
 			<label for="cpf">CPF</label>
 			<input id="cpf" pInputText formControlName="cpf" />
 			@if (cpfControl.touched && cpfControl.invalid) {
@@ -92,7 +94,7 @@
 			}
 		</div>
 
-		<div class="flex flex-column gap-1">
+		<div class="flex flex-col gap-1 w-full">
 			<label for="nome">Nome</label>
 			<input id="nome" pInputText formControlName="nome" />
 			@if (nomeControl.touched && nomeControl.invalid) {
@@ -100,7 +102,7 @@
 			}
 		</div>
 
-		<div class="flex flex-column gap-1">
+		<div class="flex flex-col gap-1 w-full">
 			<label for="email">Email</label>
 			<input id="email" pInputText formControlName="email" />
 			@if (emailControl.touched && emailControl.invalid) {
@@ -108,12 +110,12 @@
 			}
 		</div>
 
-		<div class="flex flex-column gap-1">
+		<div class="flex flex-col gap-1 w-full">
 			<label for="tipo">Perfil</label>
 			<input id="tipo" pInputText formControlName="tipo" />
 		</div>
 
-		<div class="flex flex-column gap-1">
+		<div class="flex flex-col gap-1 w-full">
 			<label for="senha">Senha</label>
 			<p-password
 				inputId="senha"
@@ -129,7 +131,7 @@
 	</form>
 
 	<ng-template #footer>
-		<div class="flex justify-content-end gap-2">
+		<div class="flex justify-content-end gap-2 w-full">
 			<p-button
 				label="Cancelar"
 				severity="secondary"
@@ -147,6 +149,7 @@
 	[modal]="true"
 	[draggable]="false"
 	[closable]="false"
+  [resizable]="false"
 	[style]="{ width: 'min(92vw, 28rem)' }"
 	header="Remover gerente">
 
