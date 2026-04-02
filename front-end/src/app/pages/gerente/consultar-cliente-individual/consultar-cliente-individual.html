@@ -1,88 +1,88 @@
 <p-toast />
 
 <div class="rounded-xl bg-white p-5 shadow-sm">
-    <h2 class="text-2xl font-bold mb-4">Consultar cliente</h2>
+  <h2 class="text-2xl font-bold mb-4">Consultar cliente</h2>
 
-    <div class="mb-4">
-        <app-barra-pesquisa
-            [placeholder]="'Digite o CPF'"
-            [value]="termoBusca()"
-            icone="pi pi-id-card"
-            [pesquisarAoDigitar]="false"
-            (pesquisar)="aoPesquisar($event)"
-            mask="000.000.000-00">
-        </app-barra-pesquisa>
-    </div>
+  <div class="mb-4">
+    <app-barra-pesquisa
+      [placeholder]="'Digite o CPF'"
+      [value]="termoBusca()"
+      icone="pi pi-id-card"
+      [pesquisarAoDigitar]="false"
+      (pesquisar)="aoPesquisar($event)"
+      mask="000.000.000-00"
+    >
+    </app-barra-pesquisa>
+  </div>
 
-    @if (resultadoBusca().length > 0) {
+  @if (resultadoBusca().length > 0) {
     <div class="bg-gray-50 border-round-xl p-4 border-1 surface-border max-w-25rem">
+      <div class="mb-3">
+        <span class="block text-sm text-500">CPF</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].cpf }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">CPF</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].cpf }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Nome</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].nome }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Nome</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].nome }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Email</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].email }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Email</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].email }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Telefone</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].telefone }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Telefone</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].telefone }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Cidade</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].cidade }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Cidade</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].cidade }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Estado</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].estado }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Estado</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].estado }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Conta</span>
+        <span class="block text-lg font-semibold text-900">
+          {{ resultadoBusca()[0].conta }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Conta</span>
-            <span class="block text-lg font-semibold text-900">
-                {{ resultadoBusca()[0].conta }}
-            </span>
-        </div>
+      <div class="mb-3">
+        <span class="block text-sm text-500">Saldo</span>
+        <span class="block text-lg font-semibold text-green-600">
+          {{ resultadoBusca()[0].saldo | currency: 'BRL' }}
+        </span>
+      </div>
 
-        <div class="mb-3">
-            <span class="block text-sm text-500">Saldo</span>
-            <span class="block text-lg font-semibold text-green-600">
-                {{ resultadoBusca()[0].saldo | currency:'BRL' }}
-            </span>
-        </div>
-
-        <div>
-            <span class="block text-sm text-500">Limite</span>
-            <span class="block text-lg font-semibold text-blue-600">
-                {{ resultadoBusca()[0].limite | currency:'BRL' }}
-            </span>
-        </div>
+      <div>
+        <span class="block text-sm text-500">Limite</span>
+        <span class="block text-lg font-semibold text-blue-600">
+          {{ resultadoBusca()[0].limite | currency: 'BRL' }}
+        </span>
+      </div>
     </div>
-} @else if (jaPesquisou()) {
+  } @else if (jaPesquisou()) {
     <div class="text-center p-4 border-1 border-round-xl surface-border text-600">
-        Nenhum funcionário encontrado.
+      Nenhum funcionário encontrado.
     </div>
-}
+  }
 </div>
