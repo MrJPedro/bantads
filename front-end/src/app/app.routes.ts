@@ -14,6 +14,7 @@ import { TelaInicialAdministrador } from './pages/administrador/tela-inicial-adm
 import { RelatorioClientes } from './pages/administrador/relatorio-clientes/relatorio-clientes';
 import { CrudGerentes } from './pages/administrador/crud-gerentes/crud-gerentes';
 import { Perfil } from './pages/cliente/perfil/perfil';
+import { authGuardGuard } from './auth-guard-guard';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -36,14 +37,21 @@ export const routes: Routes = [
   {
     path: 'autocadastro',
     component: Autocadastro
-      },
+  },
 
   //Cliente
   {
     path: 'cliente',
+    canActivate: [authGuardGuard],
+    data: {tipoRequerido: 'CLIENTE'},
     component: ClienteLayout,
     children: [
 
+      {
+        path: '',
+        redirectTo: 'cliente/tela-inicial',
+        pathMatch: 'full'
+      },
       {
         path: 'tela-inicial',
         component: TelaInicialCliente
@@ -58,8 +66,15 @@ export const routes: Routes = [
   //Gerente
   {
     path: 'gerente',
+    canActivate: [authGuardGuard],
+    data: {tipoRequerido: 'GERENTE'},
     component: GerenteLayout,
     children: [
+      {
+        path: '',
+        redirectTo: 'gerente/tela-inicial',
+        pathMatch: 'full'
+      },
       {
         path: 'tela-inicial',
         component: TelaInicialGerente
@@ -81,8 +96,15 @@ export const routes: Routes = [
   //Administrador
   {
     path: 'administrador',
+    canActivate: [authGuardGuard],
+    data: {tipoRequerido: 'ADMINISTRADOR'},
     component: AdministradorLayout,
     children: [
+      {
+        path: '',
+        redirectTo: 'administrador/tela-inicial',
+        pathMatch: 'full'
+      },
       {
         path: 'tela-inicial',
         component: TelaInicialAdministrador

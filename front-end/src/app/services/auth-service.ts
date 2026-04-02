@@ -12,19 +12,57 @@ import { API_URL } from '../DTO/api/api';
 export class AuthService {
 
   private readonly users = [
-      {
-        login: 'joao@mail.com',
-        senha: 'joaopass'
-      },
-      {
-        login: 'kauan@mail.com',
-        senha: 'kauanpass'
-      },
-      {
-        login: 'thiago@mail.com',
-        senha: 'thiagopass'
+    {
+      "access_token": "string",
+      "token_type": "bearer",
+      "tipo": "CLIENTE",
+      "usuario": {
+        "nome": "Carlos Oliveira",
+        "cpf": "52998224725",
+      " email": "carlos.oliveira@bantads.com.br"
       }
-    ]
+    },
+    {
+      "access_token": "string",
+      "token_type": "bearer",
+      "tipo": "CLIENTE",
+      "usuario": {
+        "nome": "Fernanda Lima",
+        "cpf": "12345678909",
+        "email": "fernanda.lima@bantads.com.br"
+      }
+    },
+    {
+      "access_token": "string",
+      "token_type": "bearer",
+      "tipo": "CLIENTE",
+      "usuario": {
+        "nome": "Ricardo Souza",
+        "cpf": "23456789173",
+        "email": "ricardo.souza@bantads.com.br"
+      }
+    },
+    {
+      "access_token": "string",
+      "token_type": "bearer",
+      "tipo": "CLIENTE",
+      "usuario": {
+        "nome": "Juliana Martins",
+        "cpf": "34567891228",
+        "email": "juliana.martins@bantads.com.br"
+      }
+    },
+    {
+      "access_token": "string",
+      "token_type": "bearer",
+      "tipo": "CLIENTE",
+      "usuario": {
+        "nome": "Bruno Ferreira",
+        "cpf": "45678912364",
+        "email": "bruno.ferreira@bantads.com.br"
+      }
+    }
+  ]
 
   /*private readonly httpOptionsComBody = {
     headers: new HttpHeaders({
@@ -37,19 +75,24 @@ export class AuthService {
     private httpClient: HttpClient
   ) {}
 
-  login(login: string, senha: string): boolean {
+  login(login: string, senha: string) {
     
 
+    // console.log(login)
+    // console.log(senha)
+    
+    // Por hora, loga-se sem senha -_-
     const credencial = this.users.find(
-      u => u.login === login && u.senha === senha
+      u => u.usuario.email === login
     );
           
+    // console.log("credencial = " + credencial)
     if(!credencial) {
       return false
     }
 
-    localStorage.setItem("Usuario_logado", credencial.login)
-    return true
+    localStorage.setItem("Usuario_logado", JSON.stringify(credencial))
+    return credencial;
 
     /*let body: LoginInfo = {login, senha}
 
@@ -78,21 +121,13 @@ export class AuthService {
     )*/
   }
 
-  loginEstaLogado(login: string): boolean{
-    const usuarioLogado = localStorage.getItem("Usuario_logado")
-    if(login === usuarioLogado){
-      return true
-    }
-    return false
-  }
-
-  getUsuario() {
+  getUsuarioLogado() {
     const user = localStorage.getItem("Usuario_logado");
     return user ? JSON.parse(user) : null;
   }
 
   getCpf() {
-    return this.getUsuario()?.cpf;
+    return this.getUsuarioLogado()?.cpf;
   }
 }
 //

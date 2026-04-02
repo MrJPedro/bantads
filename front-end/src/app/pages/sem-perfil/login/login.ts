@@ -1,10 +1,11 @@
 import { AuthService } from '../../../services/auth-service';
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -19,36 +20,43 @@ export class Login {
   readonly LS_KEY = "Usuario_logado"
 
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
 
-  login(/* Referência ao formulário */) {
-    // if(formulário é válido){
+  login(form: NgForm) {
+    if(form.valid){
         const {email, senha} = this.credenciais;
         const loginEfetuado = this.authService.login(email, senha);
 
+        console.log(email)
+        console.log(senha)
+        console.log(loginEfetuado)
+
         if (!loginEfetuado) {
-          // Usuário/Senha incorretos
+          console.log("Usuário/Senha incorretos")
           return;
         }
 
-        // Login efetuado com sucesso
-        // Utilizar LocalStorage para armazenar usuário logado
-    //}
+        console.log("Login efetuado com sucesso")
+        
+        switch(loginEfetuado.tipo) {
+          case 'CLIENTE':
+            this.router.navigate(['/cliente/tela-inicial'])
+            break
+          case 'GERENTE':
+            this.router.navigate(['/gerente/tela-inicial'])
+            break
+          case 'ADMINISTRADOR':
+            this.router.navigate(['/administrador/tela-inicial'])
+            break
+          default:
+            break
+        }
+        
+    }
   }
 
-  logout() {
-    /* Ainda não estamos utilizando tokens
-    this.authService.logout().subscribe({
-      next: response => {
-        //
-      },
-      err: response => {
-        //
-        console.log(response)
-      }
-    })*/
-  }
     checked1 = signal<boolean>(true);
 }
