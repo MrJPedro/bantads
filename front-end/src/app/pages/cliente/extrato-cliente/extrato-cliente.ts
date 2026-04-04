@@ -1,12 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { TableModule } from 'primeng/table';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ButtonModule } from 'primeng/button';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+
+import { AuthService } from '../../../services/auth-service';
+import { Cliente } from '../../../services/cliente-service'; 
+import { ItemExtratoResponse } from '../../../DTO/gerente/item-extrato-response.dto';
+
 
 export interface Movimentacao {
-  dataReferencia: Date;
+  dataReferencia: number; 
   saldoDia: number;
   diaSemMovimento?: boolean;
   dataHora?: Date;
@@ -26,105 +34,147 @@ export interface Movimentacao {
     DatePickerModule,
     ButtonModule
   ],
+  providers: [MessageService],
   templateUrl: './extrato-cliente.html',
   styleUrl: './extrato-cliente.css',
 })
+
 export class ExtratoCliente implements OnInit {
   dataInicio!: Date;
   dataFim!: Date;
-  
-  // Array final que será consumido pelo p-table
+  numeroConta!: string;
+
   movimentacoes: Movimentacao[] = [];
 
-  // Saldo inicial fictício (antes do período filtrado)
-  saldoInicial = 2500.00;
-
-  // Mock de transações "brutas" vindas de uma suposta API
-  private mockDataBruto: any[] = [];
+  constructor(
+    private messageService: MessageService,
+    private clienteService: Cliente,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    // Define o período inicial para os últimos 5 dias
+    this.numeroConta = this.authService.getContaNumero();
+
+    if (!this.numeroConta) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Conta do usuário não encontrada.'
+      });
+      return; 
+    }
+
     const hoje = new Date();
     this.dataFim = new Date(hoje);
     
-    this.dataInicio = new Date(hoje);
-    this.dataInicio.setDate(hoje.getDate() - 4);
-
-    this.gerarMockDatabase();
+    this.dataInicio = new Date();
+    this.dataInicio.setFullYear(2025);
+    this.dataInicio.setMonth(6);
+    this.dataInicio.setDate(15); 
     this.filtrar();
   }
 
-  gerarMockDatabase() {
-    // Gerando dados baseados na data atual para sempre ter resultados ao testar
-    const d1 = new Date(); d1.setDate(d1.getDate() - 4); d1.setHours(10, 30, 0);
-    const d2 = new Date(); d2.setDate(d2.getDate() - 4); d2.setHours(15, 45, 0);
-    const d3 = new Date(); d3.setDate(d3.getDate() - 2); d3.setHours(9, 15, 0);
-    const d4 = new Date(); d4.setDate(d4.getDate()); d4.setHours(14, 20, 0);
+  filtrar() {
+    if (!this.dataInicio || !this.dataFim || !this.numeroConta) return;
 
-    this.mockDataBruto = [
-      { dataHora: d1, operacao: 'Depósito', clienteOrigemDestino: '', valor: 1500.00, tipoMovimento: 'ENTRADA' },
-      { dataHora: d2, operacao: 'Transferência', clienteOrigemDestino: 'João Silva', valor: 350.00, tipoMovimento: 'SAIDA' },
-      // O dia (Hoje - 3) ficará sem movimentação propositalmente para testar o HTML
-      { dataHora: d3, operacao: 'Saque', clienteOrigemDestino: '', valor: 200.00, tipoMovimento: 'SAIDA' },
-      // O dia (Hoje - 1) também ficará sem movimentação
-      { dataHora: d4, operacao: 'Transferência', clienteOrigemDestino: 'Maria Souza', valor: 800.00, tipoMovimento: 'ENTRADA' }
-    ];
+    const dataInicioStr = this.dataInicio.toISOString();
+    const dataFimStr = this.dataFim.toISOString();
+
+    this.clienteService.consultaExtrato(this.numeroConta, dataInicioStr, dataFimStr)
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.movimentacoes) {
+            this.processarExtratoDaApi(response.movimentacoes);
+          }
+        },
+        error: (erro) => {
+          console.error("Erro ao buscar as movimentações: ", erro);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao buscar movimentações.'
+          });
+        }
+      });
   }
 
-  filtrar() {
-    if (!this.dataInicio || !this.dataFim) return;
-
+  private processarExtratoDaApi(movimentacoesDaApi: ItemExtratoResponse[]) {
     this.movimentacoes = [];
-    let saldoAtual = this.saldoInicial;
+    let saldoAtual = 0; 
 
-    // Clonando as datas para não alterar os valores do ngModel
     let dataAtual = new Date(this.dataInicio);
     const dataLimite = new Date(this.dataFim);
 
-    // Zerando as horas para comparar apenas os dias
     dataAtual.setHours(0, 0, 0, 0);
     dataLimite.setHours(0, 0, 0, 0);
 
-    // Loop dia a dia da data início até a data fim
     while (dataAtual <= dataLimite) {
-      // Busca transações apenas do dia atual do loop
-      const transacoesDoDia = this.mockDataBruto.filter(t => {
-        const dataTx = new Date(t.dataHora);
+      const transacoesDoDia = movimentacoesDaApi.filter(m => {
+        const dataTx = new Date(m.data);
         return dataTx.getDate() === dataAtual.getDate() &&
                dataTx.getMonth() === dataAtual.getMonth() &&
                dataTx.getFullYear() === dataAtual.getFullYear();
       });
 
+      const dataReferenciaPrimitiva = dataAtual.getTime(); 
+
       if (transacoesDoDia.length > 0) {
-        // Se houver transações no dia, processa cada uma delas
-        transacoesDoDia.forEach(tx => {
-          if (tx.tipoMovimento === 'ENTRADA') {
-            saldoAtual += tx.valor;
+        
+        let saldoFinalDoDia = saldoAtual;
+        transacoesDoDia.forEach(m => {
+          const ehEntrada = m.tipo === 'depósito' || (m.tipo === 'transferência' && m.destino === this.numeroConta);
+          if (ehEntrada) {
+            saldoFinalDoDia += m.valor;
           } else {
-            saldoAtual -= tx.valor;
+            saldoFinalDoDia -= m.valor;
+          }
+        });
+
+        transacoesDoDia.forEach(m => {
+          let tipoMovimento = 'ENTRADA';
+          let operacao = 'Depósito';
+          let clienteOrigemDestino = '';
+
+          if (m.tipo === 'depósito') {
+            tipoMovimento = 'ENTRADA';
+            operacao = 'Depósito';
+          } else if (m.tipo === 'saque') {
+            tipoMovimento = 'SAIDA';
+            operacao = 'Saque';
+          } else if (m.tipo === 'transferência') {
+            operacao = 'Transferência';
+            
+            if (m.origem === this.numeroConta) {
+              tipoMovimento = 'SAIDA';
+              clienteOrigemDestino = m.destino || '';
+            } else {
+              tipoMovimento = 'ENTRADA';
+              clienteOrigemDestino = m.origem || '';
+            }
           }
 
           this.movimentacoes.push({
-            dataReferencia: new Date(dataAtual), // Campo chave do groupRowsBy
-            saldoDia: saldoAtual,
+            dataReferencia: dataReferenciaPrimitiva, 
+            saldoDia: saldoFinalDoDia,
             diaSemMovimento: false,
-            dataHora: tx.dataHora,
-            operacao: tx.operacao,
-            clienteOrigemDestino: tx.clienteOrigemDestino,
-            valor: tx.valor,
-            tipoMovimento: tx.tipoMovimento
+            dataHora: new Date(m.data),
+            operacao: operacao as any,
+            clienteOrigemDestino: clienteOrigemDestino,
+            valor: m.valor,
+            tipoMovimento: tipoMovimento as any
           });
         });
+
+        saldoAtual = saldoFinalDoDia;
+
       } else {
-        // Se NÃO houver transações, cria um registro dummy apenas para exibir a data e o saldo
         this.movimentacoes.push({
-          dataReferencia: new Date(dataAtual),
+          dataReferencia: dataReferenciaPrimitiva,
           saldoDia: saldoAtual,
           diaSemMovimento: true
         });
       }
 
-      // Avança para o próximo dia
       dataAtual.setDate(dataAtual.getDate() + 1);
     }
   }
