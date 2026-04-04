@@ -68,6 +68,6 @@ export class LandingPage {
   }
 
   protected navigateToRegister(): void {
-    void this.router.navigate(['/cliente/autocadastro']);
+    void this.router.navigate(['/autocadastro']);
   }
 }

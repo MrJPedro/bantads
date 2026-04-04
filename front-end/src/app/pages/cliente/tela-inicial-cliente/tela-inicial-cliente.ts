@@ -45,12 +45,23 @@ export class TelaInicialCliente {
   }
 
     carregarSaldo(){
-  
-        this.clienteService.saldo(this.authService.getCpf()).subscribe({
+        const numeroConta = this.authService.getContaNumero();
+
+        if (!numeroConta) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Conta do usuário não encontrada.'
+            });
+            return;
+        }
+
+        this.clienteService.saldo(numeroConta).subscribe({
             next: (saldo: SaldoResponse) => {
   
                 // se encontrou
                 this.conta.set(saldo);
+                this.cor.set(this.conta().saldo >= 0.0 ? 'green' : 'red');
             },
   
             error: (err) => {

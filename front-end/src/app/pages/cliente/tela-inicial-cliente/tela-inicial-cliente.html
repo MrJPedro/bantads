@@ -7,7 +7,7 @@
         <p-card>
             <ng-template pTemplate="title">
                 <span [style.color]="cor()">
-                    R$ {{ conta().saldo | number:'1.2-2' }}
+                    {{ conta().saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}
                 </span>
             </ng-template>
 

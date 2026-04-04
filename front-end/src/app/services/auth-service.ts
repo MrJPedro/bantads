@@ -1,15 +1,18 @@
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 import { LoginInfo } from '../DTO/auth/login-info';
+import { LoginResponse } from '../DTO/auth/login-response';
 
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { API_URL } from '../DTO/api/api';
-
+const API_URL = "http://localhost:3001"
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class AuthService {
+
+  private http = inject(HttpClient);
 
   private readonly users = [
     {
@@ -19,7 +22,7 @@ export class AuthService {
       "usuario": {
         "nome": "Carlos Oliveira",
         "cpf": "52998224725",
-      " email": "carlos.oliveira@bantads.com.br"
+        "email": "carlos.oliveira@bantads.com.br"
       }
     },
     {
@@ -71,36 +74,13 @@ export class AuthService {
     observe: 'response'
   } as const*/
 
-  constructor(
-    private httpClient: HttpClient
-  ) {}
+  login(credentials: LoginInfo): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${API_URL}/login`, credentials);
+  }
 
-  login(login: string, senha: string) {
-    
 
-    // console.log(login)
-    // console.log(senha)
-    
-    // Por hora, loga-se sem senha -_-
-    const credencial = this.users.find(
-      u => u.usuario.email === login
-    );
-          
-    // console.log("credencial = " + credencial)
-    if(!credencial) {
-      return false
-    }
-
+  storeCredentials(credencial: LoginResponse): void {
     localStorage.setItem("Usuario_logado", JSON.stringify(credencial))
-    return credencial;
-
-    /*let body: LoginInfo = {login, senha}
-
-    return this.httpClient.post(
-      API_URL + "/login", 
-      JSON.stringify(body),
-      this.httpOptionsComBody
-    )*/
   }
 
   logout() {
@@ -128,6 +108,14 @@ export class AuthService {
 
   getCpf() {
     return this.getUsuarioLogado()?.cpf;
+  }
+
+  getContaNumero() {
+    return this.getUsuarioLogado()?.conta?.numero ?? null;
+  }
+
+  getToken() {
+    return this.getUsuarioLogado()?.token ?? null;
   }
 }
 //

@@ -13,13 +13,26 @@
 			<a href="#conta">Conta Digital</a>
 		</nav>
 
-		<button
-			pButton
-			type="button"
-			label="Entrar"
-			[outlined]="true"
-			(click)="navigateToLogin()"
-		></button>
+
+		<div class="nav-buttons">
+			<button
+				pButton
+				type="button"
+				label="Entrar"
+				[outlined]="true"
+				(click)="navigateToLogin()"
+				class="mr-2"
+			></button>
+			<button
+				pButton
+				type="button"
+				label="Abrir Conta"
+				icon="pi pi-user-plus"
+				iconPos="right"
+				[raised]="true"
+				(click)="navigateToRegister()" 
+			></button>
+		</div>
 	</header>
 
 	<section class="hero section-wrap">

@@ -1,11 +1,11 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 
-import * as DTO from '../DTO/cliente'
+import * as DTO from '../DTO/cliente';
+import { OperacaoResponse } from '../DTO/conta/operacao-response';
 import { SaldoResponse } from '../DTO/conta/saldo-response';
 import { TransferenciaResponse } from '../DTO/conta/transferencia-response';
-import { OperacaoResponse } from '../DTO/conta/operacao-response';
 
 
 const API_URL = "http://localhost:3001"
@@ -65,9 +65,9 @@ export class Cliente {
     )
   }
   
-  saldo(cpf: string): Observable<SaldoResponse> {
-    return this.httpClient.post<SaldoResponse>(
-      API_URL + "/contas/" + cpf + "/saldo", this.httpOptions
+  saldo(numeroConta: string): Observable<SaldoResponse> {
+    return this.httpClient.get<SaldoResponse>(
+      API_URL + "/contas/" + numeroConta + "/saldo", this.httpOptions
     )
   }
 }

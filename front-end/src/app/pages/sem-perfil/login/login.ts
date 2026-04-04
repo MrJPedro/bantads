@@ -1,11 +1,11 @@
-import { AuthService } from '../../../services/auth-service';
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
-import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth-service';
 
 @Component({
   selector: 'app-login',
@@ -26,37 +26,34 @@ export class Login {
 
 
   login(form: NgForm) {
-    if(form.valid){
-        const {email, senha} = this.credenciais;
-        const loginEfetuado = this.authService.login(email, senha);
+    if (form.valid) {
+      const { email, senha } = this.credenciais;
+      this.authService.login({login: email, senha }).subscribe({
+        next: (response) => {
+          console.log(response);
 
-        console.log(email)
-        console.log(senha)
-        console.log(loginEfetuado)
+          if (response) {
+            this.authService.storeCredentials(response);
+          }
 
-        if (!loginEfetuado) {
-          console.log("Usuário/Senha incorretos")
-          return;
+          switch (response.tipo) {
+            case 'CLIENTE':
+              console.log("Cliente logado: ");
+              this.router.navigate(['/cliente/tela-inicial']);
+              break;
+            case 'GERENTE':
+              this.router.navigate(['/gerente/tela-inicial']);
+              break;
+            case 'ADMINISTRADOR':
+              this.router.navigate(['/administrador/tela-inicial']);
+              break;
+            default:
+              break;
+          }
         }
-
-        console.log("Login efetuado com sucesso")
-        
-        switch(loginEfetuado.tipo) {
-          case 'CLIENTE':
-            this.router.navigate(['/cliente/tela-inicial'])
-            break
-          case 'GERENTE':
-            this.router.navigate(['/gerente/tela-inicial'])
-            break
-          case 'ADMINISTRADOR':
-            this.router.navigate(['/administrador/tela-inicial'])
-            break
-          default:
-            break
-        }
-        
+      });
     }
   }
 
-    checked1 = signal<boolean>(true);
+  checked1 = signal<boolean>(true);
 }
