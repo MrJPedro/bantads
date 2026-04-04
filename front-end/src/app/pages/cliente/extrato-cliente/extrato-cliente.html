@@ -1,0 +1,97 @@
+<div class="card">
+    <div class="formgrid grid mb-4">
+        
+        <div class="field col-12 md:col-3 lg:col-2">
+            <label for="dataInicio" class="block mb-2 font-bold">Data Início</label>
+            <p-datepicker 
+                inputId="dataInicio" 
+                [(ngModel)]="dataInicio" 
+                dateFormat="dd/mm/yy" 
+                [showIcon]="true"
+                styleClass="w-full">
+            </p-datepicker>
+        </div>
+
+        <div class="field col-12 md:col-3 lg:col-2">
+            <label for="dataFim" class="block mb-2 font-bold">Data Fim</label>
+            <p-datepicker 
+                inputId="dataFim" 
+                [(ngModel)]="dataFim" 
+                dateFormat="dd/mm/yy" 
+                [showIcon]="true"
+                styleClass="w-full">
+            </p-datepicker>
+        </div>
+        
+        <div class="field col-12 mt-2">
+            <p-button 
+                label="Buscar Movimentações" 
+                icon="pi pi-search" 
+                (onClick)="filtrar()">
+            </p-button>
+        </div>
+    </div>
+
+    <p-table 
+        [value]="movimentacoes" 
+        rowGroupMode="subheader" 
+        groupRowsBy="dataReferencia" 
+        responsiveLayout="scroll">
+        
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Data/Hora</th>
+                <th>Operação</th>
+                <th>Cliente Origem/Destino</th>
+                <th>Valor</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="groupheader" let-movimentacao>
+            <tr pRowGroupHeader>
+                <td colspan="4" class="bg-gray-100 font-bold text-lg text-color-secondary">
+                    <i class="pi pi-calendar mr-2"></i>
+                    {{ movimentacao.dataReferencia | date:'dd/MM/yyyy' }}
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-movimentacao let-rowIndex="rowIndex">
+            
+            <tr *ngIf="!movimentacao.diaSemMovimento" 
+                [ngStyle]="{'color': movimentacao.tipoMovimento === 'ENTRADA' ? 'blue' : 'red'}">
+                <td>{{ movimentacao.dataHora | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td>{{ movimentacao.operacao }}</td>
+                <td>
+                    <span *ngIf="movimentacao.clienteOrigemDestino">{{ movimentacao.clienteOrigemDestino }}</span>
+                    <span *ngIf="!movimentacao.clienteOrigemDestino">-</span>
+                </td>
+                <td class="font-semibold">{{ movimentacao.valor | currency:'BRL' }}</td>
+            </tr>
+
+            <tr *ngIf="movimentacao.diaSemMovimento">
+                <td colspan="4" class="text-center text-500 font-italic py-3">
+                    Nenhuma movimentação neste dia.
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="groupfooter" let-movimentacao>
+            <tr>
+                <td colspan="3" class="text-right font-bold pr-3 uppercase">
+                    Saldo Consolidado do Dia:
+                </td>
+                <td class="font-bold text-lg" 
+                    [ngClass]="{'text-blue-600': movimentacao.saldoDia >= 0, 'text-red-600': movimentacao.saldoDia < 0}">
+                    {{ movimentacao.saldoDia | currency:'BRL' }}
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="4" class="text-center p-4">Selecione um período para visualizar as movimentações.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

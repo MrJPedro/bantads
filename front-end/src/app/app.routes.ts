@@ -15,6 +15,7 @@ import { RelatorioClientes } from './pages/administrador/relatorio-clientes/rela
 import { CrudGerentes } from './pages/administrador/crud-gerentes/crud-gerentes';
 import { Perfil } from './pages/cliente/perfil/perfil';
 import { authGuardGuard } from './auth-guard-guard';
+import { ExtratoCliente } from './pages/cliente/extrato-cliente/extrato-cliente';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -52,6 +53,7 @@ export const routes: Routes = [
         redirectTo: 'cliente/tela-inicial',
         pathMatch: 'full'
       },
+      
       {
         path: 'tela-inicial',
         component: TelaInicialCliente
@@ -60,6 +62,11 @@ export const routes: Routes = [
       {
         path: 'perfil',
         component: Perfil
+      },
+
+      {
+        path: 'extrato',
+        component: ExtratoCliente 
       }
     ]
   },
