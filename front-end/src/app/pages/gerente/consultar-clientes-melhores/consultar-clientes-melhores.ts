@@ -8,6 +8,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { Gerente } from '../../../services/gerente-service';
 import { TodosClientesResponse } from '../../../DTO/cliente';
+import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
     selector: 'app-consultar-clientes-melhores',
@@ -18,7 +19,8 @@ import { TodosClientesResponse } from '../../../DTO/cliente';
         TableModule,
         ButtonModule,
         DialogModule,
-        TextareaModule
+        TextareaModule,
+        CpfPipe
     ],
 
     providers: [MessageService],

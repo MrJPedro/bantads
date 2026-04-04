@@ -20,11 +20,11 @@
 
     <ng-template #body let-cliente>
       <tr>
-        <td>{{ cliente.cpf }}</td>
+        <td>{{ cliente.cpf | cpf }}</td>
         <td>{{ cliente.nome }}</td>
         <td>{{ cliente.cidade }}</td>
         <td>{{ cliente.estado }}</td>
-        <td>{{ cliente.saldo | currency: 'BRL' }}</td>
+        <td>{{ cliente.saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}</td>
       </tr>
     </ng-template>
   </p-table>

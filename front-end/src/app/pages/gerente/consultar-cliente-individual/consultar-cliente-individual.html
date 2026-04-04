@@ -20,7 +20,7 @@
       <div class="mb-3">
         <span class="block text-sm text-500">CPF</span>
         <span class="block text-lg font-semibold text-900">
-          {{ resultadoBusca()[0].cpf }}
+          {{ resultadoBusca()[0].cpf | cpf }}
         </span>
       </div>
 
@@ -69,14 +69,14 @@
       <div class="mb-3">
         <span class="block text-sm text-500">Saldo</span>
         <span class="block text-lg font-semibold text-green-600">
-          {{ resultadoBusca()[0].saldo | currency: 'BRL' }}
+          {{ resultadoBusca()[0].saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}
         </span>
       </div>
 
       <div>
         <span class="block text-sm text-500">Limite</span>
         <span class="block text-lg font-semibold text-blue-600">
-          {{ resultadoBusca()[0].limite | currency: 'BRL' }}
+          {{ resultadoBusca()[0].limite | currency:'BRL':'symbol':'1.2-2':'pt' }}
         </span>
       </div>
     </div>

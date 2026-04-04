@@ -11,6 +11,7 @@ import { PasswordModule } from 'primeng/password';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 interface GerenteMock {
   cpf: string;
@@ -33,6 +34,7 @@ interface GerenteMock {
     PasswordModule,
     ToastModule,
     TagModule,
+    CpfPipe
   ],
   providers: [MessageService],
   templateUrl: './crud-gerentes.html',
@@ -45,19 +47,19 @@ export class CrudGerentes {
 
   readonly gerentes = signal<GerenteMock[]>([
     {
-      cpf: '123.456.789-10',
+      cpf: '12345678910',
       nome: 'Aline Moraes',
       email: 'aline.moraes@bantads.com',
       tipo: 'GERENTE',
     },
     {
-      cpf: '987.654.321-00',
+      cpf: '98765432100',
       nome: 'Bruno Ferreira',
       email: 'bruno.ferreira@bantads.com',
       tipo: 'GERENTE',
     },
     {
-      cpf: '222.333.444-55',
+      cpf: '22233344455',
       nome: 'Carla Nogueira',
       email: 'carla.nogueira@bantads.com',
       tipo: 'GERENTE',

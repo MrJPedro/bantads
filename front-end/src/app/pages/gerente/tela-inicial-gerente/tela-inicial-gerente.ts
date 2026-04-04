@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-aprovar-response.dto';
 import { Gerente } from '../../../services/gerente-service';
 import { ParaAprovarResponse } from '../../../DTO/cliente';
+import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
     selector: 'app-tela-inicial-gerente',
@@ -21,7 +22,8 @@ import { ParaAprovarResponse } from '../../../DTO/cliente';
         ButtonModule,
         DialogModule,
         TextareaModule,
-        ToastModule
+        ToastModule,
+        CpfPipe
     ],
     providers: [MessageService],
     templateUrl: './tela-inicial-gerente.html'

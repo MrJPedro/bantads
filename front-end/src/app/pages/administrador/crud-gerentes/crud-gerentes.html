@@ -42,7 +42,7 @@
 
 		<ng-template #body let-gerente>
 			<tr>
-				<td>{{ gerente.cpf }}</td>
+				<td>{{ gerente.cpf | cpf }}</td>
 				<td>{{ gerente.nome }}</td>
 				<td>{{ gerente.email }}</td>
 				<td>

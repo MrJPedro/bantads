@@ -1,16 +1,16 @@
-import { Router } from '@angular/router';
-import { SaldoResponse } from '../../../DTO/conta/saldo-response';
-import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CardModule } from 'primeng/card';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
-import { Cliente } from '../../../services/cliente-service';
+import { SaldoResponse } from '../../../DTO/conta/saldo-response';
 import { AuthService } from '../../../services/auth-service';
+import { Cliente } from '../../../services/cliente-service';
+import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
     selector: 'app-tela-inicial-cliente',
@@ -22,7 +22,8 @@ import { AuthService } from '../../../services/auth-service';
         ButtonModule,
         DialogModule,
         TextareaModule,
-        ToastModule
+        ToastModule,
+        CpfPipe
     ],
     providers: [MessageService],
     templateUrl: './tela-inicial-cliente.html'

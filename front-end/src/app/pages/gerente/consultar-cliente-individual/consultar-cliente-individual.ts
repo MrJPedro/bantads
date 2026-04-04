@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
 import { ClienteResponse } from '../../../DTO/cliente';
 import { Gerente } from '../../../services/gerente-service';
+import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
     selector: 'app-consultar-cliente-individual',
@@ -22,7 +23,8 @@ import { Gerente } from '../../../services/gerente-service';
     DialogModule,
     TextareaModule,
     ToastModule,
-    BarraPesquisa
+    BarraPesquisa,
+    CpfPipe
 ],
     providers: [MessageService],
     templateUrl: './consultar-cliente-individual.html'
