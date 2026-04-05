@@ -31,35 +31,35 @@ export class LandingPage {
     {
       icon: 'pi pi-wallet',
       title: 'Conta Inteligente',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer faucibus purus non tristique aliquam.',
+      text: 'Controle entradas, saídas e objetivos em um só lugar, com visão clara da sua vida financeira.',
     },
     {
       icon: 'pi pi-bolt',
       title: 'Transferências Instantâneas',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit orci sit amet leo malesuada posuere.',
+      text: 'Envie e receba dinheiro em segundos, a qualquer hora, com praticidade e confirmação em tempo real.',
     },
     {
       icon: 'pi pi-shield',
       title: 'Segurança em Camadas',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sed lorem et eros convallis pulvinar.',
+      text: 'Sua conta protegida com autenticação, monitoramento contínuo e tecnologia contra fraudes.',
     },
   ];
 
   protected readonly testimonials: TestimonialItem[] = [
     {
-      name: 'Cliente Exemplo',
+      name: 'Mariana Costa',
       role: 'Freelancer',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tincidunt sem ut pretium laoreet.',
+      text: 'Com o Bantads, consigo separar despesas pessoais e profissionais sem complicação.',
     },
     {
-      name: 'Usuário Teste',
+      name: 'Patrícia Lima',
       role: 'Empreendedora',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse condimentum neque vitae elit blandit auctor.',
+      text: 'As transferências instantâneas agilizaram meu negócio e melhoraram meu fluxo de caixa.',
     },
     {
-      name: 'Pessoa Demo',
+      name: 'Rafael Mendes',
       role: 'Analista',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra risus sed augue suscipit tempor.',
+      text: 'O app é rápido, seguro e me dá a confiança de resolver tudo pelo celular.',
     },
   ];
 

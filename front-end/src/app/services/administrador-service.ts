@@ -1,8 +1,8 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import * as DTO from '../DTO/gerente'
 import { RelatorioClientesResponse } from '../DTO/cliente';
+import * as DTO from '../DTO/gerente';
 
 const API_URL = "http://localhost:3001"
 
@@ -28,9 +28,13 @@ export class AdministradorService {
 
   // R16: Relatório de Clientes
   consultarTodosClientesAdm(): Observable<RelatorioClientesResponse>{
-    var filtro = "adm_relatorio_clientes"
+    const params = new HttpParams().set('filtro', 'adm_relatorio_clientes');
+
     return this.httpClient.get<RelatorioClientesResponse>(
-      API_URL + "/clientes", this.httpOptions
+      API_URL + "/clientes", {
+        ...this.httpOptions,
+        params
+      }
     )
   }
 
@@ -50,7 +54,19 @@ export class AdministradorService {
 
   // R19:  (CRUD de Gerentes) Listagem de Gerentes
   consultarTodosGerentes(): Observable<DTO.DashboardResponse> {
+    const params = new HttpParams().set('numero', 'dashboard');
+
     return this.httpClient.get<DTO.DashboardResponse>(
+      API_URL + "/gerentes", {
+        ...this.httpOptions,
+        params
+      }
+    )
+
+  }
+
+  consultarGerentesCrud(): Observable<DTO.GerentesResponse> {
+    return this.httpClient.get<DTO.GerentesResponse>(
       API_URL + "/gerentes", this.httpOptions
     )
 

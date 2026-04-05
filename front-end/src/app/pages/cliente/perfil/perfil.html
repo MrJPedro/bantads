@@ -1,6 +1,24 @@
+<p-toast />
+<p-confirmDialog />
+
 <div class="form-container">
   <p-card header="Alterar Dados do Perfil" [style]="{ width: '100%', maxWidth: '800px' }">
     <form (ngSubmit)="salvarPerfil()">
+
+      <section class="account-summary" aria-label="Resumo da conta">
+        <div class="summary-item">
+          <span class="summary-label">Gerente</span>
+          <span class="summary-value">{{ perfil.gerenteNome || 'Geniéve' }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Saldo Atual</span>
+          <span class="summary-value">{{ perfil.saldo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Limite</span>
+          <span class="summary-value">{{ perfil.limite | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+        </div>
+      </section>
       
       <div class="form-grid">
         <div class="form-group">
@@ -34,6 +52,8 @@
             name="cpf" 
             mask="999.999.999-99" 
             [(ngModel)]="perfil.cpf" 
+            [readonly]="true"
+            styleClass="p-disabled"
             [unmask]="true" 
             placeholder="000.000.000-00">
           </p-inputMask>

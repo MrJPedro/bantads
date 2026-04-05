@@ -1,9 +1,9 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 
-import * as DTO from '../DTO/gerente'
-import { ClienteParaAprovarResponse, ClienteResponse, ParaAprovarResponse, TodosClientesResponse } from '../DTO/cliente';
+import { ClienteResponse, ParaAprovarResponse, TodosClientesResponse } from '../DTO/cliente';
+import * as DTO from '../DTO/gerente';
 
 const API_URL = "http://localhost:3001"
 
@@ -73,5 +73,15 @@ export class Gerente {
         params: { filtro } 
       }
     )
-  }  
+  }
+
+  consultarGerentePorCpf(cpf: string): Observable<DTO.DadoGerente[]> {
+    return this.httpClient.get<DTO.DadoGerente[]>(
+      API_URL + "/gerentes",
+      {
+        ...this.httpOptions,
+        params: { cpf }
+      }
+    )
+  }
 }

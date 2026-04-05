@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -18,6 +19,7 @@ import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
     imports: [
         CommonModule,
         FormsModule,
+        RouterModule,
         CardModule,
         ButtonModule,
         DialogModule,

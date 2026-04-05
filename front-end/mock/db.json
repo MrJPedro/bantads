@@ -76,7 +76,7 @@
       "id": 1,
       "numero": "0556",
       "cliente": "76179646090",
-      "saldo": 1506.88,
+      "saldo": 1526.88,
       "limite": 5000,
       "gerente": "40501740066",
       "criacao": "2025-08-01T10:22:45-03:00"
@@ -85,7 +85,7 @@
       "id": 2,
       "numero": "1291",
       "cliente": "12912861012",
-      "saldo": 700,
+      "saldo": 898.1199999999999,
       "limite": 5000,
       "gerente": "40501740066",
       "criacao": "2025-07-15T14:30:00-03:00"
@@ -243,6 +243,62 @@
       "origem": "1291",
       "destino": null,
       "valor": 10
+    },
+    {
+      "conta": "1291",
+      "data": "2026-04-05T03:07:57.362Z",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "1291",
+      "valor": 27
+    },
+    {
+      "conta": "1291",
+      "data": "2026-04-05T03:10:42.546Z",
+      "tipo": "saque",
+      "origem": "1291",
+      "destino": null,
+      "valor": 2
+    },
+    {
+      "conta": "1291",
+      "data": "2026-04-05T03:17:32.505Z",
+      "tipo": "saque",
+      "origem": "1291",
+      "destino": null,
+      "valor": 800
+    },
+    {
+      "conta": "1291",
+      "data": "2026-04-05T03:17:58.143Z",
+      "tipo": "saque",
+      "origem": "1291",
+      "destino": null,
+      "valor": 4000
+    },
+    {
+      "conta": "1291",
+      "data": "2026-04-05T03:21:48.315Z",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "1291",
+      "valor": 5000
+    },
+    {
+      "conta": "1291",
+      "data": "2026-04-05T03:22:22.908Z",
+      "tipo": "transferência",
+      "origem": "1291",
+      "destino": "0556",
+      "valor": 20
+    },
+    {
+      "conta": "0556",
+      "data": "2026-04-05T03:22:22.908Z",
+      "tipo": "transferência",
+      "origem": "1291",
+      "destino": "0556",
+      "valor": 20
     }
   ],
   "gerentes": [
@@ -250,7 +306,7 @@
       "id": 1,
       "cpf": "40501740066",
       "nome": "Geniéve",
-      "email": "ger1@bantads.com.br",  
+      "email": "ger1@bantads.com.br",
       "tipo": "GERENTE",
       "senha": "tads"
     },

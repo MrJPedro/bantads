@@ -131,6 +131,15 @@
 	box-shadow: 0 22px 34px rgba(15, 23, 42, 0.2);
 }
 
+.hero-image {
+	display: block;
+	width: 100%;
+	height: clamp(280px, 38vw, 430px);
+	object-fit: cover;
+	object-position: right center;
+	border-radius: 0.8rem;
+}
+
 .mock-toolbar {
 	display: flex;
 	gap: 0.35rem;

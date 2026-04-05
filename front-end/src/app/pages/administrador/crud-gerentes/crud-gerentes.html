@@ -5,6 +5,8 @@
 		[value]="gerentesFiltrados()"
 		[rows]="10"
 		[paginator]="true"
+		[sortField]="'nome'"
+		[sortOrder]="1"
 		responsiveLayout="scroll"
 		styleClass="p-datatable-gridlines">
 
@@ -32,10 +34,10 @@
 
 		<ng-template #header>
 			<tr>
-				<th>CPF</th>
-				<th>Nome</th>
-				<th>Email</th>
-				<th>Perfil</th>
+				<th pSortableColumn="cpf">CPF <p-sortIcon field="cpf" /></th>
+				<th pSortableColumn="nome">Nome <p-sortIcon field="nome" /></th>
+				<th pSortableColumn="email">Email <p-sortIcon field="email" /></th>
+				<th pSortableColumn="telefone">Telefone <p-sortIcon field="telefone" /></th>
 				<th class="text-center">Ações</th>
 			</tr>
 		</ng-template>
@@ -45,9 +47,7 @@
 				<td>{{ gerente.cpf | cpf }}</td>
 				<td>{{ gerente.nome }}</td>
 				<td>{{ gerente.email }}</td>
-				<td>
-					<p-tag [value]="gerente.tipo" severity="info" />
-				</td>
+				<td>{{ gerente.telefone | telefone }}</td>
 				<td>
 					<div class="flex justify-content-center gap-2">
 						<p-button
@@ -111,8 +111,8 @@
 		</div>
 
 		<div class="flex flex-col gap-1 w-full">
-			<label for="tipo">Perfil</label>
-			<input id="tipo" pInputText formControlName="tipo" />
+			<label for="telefone">Telefone</label>
+			<input id="telefone" pInputText formControlName="telefone" />
 		</div>
 
 		<div class="flex flex-col gap-1 w-full">

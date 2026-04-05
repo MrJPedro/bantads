@@ -12,12 +12,13 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
+import { TelefonePipe } from '../../../shared/pipes/telefone.pipe';
 
 interface GerenteMock {
   cpf: string;
   nome: string;
   email: string;
-  tipo: string;
+  telefone: string;
 }
 
 @Component({
@@ -34,7 +35,8 @@ interface GerenteMock {
     PasswordModule,
     ToastModule,
     TagModule,
-    CpfPipe
+    CpfPipe,
+    TelefonePipe
   ],
   providers: [MessageService],
   templateUrl: './crud-gerentes.html',
@@ -50,19 +52,19 @@ export class CrudGerentes {
       cpf: '12345678910',
       nome: 'Aline Moraes',
       email: 'aline.moraes@bantads.com',
-      tipo: 'GERENTE',
+      telefone: '41999998888',
     },
     {
       cpf: '98765432100',
       nome: 'Bruno Ferreira',
       email: 'bruno.ferreira@bantads.com',
-      tipo: 'GERENTE',
+      telefone: '41988887777',
     },
     {
       cpf: '22233344455',
       nome: 'Carla Nogueira',
       email: 'carla.nogueira@bantads.com',
-      tipo: 'GERENTE',
+      telefone: '41977776666',
     },
   ]);
 
@@ -76,22 +78,25 @@ export class CrudGerentes {
     cpf: ['', [Validators.required, Validators.minLength(11)]],
     nome: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
-    tipo: ['GERENTE', [Validators.required]],
+    telefone: ['', [Validators.required, Validators.minLength(10)]],
     senha: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   readonly gerentesFiltrados = computed(() => {
     const termo = this.termoBusca().trim().toLowerCase();
+    const ordenarPorNome = (a: GerenteMock, b: GerenteMock) => a.nome.localeCompare(b.nome);
 
     if (!termo) {
-      return this.gerentes();
+      return [...this.gerentes()].sort(ordenarPorNome);
     }
 
-    return this.gerentes().filter((gerente) =>
-      gerente.nome.toLowerCase().includes(termo)
-      || gerente.cpf.toLowerCase().includes(termo)
-      || gerente.email.toLowerCase().includes(termo),
-    );
+    return this.gerentes()
+      .filter((gerente) =>
+        gerente.nome.toLowerCase().includes(termo)
+        || gerente.cpf.toLowerCase().includes(termo)
+        || gerente.email.toLowerCase().includes(termo),
+      )
+      .sort(ordenarPorNome);
   });
 
   get cpfControl() {
@@ -117,7 +122,7 @@ export class CrudGerentes {
       cpf: '',
       nome: '',
       email: '',
-      tipo: 'GERENTE',
+      telefone: '',
       senha: '',
     });
     this.cpfControl.enable();
@@ -133,7 +138,7 @@ export class CrudGerentes {
       cpf: gerente.cpf,
       nome: gerente.nome,
       email: gerente.email,
-      tipo: gerente.tipo,
+      telefone: gerente.telefone,
       senha: '',
     });
     this.cpfControl.disable();
@@ -170,7 +175,7 @@ export class CrudGerentes {
         cpf: gerenteFormulario.cpf,
         nome: gerenteFormulario.nome,
         email: gerenteFormulario.email,
-        tipo: gerenteFormulario.tipo,
+        telefone: gerenteFormulario.telefone,
       }].sort((a, b) => a.nome.localeCompare(b.nome));
 
       this.gerentes.set(novaLista);
@@ -197,7 +202,7 @@ export class CrudGerentes {
         ...gerente,
         nome: gerenteFormulario.nome,
         email: gerenteFormulario.email,
-        tipo: gerenteFormulario.tipo,
+        telefone: gerenteFormulario.telefone,
       };
     });
 

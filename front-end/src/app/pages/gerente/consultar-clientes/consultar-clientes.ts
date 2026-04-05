@@ -1,15 +1,15 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
-import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
+import { ClienteResponse, TodosClientesResponse } from '../../../DTO/cliente';
 import { Gerente } from '../../../services/gerente-service';
-import { TodosClientesResponse } from '../../../DTO/cliente';
+import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
 import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
@@ -40,8 +40,10 @@ export class ConsultarClientes implements OnInit {
         private messageService: MessageService
     ) {}
     
-    clientes = signal<any[]>([]);
+    clientes = signal<ClienteResponse[]>([]);
     termoBusca = signal('');
+    clienteSelecionado = signal<ClienteResponse | null>(null);
+    modalDetalhesVisivel = signal(false);
 
     sortField = 'nome';
     sortOrder = 1;
@@ -86,6 +88,16 @@ export class ConsultarClientes implements OnInit {
     aoPesquisar(valor: string) {
     this.termoBusca.set(valor);
 }
+
+    abrirModalDetalhes(cliente: ClienteResponse) {
+        this.clienteSelecionado.set(cliente);
+        this.modalDetalhesVisivel.set(true);
+    }
+
+    fecharModalDetalhes() {
+        this.modalDetalhesVisivel.set(false);
+        this.clienteSelecionado.set(null);
+    }
 /*  mockDados() {
         this.clientes.set([
             {

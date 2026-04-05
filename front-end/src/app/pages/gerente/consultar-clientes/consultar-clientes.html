@@ -28,6 +28,7 @@
         <th>Estado</th>
         <th>Saldo</th>
         <th>Limite</th>
+        <th>Detalhes</th>
       </tr>
     </ng-template>
 
@@ -39,7 +40,85 @@
         <td>{{ cliente.estado }}</td>
         <td>{{ cliente.saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}</td>
         <td>{{ cliente.limite | currency:'BRL':'symbol':'1.2-2':'pt' }}</td>
+        <td>
+          <button
+            pButton
+            type="button"
+            label="Ver detalhes"
+            class="p-button-text p-0"
+            (click)="abrirModalDetalhes(cliente)"
+          ></button>
+        </td>
       </tr>
     </ng-template>
   </p-table>
 </div>
+
+<p-dialog
+  header="Dados do cliente"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '40rem', maxWidth: '95vw' }"
+  [visible]="modalDetalhesVisivel()"
+  (visibleChange)="modalDetalhesVisivel.set($event)"
+  (onHide)="fecharModalDetalhes()"
+>
+  @if (clienteSelecionado(); as cliente) {
+    <div class="grid">
+      <div class="col-12 md:col-6 mb-3">
+        <span class="block text-sm text-500">CPF</span>
+        <span class="block text-900 font-semibold">{{ cliente.cpf | cpf }}</span>
+      </div>
+
+      <div class="col-12 md:col-6 mb-3">
+        <span class="block text-sm text-500">Nome</span>
+        <span class="block text-900 font-semibold">{{ cliente.nome }}</span>
+      </div>
+
+      <div class="col-12 md:col-6 mb-3">
+        <span class="block text-sm text-500">Email</span>
+        <span class="block text-900 font-semibold">{{ cliente.email }}</span>
+      </div>
+
+      <div class="col-12 md:col-6 mb-3">
+        <span class="block text-sm text-500">Telefone</span>
+        <span class="block text-900 font-semibold">{{ cliente.telefone }}</span>
+      </div>
+
+      <div class="col-12 mb-3">
+        <span class="block text-sm text-500">Endereco</span>
+        <span class="block text-900 font-semibold">{{ cliente.endereco }}</span>
+      </div>
+
+      <div class="col-12 md:col-6 mb-3">
+        <span class="block text-sm text-500">Cidade</span>
+        <span class="block text-900 font-semibold">{{ cliente.cidade }}</span>
+      </div>
+
+      <div class="col-12 md:col-6 mb-3">
+        <span class="block text-sm text-500">Estado</span>
+        <span class="block text-900 font-semibold">{{ cliente.estado }}</span>
+      </div>
+
+      <div class="col-12 md:col-4 mb-3">
+        <span class="block text-sm text-500">Conta</span>
+        <span class="block text-900 font-semibold">{{ cliente.conta }}</span>
+      </div>
+
+      <div class="col-12 md:col-4 mb-3">
+        <span class="block text-sm text-500">Saldo</span>
+        <span class="block text-green-600 font-semibold">
+          {{ cliente.saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}
+        </span>
+      </div>
+
+      <div class="col-12 md:col-4 mb-3">
+        <span class="block text-sm text-500">Limite</span>
+        <span class="block text-blue-600 font-semibold">
+          {{ cliente.limite | currency:'BRL':'symbol':'1.2-2':'pt' }}
+        </span>
+      </div>
+    </div>
+  }
+</p-dialog>

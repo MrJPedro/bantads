@@ -1,26 +1,29 @@
-import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
-import { InputTextModule } from 'primeng/inputtext';
 import { Dialog } from "primeng/dialog";
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { AutocadastroInfo } from '../../../DTO/cliente/autocadastro-info.dto';
-import { AutocadastroService } from '../../../services/autocadastro-service'
 import { CepService } from '../../../services/cep-service';
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @Component({
   selector: 'app-autocadastro',
-  imports: [CommonModule, FormsModule, ButtonModule, CheckboxModule, InputTextModule, Dialog, NgxMaskDirective],
+  imports: [CommonModule, FormsModule, ButtonModule, CheckboxModule, InputTextModule, InputNumberModule, Dialog, NgxMaskDirective],
   templateUrl: './autocadastro.html',
   providers: [provideNgxMask()],
   styleUrl: './autocadastro.css',
 })
-export class Autocadastro {
+export class Autocadastro implements OnInit, OnDestroy {
 
   private cepService = inject(CepService);
-  private autocadastroService = inject(AutocadastroService);
+  private cepSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   public dados: AutocadastroInfo = {
     cpf: '',
@@ -39,9 +42,31 @@ export class Autocadastro {
 showDialog() {
 this.visible = true;
 }
+showConfirmationModal() {
+this.showConfirmation = true;
+}
 @Input() mask = '';
 email = '';
 visible: any;
+showConfirmation = false;
+
+ngOnInit() {
+  this.cepSubject.pipe(
+    debounceTime(800),
+    takeUntil(this.destroy$)
+  ).subscribe(() => {
+    this.buscarCEP();
+  });
+}
+
+ngOnDestroy() {
+  this.destroy$.next();
+  this.destroy$.complete();
+}
+
+onCepInput() {
+  this.cepSubject.next(this.dados.CEP);
+}
 
   buscarCEP() {
     const cepLimpo = this.dados.CEP.replace(/\D/g, '');
@@ -63,13 +88,6 @@ visible: any;
   }
 
   cadastrar() {
-    this.autocadastroService.cadastrarCliente(this.dados).subscribe({
-      next: () => {
-        alert('Solicitação enviada com sucesso! Aguarde a aprovação do gerente.');
-      },
-      error: () => {
-        alert('Erro ao realizar o cadastro. Tente novamente.');
-      }
-    });
+    this.showConfirmationModal();
   }
 }

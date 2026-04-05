@@ -103,19 +103,30 @@ export class AuthService {
 
   getUsuarioLogado() {
     const user = localStorage.getItem("Usuario_logado");
-    return user ? JSON.parse(user) : null;
+    if (!user) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(user);
+    } catch {
+      return null;
+    }
   }
 
   getCpf() {
-    return this.getUsuarioLogado()?.cpf;
+    const usuarioLogado = this.getUsuarioLogado();
+    return usuarioLogado?.cpf ?? usuarioLogado?.usuario?.cpf ?? null;
   }
 
   getContaNumero() {
-    return this.getUsuarioLogado()?.conta?.numero ?? null;
+    const usuarioLogado = this.getUsuarioLogado();
+    return usuarioLogado?.conta?.numero ?? usuarioLogado?.cliente?.conta?.numero ?? null;
   }
 
   getToken() {
-    return this.getUsuarioLogado()?.token ?? null;
+    const usuarioLogado = this.getUsuarioLogado();
+    return usuarioLogado?.token ?? usuarioLogado?.access_token ?? null;
   }
 }
 //

@@ -7,6 +7,8 @@
         [value]="clientes()"
         [rows]="10"
         [paginator]="true"
+        sortField="nome"
+        [sortOrder]="1"
         responsiveLayout="scroll"
         styleClass="p-datatable-gridlines">
 
@@ -16,31 +18,31 @@
                 <th>Nome</th>
                 <th>Email</th>
                 <th>Salário</th>
-                <th>n° Conta</th>
+                <th>Número da Conta</th>
                 <th>Saldo</th>
-                <th>Limite</th>
-                <th>Nome Gerente</th>
-                <th>CPF Gerente</th>
+                <th>Limite de Crédito</th>
+                <th>CPF do Gerente</th>
+                <th>Nome do Gerente</th>
             </tr>
         </ng-template>
 
         <ng-template #body let-cliente>
             <tr>
-                <td>{{ cliente.cpf }}</td>
+                <td>{{ cliente.cpf | cpf }}</td>
                 <td>{{ cliente.nome }}</td>
-                <td>{{ cliente.email}}</td>
+                <td>{{ cliente.email }}</td>
                 <td>{{ cliente.salario | currency: 'BRL' }}</td>
-                <td>{{ cliente.numConta }}</td>
-                <td>{{ cliente.saldo }}</td>
-                <td>{{ cliente.limite }}</td>
-                <td>{{ cliente.nomeGerente }}</td>
-                <td>{{ cliente.cpfGerente }}</td>
+                <td>{{ cliente.conta || '-' }}</td>
+                <td>{{ (+cliente.saldo || 0) | currency: 'BRL' }}</td>
+                <td>{{ (cliente.limite || 0) | currency: 'BRL' }}</td>
+                <td>{{ (cliente.gerenteCpf || '-' ) | cpf }}</td>
+                <td>{{ cliente.gerenteNome || '-' }}</td>
             </tr>
         </ng-template>
 
         <ng-template #emptymessage>
             <tr>
-                <td colspan="4" class="text-center p-4">Nenhuma pendência encontrada.</td>
+                <td colspan="9" class="text-center p-4">Nenhum cliente encontrado.</td>
             </tr>
         </ng-template>
     </p-table>

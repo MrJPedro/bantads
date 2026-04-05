@@ -423,7 +423,7 @@ server.post("/contas/:numero/sacar", (req, res) => {
   if (!valor || valor <= 0) return res.status(400).json({ erro: "Valor deve ser maior que zero" });
   const limiteDisponivel = contaVal.saldo + contaVal.limite;
   if (valor > limiteDisponivel) {
-    return res.status(400).json({ erro: "Saldo insuficiente" });
+    return res.status(400).json({ erro: "Limite insuficiente" });
   }
 
   const novoSaldo = contaVal.saldo - valor;
@@ -458,7 +458,7 @@ server.post("/contas/:numero/transferir", (req, res) => {
   if (!valor || valor <= 0) return res.status(400).json({ erro: "Valor deve ser maior que zero" });
   const limiteDisponivel = origemVal.saldo + origemVal.limite;
   if (valor > limiteDisponivel) {
-    return res.status(400).json({ erro: "Saldo insuficiente" });
+    return res.status(400).json({ erro: "Limite insuficiente" });
   }
 
   const novoSaldoOrigem = origemVal.saldo - valor;

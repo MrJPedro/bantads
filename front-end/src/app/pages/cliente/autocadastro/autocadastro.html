@@ -48,13 +48,22 @@
                         <label class="text-surface-900 dark:text-surface-0 font-medium leading-normal">
                           Telefone
                         </label>
-                        <input name="telefone" [(ngModel)]="dados.telefone" pInputText type="tel" placeholder="Telefone" class="w-full px-3 py-2 shadow-sm rounded-lg" />
+                        <input name="telefone" [(ngModel)]="dados.telefone" mask="(00) 00000-0000" pInputText type="tel" placeholder="(00) 00000-0000" class="w-full px-3 py-2 shadow-sm rounded-lg" />
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="text-surface-900 dark:text-surface-0 font-medium leading-normal">
                           Salário
                         </label>
-                        <input name="salario" [(ngModel)]="dados.salario" pInputText type="number" placeholder="Salário" class="w-full px-3 py-2 shadow-sm rounded-lg" />
+                        <p-inputNumber 
+                          id="salario" 
+                          name="salario" 
+                          [(ngModel)]="dados.salario" 
+                          mode="currency" 
+                          currency="BRL" 
+                          locale="pt-BR" 
+                          placeholder="R$ 0,00"
+                          class="w-full">
+                        </p-inputNumber>
                     </div>
         <div class="card flex justify-center">
             <p-button (click)="showDialog()" label="Preencher endereço" icon="pi pi-address-book" styleClass="!bg-blue-500 !border-blue-500 hover:!bg-blue-600 hover:!border-blue-600 !text-white"/>
@@ -62,7 +71,7 @@
                 <span class="p-text-secondary block mb-8">Insira aqui suas informações de endereço</span>
                 <div class="flex items-center gap-4 mb-4">
                     <label class="font-semibold w-24">CEP</label>
-                    <input name="cep" (blur)="buscarCEP()" [(ngModel)]="dados.CEP" mask="00.000-000" pInputText class="flex-auto" autocomplete="off" />
+                    <input name="cep" (input)="onCepInput()" [(ngModel)]="dados.CEP" mask="00.000-000" pInputText class="flex-auto" autocomplete="off" />
                 </div>
                 <div class="flex items-center gap-4 mb-8">
                     <label for="email" class="font-semibold w-24">Estado</label>
@@ -89,14 +98,28 @@
                     <p-button label="Salvar" (click)="visible = false" />
                 </div>
             </p-dialog>
+            <p-dialog header="Cadastro Realizado" [modal]="true" [(visible)]="showConfirmation" [style]="{ width: '25rem' }" [closable]="false">
+                <div class="flex flex-col items-center gap-4">
+                    <i class="pi pi-check-circle text-green-600 text-4xl"></i>
+                    <span class="p-text-secondary text-center">
+                        Sua solicitação de cadastro foi enviada com sucesso!
+                    </span>
+                    <span class="p-text-secondary text-center font-semibold">
+                        Aguarde a aprovação do gerente para ativar sua conta.
+                    </span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <p-button label="Fechar" (click)="showConfirmation = false" />
+                </ng-template>
+            </p-dialog>
         </div>
                 </div>
                 <button pButton
                         (click)="cadastrar()"
                         class="w-full py-2 rounded-lg flex justify-center items-center gap-2">
-                    <i pButtonIcon class="pi pi-check-circle text-base! leading-normal!"></i>
+                                        <i pButtonIcon class="pi pi-check-circle text-base! leading-normal!"></i>
                     <span pButtonLabel>
-                      Cadastrar
+                                            Cadastrar
                     </span>
                 </button>
             </div>

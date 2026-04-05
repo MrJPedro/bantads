@@ -1,21 +1,24 @@
 import { Routes } from '@angular/router';
-import { LandingPage } from './pages/sem-perfil/landing-page/landing-page';
-import { Login } from './pages/sem-perfil/login/login';
-import { ClienteLayout } from './pages/cliente/cliente-layout/cliente-layout';
+import { authGuardGuard } from './auth-guard-guard';
+import { AdministradorLayout } from './pages/administrador/administrador-layout/administrador-layout';
+import { CrudGerentes } from './pages/administrador/crud-gerentes/crud-gerentes';
+import { RelatorioClientes } from './pages/administrador/relatorio-clientes/relatorio-clientes';
+import { TelaInicialAdministrador } from './pages/administrador/tela-inicial-administrador/tela-inicial-administrador';
 import { Autocadastro } from './pages/cliente/autocadastro/autocadastro';
+import { ClienteLayout } from './pages/cliente/cliente-layout/cliente-layout';
+import { DepositarCliente } from './pages/cliente/depositar-cliente/depositar-cliente';
+import { ExtratoCliente } from './pages/cliente/extrato-cliente/extrato-cliente';
+import { Perfil } from './pages/cliente/perfil/perfil';
+import { SacarCliente } from './pages/cliente/sacar-cliente/sacar-cliente';
 import { TelaInicialCliente } from './pages/cliente/tela-inicial-cliente/tela-inicial-cliente';
-import { GerenteLayout } from './pages/gerente/gerente-layout/gerente-layout';
-import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-inicial-gerente';
-import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
+import { TransferirCliente } from './pages/cliente/transferir-cliente/transferir-cliente';
 import { ConsultarClienteIndividual } from './pages/gerente/consultar-cliente-individual/consultar-cliente-individual';
 import { ConsultarClientesMelhores } from './pages/gerente/consultar-clientes-melhores/consultar-clientes-melhores';
-import { AdministradorLayout } from './pages/administrador/administrador-layout/administrador-layout';
-import { TelaInicialAdministrador } from './pages/administrador/tela-inicial-administrador/tela-inicial-administrador';
-import { RelatorioClientes } from './pages/administrador/relatorio-clientes/relatorio-clientes';
-import { CrudGerentes } from './pages/administrador/crud-gerentes/crud-gerentes';
-import { Perfil } from './pages/cliente/perfil/perfil';
-import { authGuardGuard } from './auth-guard-guard';
-import { ExtratoCliente } from './pages/cliente/extrato-cliente/extrato-cliente';
+import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
+import { GerenteLayout } from './pages/gerente/gerente-layout/gerente-layout';
+import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-inicial-gerente';
+import { LandingPage } from './pages/sem-perfil/landing-page/landing-page';
+import { Login } from './pages/sem-perfil/login/login';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -67,6 +70,21 @@ export const routes: Routes = [
       {
         path: 'extrato',
         component: ExtratoCliente 
+      },
+
+      {
+        path: 'transferir',
+        component: TransferirCliente
+      },
+
+      {
+        path: 'depositar',
+        component: DepositarCliente
+      },
+
+      {
+        path: 'sacar',
+        component: SacarCliente
       }
     ]
   },

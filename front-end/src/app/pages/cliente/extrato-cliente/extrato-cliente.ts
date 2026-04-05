@@ -1,16 +1,15 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { TableModule } from 'primeng/table';
-import { DatePickerModule } from 'primeng/datepicker';
-import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TableModule } from 'primeng/table';
 
-import { AuthService } from '../../../services/auth-service';
-import { Cliente } from '../../../services/cliente-service'; 
 import { ItemExtratoResponse } from '../../../DTO/gerente/item-extrato-response.dto';
+import { AuthService } from '../../../services/auth-service';
+import { Cliente } from '../../../services/cliente-service';
 
 
 export interface Movimentacao {
@@ -77,14 +76,16 @@ export class ExtratoCliente implements OnInit {
   filtrar() {
     if (!this.dataInicio || !this.dataFim || !this.numeroConta) return;
 
-    const dataInicioStr = this.dataInicio.toISOString();
+    const dataInicioHistoricoStr = new Date(1970, 0, 1).toISOString();
     const dataFimStr = this.dataFim.toISOString();
 
-    this.clienteService.consultaExtrato(this.numeroConta, dataInicioStr, dataFimStr)
+    this.clienteService.consultaExtrato(this.numeroConta, dataInicioHistoricoStr, dataFimStr)
       .subscribe({
         next: (response: any) => {
           if (response && response.movimentacoes) {
             this.processarExtratoDaApi(response.movimentacoes);
+          } else {
+            this.movimentacoes = [];
           }
         },
         error: (erro) => {
@@ -98,18 +99,52 @@ export class ExtratoCliente implements OnInit {
       });
   }
 
+  private calcularDeltaSaldo(movimentacao: ItemExtratoResponse): number {
+    if (movimentacao.tipo === 'depósito') {
+      return movimentacao.valor;
+    }
+
+    if (movimentacao.tipo === 'saque') {
+      return -movimentacao.valor;
+    }
+
+    if (movimentacao.tipo === 'transferência') {
+      if (movimentacao.destino === this.numeroConta) {
+        return movimentacao.valor;
+      }
+
+      if (movimentacao.origem === this.numeroConta) {
+        return -movimentacao.valor;
+      }
+    }
+
+    return 0;
+  }
+
   private processarExtratoDaApi(movimentacoesDaApi: ItemExtratoResponse[]) {
     this.movimentacoes = [];
-    let saldoAtual = 0; 
+    const inicioPeriodo = new Date(this.dataInicio);
+    const fimPeriodo = new Date(this.dataFim);
 
-    let dataAtual = new Date(this.dataInicio);
-    const dataLimite = new Date(this.dataFim);
+    inicioPeriodo.setHours(0, 0, 0, 0);
+    fimPeriodo.setHours(0, 0, 0, 0);
 
-    dataAtual.setHours(0, 0, 0, 0);
-    dataLimite.setHours(0, 0, 0, 0);
+    const movimentacoesOrdenadas = [...movimentacoesDaApi].sort(
+      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
+    );
+
+    let saldoAtual = movimentacoesOrdenadas.reduce((saldo, movimentacao) => {
+      const dataMovimentacao = new Date(movimentacao.data);
+      return dataMovimentacao < inicioPeriodo
+        ? saldo + this.calcularDeltaSaldo(movimentacao)
+        : saldo;
+    }, 0);
+
+    let dataAtual = new Date(inicioPeriodo);
+    const dataLimite = new Date(fimPeriodo);
 
     while (dataAtual <= dataLimite) {
-      const transacoesDoDia = movimentacoesDaApi.filter(m => {
+      const transacoesDoDia = movimentacoesOrdenadas.filter(m => {
         const dataTx = new Date(m.data);
         return dataTx.getDate() === dataAtual.getDate() &&
                dataTx.getMonth() === dataAtual.getMonth() &&
@@ -120,19 +155,16 @@ export class ExtratoCliente implements OnInit {
 
       if (transacoesDoDia.length > 0) {
         
-        let saldoFinalDoDia = saldoAtual;
-        transacoesDoDia.forEach(m => {
-          const ehEntrada = m.tipo === 'depósito' || (m.tipo === 'transferência' && m.destino === this.numeroConta);
-          if (ehEntrada) {
-            saldoFinalDoDia += m.valor;
-          } else {
-            saldoFinalDoDia -= m.valor;
-          }
-        });
+        const variacaoDoDia = transacoesDoDia.reduce(
+          (acumulado, movimentacao) => acumulado + this.calcularDeltaSaldo(movimentacao),
+          0
+        );
+        const saldoFinalDoDia = saldoAtual + variacaoDoDia;
 
         transacoesDoDia.forEach(m => {
-          let tipoMovimento = 'ENTRADA';
-          let operacao = 'Depósito';
+          const ehEntrada = this.calcularDeltaSaldo(m) >= 0;
+          let tipoMovimento: 'ENTRADA' | 'SAIDA' = ehEntrada ? 'ENTRADA' : 'SAIDA';
+          let operacao: 'Depósito' | 'Saque' | 'Transferência' = 'Depósito';
           let clienteOrigemDestino = '';
 
           if (m.tipo === 'depósito') {
@@ -147,7 +179,7 @@ export class ExtratoCliente implements OnInit {
             if (m.origem === this.numeroConta) {
               tipoMovimento = 'SAIDA';
               clienteOrigemDestino = m.destino || '';
-            } else {
+            } else if (m.destino === this.numeroConta) {
               tipoMovimento = 'ENTRADA';
               clienteOrigemDestino = m.origem || '';
             }
@@ -158,10 +190,10 @@ export class ExtratoCliente implements OnInit {
             saldoDia: saldoFinalDoDia,
             diaSemMovimento: false,
             dataHora: new Date(m.data),
-            operacao: operacao as any,
+            operacao,
             clienteOrigemDestino: clienteOrigemDestino,
             valor: m.valor,
-            tipoMovimento: tipoMovimento as any
+            tipoMovimento
           });
         });
 

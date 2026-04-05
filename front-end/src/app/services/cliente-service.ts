@@ -26,6 +26,13 @@ export class Cliente {
   } 
 
   // R04: Alteração de Perfil
+  consultarPerfil(cpf: string): Observable<DTO.DadosClienteResponse> {
+    return this.httpClient.get<DTO.DadosClienteResponse>(
+      API_URL + "/clientes/" + cpf,
+      this.httpOptions
+    )
+  }
+
   updatePerfil (CPF: string, novos: DTO.PerfilInfo): Observable<DTO.ClienteResponse>{
 
     return this.httpClient.put<DTO.ClienteResponse>(
@@ -50,7 +57,7 @@ export class Cliente {
   // R07: Transferência
   transferir(cpf: string, valor: number, destino: string): Observable<TransferenciaResponse> {
     return this.httpClient.post<TransferenciaResponse>(
-      API_URL + "/contas/" + cpf + "/depositar", { destino, valor }, this.httpOptions
+      API_URL + "/contas/" + cpf + "/transferir", { destino, valor }, this.httpOptions
     )
   }
 
