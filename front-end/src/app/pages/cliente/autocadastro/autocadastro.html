@@ -54,13 +54,13 @@
                         <label class="text-surface-900 dark:text-surface-0 font-medium leading-normal">
                           Salário
                         </label>
-                        <p-inputNumber 
-                          id="salario" 
-                          name="salario" 
-                          [(ngModel)]="dados.salario" 
-                          mode="currency" 
-                          currency="BRL" 
-                          locale="pt-BR" 
+                        <p-inputNumber
+                          id="salario"
+                          name="salario"
+                          [(ngModel)]="dados.salario"
+                          mode="currency"
+                          currency="BRL"
+                          locale="pt-BR"
                           placeholder="R$ 0,00"
                           class="w-full">
                         </p-inputNumber>
@@ -98,7 +98,12 @@
                     <p-button label="Salvar" (click)="visible = false" />
                 </div>
             </p-dialog>
-            <p-dialog header="Cadastro Realizado" [modal]="true" [(visible)]="showConfirmation" [style]="{ width: '25rem' }" [closable]="false">
+            <p-dialog [modal]="true" [(visible)]="showConfirmation" [style]="{ width: '25rem' }" [closable]="false" [resizable]="false">
+              <ng-template pTemplate="header">
+                <div class="w-full text-center font-semibold text-lg">
+                  Cadastro realizado
+                </div>
+              </ng-template>
                 <div class="flex flex-col items-center gap-4">
                     <i class="pi pi-check-circle text-green-600 text-4xl"></i>
                     <span class="p-text-secondary text-center">
@@ -109,18 +114,18 @@
                     </span>
                 </div>
                 <ng-template pTemplate="footer">
+                  <div class="flex justify-center w-full">
                     <p-button label="Voltar" (click)="voltar()" />
+                  </div>
                 </ng-template>
             </p-dialog>
         </div>
-                </div>
-                <button pButton
-                        (click)="cadastrar()"
-                        class="w-full py-2 rounded-lg flex justify-center items-center gap-2">
-                                        <i pButtonIcon class="pi pi-check-circle text-base! leading-normal!"></i>
-                    <span pButtonLabel>
-                                            Cadastrar
-                    </span>
-                </button>
-            </div>
+        </div>
+          <button pButton
+            (click)="cadastrar()"
+            class="w-full py-2 rounded-lg flex justify-center items-center gap-2">
+            <i pButtonIcon class="pi pi-check-circle text-base! leading-normal!"></i>
+            <span pButtonLabel>Cadastrar</span>
+          </button>
+        </div>
         </div>
