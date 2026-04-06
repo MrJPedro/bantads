@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -24,6 +25,8 @@ export class Autocadastro implements OnInit, OnDestroy {
   private cepService = inject(CepService);
   private cepSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+
+  private router = inject(Router);
 
   public dados: AutocadastroInfo = {
     cpf: '',
@@ -89,5 +92,9 @@ onCepInput() {
 
   cadastrar() {
     this.showConfirmationModal();
+  }
+
+  voltar() {
+    this.router.navigate(['/']);
   }
 }
