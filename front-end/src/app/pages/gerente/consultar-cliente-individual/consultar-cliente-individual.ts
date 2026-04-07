@@ -107,5 +107,56 @@ export class ConsultarClienteIndividual implements OnInit {
 }
 
 */
+/*
+    const clienteEncontrado = this.clientes().find(
+        (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
+    );
+
+    this.resultadoBusca.set(clienteEncontrado ? [clienteEncontrado] : []);
+
+    if (!clienteEncontrado) {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Nenhum resultado',
+            detail: 'Nenhum funcionário encontrado para o CPF informado.'
+        });
+    }
+}
+
+*/
+/*
+    const clienteEncontrado = this.clientes().find(
+        (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
+    );
+
+    this.resultadoBusca.set(clienteEncontrado ? [clienteEncontrado] : []);
+
+    if (!clienteEncontrado) {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Nenhum resultado',
+            detail: 'Nenhum funcionário encontrado para o CPF informado.'
+        });
+    }
+}
+
+*/
+/*
+    const clienteEncontrado = this.clientes().find(
+        (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
+    );
+
+    this.resultadoBusca.set(clienteEncontrado ? [clienteEncontrado] : []);
+
+    if (!clienteEncontrado) {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Nenhum resultado',
+            detail: 'Nenhum funcionário encontrado para o CPF informado.'
+        });
+    }
+}
+
+*/
         
 }
