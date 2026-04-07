@@ -28,7 +28,7 @@
 				icon="pi pi-user-plus"
 				iconPos="right"
 				[raised]="true"
-				(click)="navigateToRegister()" 
+				(click)="navigateToRegister()"
 			></button>
 		</div>
 	</header>
@@ -50,7 +50,7 @@
 					icon="pi pi-user-plus"
 					iconPos="right"
 					[raised]="true"
-					(click)="navigateToRegister()" 
+					(click)="navigateToRegister()"
 				></button>
 			</div>
 
@@ -128,12 +128,12 @@
 		<div class="testimonial-grid">
 			@for (item of testimonials; track item.name) {
 				<p-card class="testimonial-card">
-					<p>
+          <p><!--Citação cliente-->
 						"{{ item.text }}"
 					</p>
 					<p-divider></p-divider>
-					<strong>{{ item.name }}</strong>
-					<span>{{ item.role }}</span>
+          <strong class="mr-4">{{ item.name }}</strong><!--Nome cliente-->
+          <span>{{ item.role }}</span><!--Profissão cliente-->
 				</p-card>
 			}
 		</div>
