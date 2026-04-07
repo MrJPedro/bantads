@@ -87,32 +87,5 @@ export class TelaInicialAdministrador implements OnInit {
       somaNegativa,
     };
   }
-/*  mockDados(){
-    this.gerentes.set([
-      {
-        nome: 'Ana',
-        qtdClientes: 10,
-        somaPositiva: 1530.75,
-        somaNegativa: 700.20
-      },
-      {
-        nome: 'Beto',
-        qtdClientes: 2,
-        somaPositiva: 25.99,
-        somaNegativa: 1000
-      },
-      {
-        nome: 'Carlos',
-        qtdClientes: 23,
-        somaPositiva: 8364.29,
-        somaNegativa: 152.37
-      },
-      {
-        nome: 'Diana',
-        qtdClientes: 12,
-        somaPositiva: 273.13,
-        somaNegativa: 9128.98
-      },
-    ].sort((a, b) => b.somaPositiva - a.somaPositiva));
-  } */
+
 }

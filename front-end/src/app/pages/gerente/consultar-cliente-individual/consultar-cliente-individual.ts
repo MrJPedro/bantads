@@ -107,36 +107,5 @@ export class ConsultarClienteIndividual implements OnInit {
 }
 
 */
-
- /*   mockDados() {
-        this.clientes.set([
-            {
-                cpf: '123.456.789-00',
-                nome: 'Ricardo Silva',
-                email: 'ricardo@email.com',
-                telefone: '98765-4321',
-                salario: 3500.00,
-                endereco: 'Rua A',
-                cidade: 'Curitiba',
-                estado: 'PR',
-                conta: '1234',
-                saldo: 300.00,
-                limite: 10500.00
-            },
-            {
-                cpf: '987.654.321-11',
-                nome: 'Ana Souza',
-                email: 'ana@email.com',
-                telefone: '98765-4321',
-                salario: 1500.00,
-                endereco: 'Rua B',
-                cidade: 'Pinhais',
-                estado: 'PR',
-                conta: '4321',
-                saldo: 4500.00,
-                limite: 9500.00
-            }
-        ]);
-    } */
         
 }
