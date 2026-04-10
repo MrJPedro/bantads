@@ -1,50 +1,49 @@
 <p-toast />
 
 <div class="rounded-xl bg-white p-6 shadow-sm">
-    <h2 class="text-2xl font-bold mb-6">Clientes</h2>
+  <h2 class="text-2xl font-bold mb-6">Clientes</h2>
 
-    <p-table
-        [value]="clientes()"
-        [rows]="10"
-        [paginator]="true"
-        sortField="nome"
-        [sortOrder]="1"
-        responsiveLayout="scroll"
-        styleClass="p-datatable-gridlines">
+  <p-table
+    [value]="clientes()"
+    [rows]="10"
+    [paginator]="true"
+    sortField="nome"
+    [sortOrder]="1"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-gridlines"
+  >
+    <ng-template #header>
+      <tr>
+        <th>CPF</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Salário</th>
+        <th>Número da Conta</th>
+        <th>Saldo</th>
+        <th>Limite de Crédito</th>
+        <th>CPF do Gerente</th>
+        <th>Nome do Gerente</th>
+      </tr>
+    </ng-template>
 
-        <ng-template #header>
-            <tr>
-                <th>CPF</th>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Salário</th>
-                <th>Número da Conta</th>
-                <th>Saldo</th>
-                <th>Limite de Crédito</th>
-                <th>CPF do Gerente</th>
-                <th>Nome do Gerente</th>
-            </tr>
-        </ng-template>
+    <ng-template #body let-cliente>
+      <tr>
+        <td>{{ cliente.cpf | cpf }}</td>
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.email }}</td>
+        <td>{{ cliente.salario | currency: 'BRL' }}</td>
+        <td>{{ cliente.conta || '-' }}</td>
+        <td>{{ +cliente.saldo || 0 | currency: 'BRL' }}</td>
+        <td>{{ cliente.limite || 0 | currency: 'BRL' }}</td>
+        <td>{{ cliente.gerenteCpf || '-' | cpf }}</td>
+        <td>{{ cliente.gerenteNome || '-' }}</td>
+      </tr>
+    </ng-template>
 
-        <ng-template #body let-cliente>
-            <tr>
-                <td>{{ cliente.cpf | cpf }}</td>
-                <td>{{ cliente.nome }}</td>
-                <td>{{ cliente.email }}</td>
-                <td>{{ cliente.salario | currency: 'BRL' }}</td>
-                <td>{{ cliente.conta || '-' }}</td>
-                <td>{{ (+cliente.saldo || 0) | currency: 'BRL' }}</td>
-                <td>{{ (cliente.limite || 0) | currency: 'BRL' }}</td>
-                <td>{{ (cliente.gerenteCpf || '-' ) | cpf }}</td>
-                <td>{{ cliente.gerenteNome || '-' }}</td>
-            </tr>
-        </ng-template>
-
-        <ng-template #emptymessage>
-            <tr>
-                <td colspan="9" class="text-center p-4">Nenhum cliente encontrado.</td>
-            </tr>
-        </ng-template>
-    </p-table>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="9" class="text-center p-4">Nenhum cliente encontrado.</td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>
-
