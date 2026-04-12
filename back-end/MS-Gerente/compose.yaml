@@ -1,0 +1,21 @@
+# ===== Microsserviço do gerente
+  ms-gerente:
+    image: ms-gerente-spring
+    container_name: ms-gerente
+    build: ./MS-Gerente/ms-gerente.Dockerfile
+    networks: backend
+    depends_on:
+      rabbitmq:
+      ms-gerente-db:
+
+# ===== BD (Postgres)
+  ms-gerente-db:
+    image: postgres
+    container_name: ms-gerente-db
+    environment:
+    #  - usuário
+    #  - senha
+    # E outras variáveis relevantes
+    volumes:
+    #  - dados:/dados
+    networks: backend

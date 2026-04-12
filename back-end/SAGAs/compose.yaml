@@ -1,0 +1,12 @@
+# ===== Microsserviço do cliente e BD (Postgres)
+  ms-sagas:
+    image: ms-sagas-spring
+    container_name: ms-sagas
+    build: ./SAGAs/sagas.Dockerfile
+    networks: backend
+    depends_on:
+      ms-auth:
+      ms-cliente:
+      ms-conta:
+      ms-gerente:
+

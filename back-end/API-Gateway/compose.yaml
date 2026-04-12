@@ -1,0 +1,13 @@
+# ===== API Gateway
+  api-gateway:
+    image: api-gateway-node
+    container_name: api-gateway
+    build: ./API-Gateway/api-gateway.Dockerfile
+    ports:
+      - 80:80
+    environment:
+    #  - VAR=valor  -> Aqui devem vir as variáveis de ambiente, se houver alguma
+    # Caso não haja nenhuma, favor remover a diretiva "environment", bem como esses comentários
+    networks: backend
+    depends_on:
+      rabbitmq:

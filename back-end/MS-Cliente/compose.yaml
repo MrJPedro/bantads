@@ -1,0 +1,21 @@
+# ===== Microsserviço do cliente
+  ms-cliente:
+    image: ms-cliente-spring
+    container_name: ms-cliente
+    build: ./MS-Cliente/ms-cliente.Dockerfile
+    networks: backend
+    depends_on:
+      rabbitmq:
+      ms-cliente-db:
+
+# ===== BD (Postgres)
+  ms-cliente-db:
+    image: postgres
+    container_name: ms-cliente-db
+    environment:
+    #  - usuário
+    #  - senha
+    # E outras variáveis relevantes
+    volumes:
+    #  - dados:/dados
+    networks: backend

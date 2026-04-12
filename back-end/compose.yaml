@@ -1,1 +1,20 @@
 # Template para Docker Compose
+services:
+
+  include:
+    - ./API-Gateway/compose.yaml
+    - ./MS-Auth/compose.yaml
+    - ./MS-Cliente/compose.yaml
+    - ./MS-Conta/compose.yaml
+    - ./MS-Gerente/compose.yaml
+    - ./RabbitMQ/compose.yaml
+    - ./SAGAs/compose.yaml
+
+# ===== Volumes e Redes
+  volumes:
+  #  - nome-do-volume:/caminho/dentro/do/contêiner
+  #  - ./caminho/na/sua/máquina:/caminho/dentro/do/contêiner
+  # Todos os "named volumes" devem estar declarados aqui
+
+  networks:
+    backend:
