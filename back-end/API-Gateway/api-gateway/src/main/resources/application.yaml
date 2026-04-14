@@ -1,0 +1,29 @@
+server:
+  port: 3001
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: auth_route
+            uri: http://localhost:8081 
+            predicates:
+              - Path=/login
+          
+          - id: gerentes_route
+            uri: http://localhost:8082 
+            predicates:
+              - Path=/gerentes/**
+          
+          - id: clientes_route
+            uri: http://localhost:8083 
+            predicates:
+              - Path=/clientes/**
+          
+          - id: contas_route
+            uri: http://localhost:8084
+            predicates:
+              - Path=/contas/**
