@@ -1,24 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuardGuard } from './auth-guard-guard';
-import { AdministradorLayout } from './pages/administrador/administrador-layout/administrador-layout';
-import { CrudGerentes } from './pages/administrador/crud-gerentes/crud-gerentes';
-import { RelatorioClientes } from './pages/administrador/relatorio-clientes/relatorio-clientes';
-import { TelaInicialAdministrador } from './pages/administrador/tela-inicial-administrador/tela-inicial-administrador';
-import { Autocadastro } from './pages/cliente/autocadastro/autocadastro';
-import { ClienteLayout } from './pages/cliente/cliente-layout/cliente-layout';
-import { DepositarCliente } from './pages/cliente/depositar-cliente/depositar-cliente';
-import { ExtratoCliente } from './pages/cliente/extrato-cliente/extrato-cliente';
-import { Perfil } from './pages/cliente/perfil/perfil';
-import { SacarCliente } from './pages/cliente/sacar-cliente/sacar-cliente';
-import { TelaInicialCliente } from './pages/cliente/tela-inicial-cliente/tela-inicial-cliente';
-import { TransferirCliente } from './pages/cliente/transferir-cliente/transferir-cliente';
-import { ConsultarClienteIndividual } from './pages/gerente/consultar-cliente-individual/consultar-cliente-individual';
-import { ConsultarClientesMelhores } from './pages/gerente/consultar-clientes-melhores/consultar-clientes-melhores';
-import { ConsultarClientes } from './pages/gerente/consultar-clientes/consultar-clientes';
-import { GerenteLayout } from './pages/gerente/gerente-layout/gerente-layout';
-import { TelaInicialGerente } from './pages/gerente/tela-inicial-gerente/tela-inicial-gerente';
-import { LandingPage } from './pages/sem-perfil/landing-page/landing-page';
-import { Login } from './pages/sem-perfil/login/login';
 
 export const routes: Routes = [
   //Sem sem-perfil
@@ -30,17 +11,24 @@ export const routes: Routes = [
 
   {
     path: 'landing-page',
-    component: LandingPage
+    loadComponent: () =>
+      import('./pages/sem-perfil/landing-page/landing-page').then(
+        (m) => m.LandingPage
+      )
   },
 
   {
     path: 'login',
-    component: Login
+    loadComponent: () =>
+      import('./pages/sem-perfil/login/login').then((m) => m.Login)
   },
 
   {
     path: 'autocadastro',
-    component: Autocadastro
+    loadComponent: () =>
+      import('./pages/cliente/autocadastro/autocadastro').then(
+        (m) => m.Autocadastro
+      )
   },
 
   //Cliente
@@ -48,101 +36,25 @@ export const routes: Routes = [
     path: 'cliente',
     canActivate: [authGuardGuard],
     data: {tipoRequerido: 'CLIENTE'},
-    component: ClienteLayout,
-    children: [
-
-      {
-        path: '',
-        redirectTo: 'cliente/tela-inicial',
-        pathMatch: 'full'
-      },
-      
-      {
-        path: 'tela-inicial',
-        component: TelaInicialCliente
-      },
-
-      {
-        path: 'perfil',
-        component: Perfil
-      },
-
-      {
-        path: 'extrato',
-        component: ExtratoCliente 
-      },
-
-      {
-        path: 'transferir',
-        component: TransferirCliente
-      },
-
-      {
-        path: 'depositar',
-        component: DepositarCliente
-      },
-
-      {
-        path: 'sacar',
-        component: SacarCliente
-      }
-    ]
+    loadChildren: () =>
+      import('./pages/cliente/cliente.routes').then((m) => m.clienteRoutes)
   },
   //Gerente
   {
     path: 'gerente',
     canActivate: [authGuardGuard],
     data: {tipoRequerido: 'GERENTE'},
-    component: GerenteLayout,
-    children: [
-      {
-        path: '',
-        redirectTo: 'gerente/tela-inicial',
-        pathMatch: 'full'
-      },
-      {
-        path: 'tela-inicial',
-        component: TelaInicialGerente
-      },
-      {
-        path: 'consultar-clientes',
-        component: ConsultarClientes
-      },
-      {
-        path: 'consultar-cliente-individual',
-        component: ConsultarClienteIndividual
-      },
-      {
-        path: 'consultar-clientes-melhores',
-        component: ConsultarClientesMelhores
-      }
-    ]
+    loadChildren: () =>
+      import('./pages/gerente/gerente.routes').then((m) => m.gerenteRoutes)
   },
   //Administrador
   {
     path: 'administrador',
     canActivate: [authGuardGuard],
     data: {tipoRequerido: 'ADMINISTRADOR'},
-    component: AdministradorLayout,
-    children: [
-      {
-        path: '',
-        redirectTo: 'administrador/tela-inicial',
-        pathMatch: 'full'
-      },
-      {
-        path: 'tela-inicial',
-        component: TelaInicialAdministrador
-      },
-
-      { path: 'relatorio-clientes',
-        component: RelatorioClientes
-      },
-
-      {
-        path: 'gerenciar-gerentes',
-        component: CrudGerentes
-      }
-    ]
+    loadChildren: () =>
+      import('./pages/administrador/administrador.routes').then(
+        (m) => m.administradorRoutes
+      )
   }
 ];
