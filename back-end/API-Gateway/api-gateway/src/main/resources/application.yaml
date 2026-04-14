@@ -1,5 +1,5 @@
 server:
-  port: 3001
+  port: 8080
 
 spring:
   application:
@@ -9,21 +9,21 @@ spring:
       mvc:
         routes:
           - id: auth_route
-            uri: http://localhost:8081 
+            uri: ${AUTH_URI:http://localhost:8081} // varíaveis de ambiente passadas pelo docker + fallback
             predicates:
               - Path=/login
-          
+              
           - id: gerentes_route
-            uri: http://localhost:8082 
+            uri: ${GERENTES_URI:http://localhost:8082}
             predicates:
               - Path=/gerentes/**
-          
+              
           - id: clientes_route
-            uri: http://localhost:8083 
+            uri: ${CLIENTES_URI:http://localhost:8083}
             predicates:
               - Path=/clientes/**
-          
+              
           - id: contas_route
-            uri: http://localhost:8084
+            uri: ${CONTAS_URI:http://localhost:8084}
             predicates:
               - Path=/contas/**
