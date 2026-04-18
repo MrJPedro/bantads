@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed} from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -11,67 +11,59 @@ import { TodosClientesResponse } from '../../../DTO/cliente';
 import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
-    selector: 'app-consultar-clientes-melhores',
-    standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        TableModule,
-        ButtonModule,
-        DialogModule,
-        TextareaModule,
-        CpfPipe
-    ],
+  selector: 'app-consultar-clientes-melhores',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    DialogModule,
+    TextareaModule,
+    CpfPipe,
+  ],
 
-    providers: [MessageService],
-    templateUrl: './consultar-clientes-melhores.html'
+  providers: [MessageService],
+  templateUrl: './consultar-clientes-melhores.html',
 })
-
-
-
 export class ConsultarClientesMelhores implements OnInit {
+  constructor(
+    private gerenteService: Gerente,
+    private messageService: MessageService,
+  ) {}
 
-    constructor(
-        private gerenteService: Gerente,
-        private messageService: MessageService
-    ) {}
+  clientes = signal<any[]>([]);
+  clientesExibidos = computed(() =>
+    [...this.clientes()].sort((a, b) => b.saldo - a.saldo).slice(0, 3),
+  );
 
-    clientes = signal<any[]>([]);
-    clientesExibidos = computed(() =>
-    [...this.clientes()]
-        .sort((a, b) => b.saldo - a.saldo)
-        .slice(0, 3)
-);
+  ngOnInit() {
+    // this.mockDados();
+    this.carregarClientes();
+  }
 
-    ngOnInit() {
-        // this.mockDados();
-        this.carregarClientes();
-    }
+  carregarClientes() {
+    this.gerenteService.melhoresClientes().subscribe({
+      next: (clientes: TodosClientesResponse) => {
+        // se encontrou
+        this.clientes.set(clientes);
+      },
 
-    carregarClientes(){
-        
-        this.gerenteService.melhoresClientes().subscribe({
-            next: (clientes: TodosClientesResponse) => {
+      error: (err) => {
+        console.error(err);
 
-                // se encontrou
-                this.clientes.set(clientes);
-            },
+        this.clientes.set([]);
 
-            error: (err) => {
-                console.error(err);
-
-                this.clientes.set([]);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erro',
-                    detail: 'Clientes não encontrados ou erro no servidor.'
-                });
-            }
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Clientes não encontrados ou erro no servidor.',
         });
-    }
+      },
+    });
+  }
 
-/*    mockDados() { 
+  /*    mockDados() { 
         this.clientes.set([
             {
                 cpf: '123.456.789-00',

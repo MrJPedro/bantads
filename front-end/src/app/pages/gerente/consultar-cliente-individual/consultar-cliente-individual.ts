@@ -7,15 +7,15 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
+import { BarraPesquisa } from '../../../shared/components/barra-pesquisa/barra-pesquisa';
 import { ClienteResponse } from '../../../DTO/cliente';
 import { Gerente } from '../../../services/gerente-service';
 import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
-    selector: 'app-consultar-cliente-individual',
-    standalone: true,
-    imports: [
+  selector: 'app-consultar-cliente-individual',
+  standalone: true,
+  imports: [
     CommonModule,
     FormsModule,
     TableModule,
@@ -24,73 +24,71 @@ import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
     TextareaModule,
     ToastModule,
     BarraPesquisa,
-    CpfPipe
-],
-    providers: [MessageService],
-    templateUrl: './consultar-cliente-individual.html'
+    CpfPipe,
+  ],
+  providers: [MessageService],
+  templateUrl: './consultar-cliente-individual.html',
 })
 export class ConsultarClienteIndividual implements OnInit {
+  // clientes = signal<any[]>([]);
 
-    // clientes = signal<any[]>([]);
-
-    ngOnInit() {
+  ngOnInit() {
     //    this.mockDados();
-    }
+  }
 
-    sortField = 'nome';
-    sortOrder = 1;
+  sortField = 'nome';
+  sortOrder = 1;
 
-    termoBusca = signal('');
-    jaPesquisou = signal(false);
-    resultadoBusca = signal<any[]>([]);
+  termoBusca = signal('');
+  jaPesquisou = signal(false);
+  resultadoBusca = signal<any[]>([]);
 
-    private somenteNumeros(valor: string): string {
+  private somenteNumeros(valor: string): string {
     return (valor || '').replace(/\D/g, '');
+  }
+
+  constructor(
+    private messageService: MessageService,
+    private gerenteService: Gerente,
+  ) {}
+
+  aoPesquisar(valor: string) {
+    this.jaPesquisou.set(true);
+    this.termoBusca.set(valor);
+    const cpfLimpo = this.somenteNumeros(valor);
+
+    if (cpfLimpo.length !== 11) {
+      this.resultadoBusca.set([]);
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'CPF incompleto',
+        detail: 'Digite os 11 dígitos do CPF para pesquisar.',
+      });
+
+      return;
     }
 
-    constructor(
-        private messageService: MessageService,
-        private gerenteService: Gerente
-    ) {}
+    this.gerenteService.consultarCliente(cpfLimpo).subscribe({
+      next: (cliente: ClienteResponse) => {
+        // se encontrou
+        this.resultadoBusca.set([cliente]);
+      },
 
-    aoPesquisar(valor: string) {
-        this.jaPesquisou.set(true);
-        this.termoBusca.set(valor);
-        const cpfLimpo = this.somenteNumeros(valor);
+      error: (err) => {
+        console.error(err);
 
-        if (cpfLimpo.length !== 11) {
-            this.resultadoBusca.set([]);
+        this.resultadoBusca.set([]);
 
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'CPF incompleto',
-                detail: 'Digite os 11 dígitos do CPF para pesquisar.'
-            });
-
-            return;
-        }
-
-        this.gerenteService.consultarCliente(cpfLimpo).subscribe({
-            next: (cliente: ClienteResponse) => {
-
-                // se encontrou
-                this.resultadoBusca.set([cliente]);
-            },
-
-            error: (err) => {
-                console.error(err);
-
-                this.resultadoBusca.set([]);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erro',
-                    detail: 'Cliente não encontrado ou erro no servidor.'
-                });
-            }
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Cliente não encontrado ou erro no servidor.',
         });
-    }
-/*
+      },
+    });
+  }
+  /*
     const clienteEncontrado = this.clientes().find(
         (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
     );
@@ -107,7 +105,7 @@ export class ConsultarClienteIndividual implements OnInit {
 }
 
 */
-/*
+  /*
     const clienteEncontrado = this.clientes().find(
         (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
     );
@@ -124,7 +122,7 @@ export class ConsultarClienteIndividual implements OnInit {
 }
 
 */
-/*
+  /*
     const clienteEncontrado = this.clientes().find(
         (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
     );
@@ -141,7 +139,7 @@ export class ConsultarClienteIndividual implements OnInit {
 }
 
 */
-/*
+  /*
     const clienteEncontrado = this.clientes().find(
         (cliente) => this.somenteNumeros(cliente.cpf) === cpfLimpo
     );
@@ -158,5 +156,4 @@ export class ConsultarClienteIndividual implements OnInit {
 }
 
 */
-        
 }

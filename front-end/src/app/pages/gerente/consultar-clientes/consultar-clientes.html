@@ -38,8 +38,8 @@
         <td>{{ cliente.nome }}</td>
         <td>{{ cliente.cidade }}</td>
         <td>{{ cliente.estado }}</td>
-        <td>{{ cliente.saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}</td>
-        <td>{{ cliente.limite | currency:'BRL':'symbol':'1.2-2':'pt' }}</td>
+        <td>{{ cliente.saldo | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt' }}</td>
+        <td>{{ cliente.limite | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt' }}</td>
         <td>
           <button
             pButton
@@ -109,14 +109,14 @@
       <div class="col-12 md:col-4 mb-3">
         <span class="block text-sm text-500">Saldo</span>
         <span class="block text-green-600 font-semibold">
-          {{ cliente.saldo | currency:'BRL':'symbol':'1.2-2':'pt' }}
+          {{ cliente.saldo | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt' }}
         </span>
       </div>
 
       <div class="col-12 md:col-4 mb-3">
         <span class="block text-sm text-500">Limite</span>
         <span class="block text-blue-600 font-semibold">
-          {{ cliente.limite | currency:'BRL':'symbol':'1.2-2':'pt' }}
+          {{ cliente.limite | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt' }}
         </span>
       </div>
     </div>

@@ -9,13 +9,13 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { ClienteResponse, TodosClientesResponse } from '../../../DTO/cliente';
 import { Gerente } from '../../../services/gerente-service';
-import { BarraPesquisa } from "../../../shared/components/barra-pesquisa/barra-pesquisa";
+import { BarraPesquisa } from '../../../shared/components/barra-pesquisa/barra-pesquisa';
 import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
 @Component({
-    selector: 'app-consultar-clientes',
-    standalone: true,
-    imports: [
+  selector: 'app-consultar-clientes',
+  standalone: true,
+  imports: [
     CommonModule,
     FormsModule,
     TableModule,
@@ -24,81 +24,77 @@ import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
     TextareaModule,
     ToastModule,
     BarraPesquisa,
-    CpfPipe
-],
-    providers: [MessageService],
-    templateUrl: './consultar-clientes.html'
+    CpfPipe,
+  ],
+  providers: [MessageService],
+  templateUrl: './consultar-clientes.html',
 })
 export class ConsultarClientes implements OnInit {
-    
-    ngOnInit() {
-        this.carregarClientes();
-    }
+  ngOnInit() {
+    this.carregarClientes();
+  }
 
-    constructor(
-        private gerenteService: Gerente,
-        private messageService: MessageService
-    ) {}
-    
-    clientes = signal<ClienteResponse[]>([]);
-    termoBusca = signal('');
-    clienteSelecionado = signal<ClienteResponse | null>(null);
-    modalDetalhesVisivel = signal(false);
+  constructor(
+    private gerenteService: Gerente,
+    private messageService: MessageService,
+  ) {}
 
-    sortField = 'nome';
-    sortOrder = 1;
+  clientes = signal<ClienteResponse[]>([]);
+  termoBusca = signal('');
+  clienteSelecionado = signal<ClienteResponse | null>(null);
+  modalDetalhesVisivel = signal(false);
 
-    carregarClientes(){
+  sortField = 'nome';
+  sortOrder = 1;
 
-        this.gerenteService.consultarTodosClientesGer().subscribe({
-            next: (clientes: TodosClientesResponse) => {
+  carregarClientes() {
+    this.gerenteService.consultarTodosClientesGer().subscribe({
+      next: (clientes: TodosClientesResponse) => {
+        // se encontrou
+        this.clientes.set(clientes);
+      },
 
-                // se encontrou
-                this.clientes.set(clientes);
-            },
+      error: (err) => {
+        console.error(err);
 
-            error: (err) => {
-                console.error(err);
+        this.clientes.set([]);
 
-                this.clientes.set([]);
-
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erro',
-                    detail: 'Clientes não encontrados ou erro no servidor.'
-                });
-            }
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Clientes não encontrados ou erro no servidor.',
         });
+      },
+    });
+  }
+
+  clientesFiltrados = computed(() => {
+    const termo = this.termoBusca().trim().toLowerCase();
+
+    if (!termo) {
+      return this.clientes();
     }
 
-    clientesFiltrados = computed(() => {
+    return this.clientes().filter(
+      (cliente) =>
+        cliente.nome.toLowerCase().includes(termo) || cliente.cpf.toLowerCase().includes(termo),
+    );
+  });
 
-        const termo = this.termoBusca().trim().toLowerCase();
-
-        if (!termo) {
-            return this.clientes();
-        }
-
-        return this.clientes().filter((cliente) =>
-            cliente.nome.toLowerCase().includes(termo) ||
-            cliente.cpf.toLowerCase().includes(termo)
-        );
-    }); 
-
-    aoPesquisar(valor: string) {
+  aoPesquisar(valor: string) {
     this.termoBusca.set(valor);
-}
+  }
 
-    abrirModalDetalhes(cliente: ClienteResponse) {
-        this.clienteSelecionado.set(cliente);
-        this.modalDetalhesVisivel.set(true);
-    }
+  abrirModalDetalhes(cliente: ClienteResponse) {
+    this.clienteSelecionado.set(cliente);
+    this.modalDetalhesVisivel.set(true);
+  }
 
-    fecharModalDetalhes() {
-        this.modalDetalhesVisivel.set(false);
-        this.clienteSelecionado.set(null);
-    }
-/*  mockDados() {
+  fecharModalDetalhes() {
+    this.modalDetalhesVisivel.set(false);
+    this.clienteSelecionado.set(null);
+  }
+  /*  mockDados() {
         this.clientes.set([
             {
                 cpf: '123.456.789-00',
