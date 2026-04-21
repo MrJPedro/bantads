@@ -1,1 +1,11 @@
-# Template de Dockerfile para o microsserviço API-Gateway
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+CMD ["npm", "start"]

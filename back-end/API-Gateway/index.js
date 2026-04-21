@@ -1,4 +1,3 @@
-require('dotenv').config(); // olhar o .env
 const express = require('express');
 const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -34,5 +33,5 @@ app.use('/contas', createProxyMiddleware({
 }));
 
 app.listen(PORT, () => {
-    console.log(`API Gateway rondando na porta: http://localhost:${PORT}`);
+    console.log(`API Gateway rondando na porta: ${PORT}`);
 });

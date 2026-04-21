@@ -1,13 +1,23 @@
-# ===== API Gateway
+services:
   api-gateway:
     image: api-gateway-node
     container_name: api-gateway
-    build: ./API-Gateway/api-gateway.Dockerfile
+    build:
+      context: .
+      dockerfile: api-gateway.Dockerfile
     ports:
-      - 80:80
+      - "80:80"
     environment:
-    #  - VAR=valor  -> Aqui devem vir as variáveis de ambiente, se houver alguma
-    # Caso não haja nenhuma, favor remover a diretiva "environment", bem como esses comentários
-    networks: backend
+      - PORT=80
+      - FRONT=http://localhost:4200
+      - AUTH_URI=http://ms-auth:8081
+      - GERENTES_URI=http://ms-gerente:8082
+      - CLIENTES_URI=http://ms-cliente:8083
+      - CONTAS_URI=http://ms-conta:8084
+    networks:
+      - backend
     depends_on:
-      rabbitmq:
+      - rabbitmq 
+      
+networks:
+  backend:

@@ -1,1 +1,4 @@
-# Template de Dockerignore para o microsserviço API-Gateway
+node_modules/
+npm-debug.log
+.env
+.gitignore
