@@ -1,4 +1,4 @@
-package com.bantads.cliente_service
+package com.bantads.service
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

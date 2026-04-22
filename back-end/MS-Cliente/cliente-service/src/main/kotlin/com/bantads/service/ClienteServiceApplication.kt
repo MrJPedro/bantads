@@ -1,4 +1,4 @@
-package com.bantads.cliente_service
+package com.bantads.service
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
