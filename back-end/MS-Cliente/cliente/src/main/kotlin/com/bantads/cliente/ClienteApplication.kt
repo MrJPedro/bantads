@@ -1,11 +1,11 @@
-package com.bantads.service
+package com.bantads.cliente
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class ClienteServiceApplication
+class ClienteApplication
 
 fun main(args: Array<String>) {
-	runApplication<ClienteServiceApplication>(*args)
+	runApplication<ClienteApplication>(*args)
 }

@@ -1,10 +1,10 @@
-package com.bantads.service
+package com.bantads.cliente
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class ClienteServiceApplicationTests {
+class ClienteApplicationTests {
 
 	@Test
 	fun contextLoads() {
