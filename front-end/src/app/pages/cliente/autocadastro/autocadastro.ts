@@ -1,100 +1,136 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ButtonModule } from 'primeng/button';
-import { CheckboxModule } from 'primeng/checkbox';
-import { Dialog } from "primeng/dialog";
+import { Dialog } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
-import { AutocadastroInfo } from '../../../DTO/cliente/autocadastro-info.dto';
 import { CepService } from '../../../services/cep-service';
 
 @Component({
   selector: 'app-autocadastro',
-  imports: [CommonModule, FormsModule, ButtonModule, CheckboxModule, InputTextModule, InputNumberModule, Dialog, NgxMaskDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    InputTextModule,
+    InputNumberModule,
+    Dialog,
+    NgxMaskDirective,
+  ],
   templateUrl: './autocadastro.html',
   providers: [provideNgxMask()],
   styleUrl: './autocadastro.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Autocadastro implements OnInit, OnDestroy {
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly cepService = inject(CepService);
+  private readonly router = inject(Router);
 
-  private cepService = inject(CepService);
-  private cepSubject = new Subject<string>();
-  private destroy$ = new Subject<void>();
+  private readonly cepSubject = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
 
-  private router = inject(Router);
+  visible = false;
+  showConfirmation = false;
 
-  public dados: AutocadastroInfo = {
-    cpf: '',
-    email: '',
-    nome: '',
-    telefone: '',
-    salario: 0,
-    logradouro: '',
-    numero: '',
-    complemento: '',
-    CEP: '',
-    cidade: '',
-    estado: ''
-  };
-
-showDialog() {
-this.visible = true;
-}
-showConfirmationModal() {
-this.showConfirmation = true;
-}
-@Input() mask = '';
-email = '';
-visible: any;
-showConfirmation = false;
-
-ngOnInit() {
-  this.cepSubject.pipe(
-    debounceTime(800),
-    takeUntil(this.destroy$)
-  ).subscribe(() => {
-    this.buscarCEP();
+  readonly formularioCadastro = this.formBuilder.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    nome: ['', [Validators.required, Validators.minLength(3)]],
+    cpf: ['', [Validators.required, Validators.minLength(11)]],
+    telefone: ['', [Validators.required, Validators.minLength(10)]],
+    salario: [0, [Validators.required, Validators.min(0.01)]],
   });
-}
 
-ngOnDestroy() {
-  this.destroy$.next();
-  this.destroy$.complete();
-}
+  readonly formularioEndereco = this.formBuilder.nonNullable.group({
+    cep: ['', [Validators.required, Validators.minLength(8)]],
+    estado: ['', [Validators.required]],
+    cidade: ['', [Validators.required]],
+    logradouro: ['', [Validators.required]],
+    numero: ['', [Validators.required]],
+    complemento: [''],
+  });
 
-onCepInput() {
-  this.cepSubject.next(this.dados.CEP);
-}
+  get emailControl() { return this.formularioCadastro.controls.email; }
+  get nomeControl() { return this.formularioCadastro.controls.nome; }
+  get cpfControl() { return this.formularioCadastro.controls.cpf; }
+  get telefoneControl() { return this.formularioCadastro.controls.telefone; }
+  get salarioControl() { return this.formularioCadastro.controls.salario; }
 
-  buscarCEP() {
-    const cepLimpo = this.dados.CEP.replace(/\D/g, '');
+  get cepControl() { return this.formularioEndereco.controls.cep; }
+  get estadoControl() { return this.formularioEndereco.controls.estado; }
+  get cidadeControl() { return this.formularioEndereco.controls.cidade; }
+  get logradouroControl() { return this.formularioEndereco.controls.logradouro; }
+  get numeroControl() { return this.formularioEndereco.controls.numero; }
 
+  ngOnInit(): void {
+    this.cepSubject.pipe(
+      debounceTime(800),
+      takeUntil(this.destroy$),
+    ).subscribe(() => this.buscarCEP());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  showDialogEndereco(): void {
+    this.visible = true;
+  }
+
+  onCepInput(valor: string): void {
+    this.cepSubject.next(valor);
+  }
+
+  buscarCEP(): void {
+    const cepLimpo = this.cepControl.value.replace(/\D/g, '');
     if (cepLimpo.length === 8) {
       this.cepService.buscar(cepLimpo).subscribe({
         next: (res) => {
           if (!res.erro) {
-            this.dados.logradouro = res.logradouro;
-            this.dados.cidade = res.localidade;
-            this.dados.estado = res.uf;
+            this.formularioEndereco.patchValue({
+              logradouro: res.logradouro,
+              cidade: res.localidade,
+              estado: res.uf,
+            });
           } else {
             alert('CEP não encontrado!');
           }
         },
-        error: () => alert('Erro ao buscar o CEP.')
+        error: () => alert('Erro ao buscar o CEP.'),
       });
     }
   }
 
-  cadastrar() {
-    this.showConfirmationModal();
+  salvarEndereco(): void {
+    if (this.formularioEndereco.invalid) {
+      this.formularioEndereco.markAllAsTouched();
+      return;
+    }
+    this.visible = false;
   }
 
-  voltar() {
+  cadastrar(): void {
+    if (this.formularioCadastro.invalid) {
+      this.formularioCadastro.markAllAsTouched();
+      return;
+    }
+
+    if (this.formularioEndereco.invalid) {
+      this.formularioEndereco.markAllAsTouched();
+      alert('Por favor, preencha o endereço antes de continuar.');
+      return;
+    }
+
+    this.showConfirmation = true;
+  }
+
+  voltar(): void {
     this.router.navigate(['/']);
   }
 }
