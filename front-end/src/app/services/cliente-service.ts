@@ -58,7 +58,7 @@ export class Cliente {
   transferir(cpf: string, valor: number, destino: string): Observable<TransferenciaResponse> {
     return this.httpClient.post<TransferenciaResponse>(
       API_URL + "/contas/" + cpf + "/transferir", { destino, valor }, this.httpOptions
-    )
+    ) 
   }
 
   //   R08: Consulta de extrato

@@ -1,5 +1,6 @@
 package com.bantads.conta_service.controller
 
+import com.bantads.conta_service.dtos.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -7,48 +8,48 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/contas")
 class ContaController {
 
-    @GetMapping("/{numero}/saldo")
+    @GetMapping("/{cpf}/saldo")
     fun getSaldo(
-        @PathVariable numero: String
-        ): ResponseEntity<SaldoResponseDTO> {
-        // TODO: Implementar consulta de saldo
+        @PathVariable cpf: String
+        ): ResponseEntity<Any> {
+        // Implementar a lógica d consulta do saldo
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{numero}/depositar")
+    @PostMapping("/{cpf}/depositar")
     fun depositar(
-        @PathVariable numero: String, 
+        @PathVariable cpf: String, 
         @RequestBody request: DepositoRequestDTO
-        ): ResponseEntity<SaldoResponseDTO> {
-        // TODO: Implementar lógica de depósito (R5)
+        ): ResponseEntity<Any> {
+        // Implementar a lógica do depósiot
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{numero}/sacar")
+    @PostMapping("/{cpf}/sacar") 
     fun sacar(
-        @PathVariable numero: String, 
+        @PathVariable cpf: String, 
         @RequestBody request: SaqueRequestDTO
-        ): ResponseEntity<SaldoResponseDTO> {
-        // TODO: Implementar lógica de saque (R6)
+        ): ResponseEntity<Any> {
+        // Implementar a lógica do saque
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{numero}/transferir")
+    @PostMapping("/{cpf}/transferir")
     fun transferir(
-    @PathVariable numero: String, 
+    @PathVariable cpf: String, 
     @RequestBody request: TransferenciaRequestDTO
-    ): ResponseEntity<SaldoResponseDTO> {
-        // TODO: Implementar lógica de transferência (R7)
+    ): ResponseEntity<Any> {
+        // Implementar a lógica da transferência
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/{numero}/extrato")
+    @GetMapping("/{cpf}/extrato")
     fun getExtrato(
-        @PathVariable numero: String,
+        @PathVariable cpf: String,
         @RequestParam(required = false) dataInicio: String?,
         @RequestParam(required = false) dataFim: String?
-    ): ResponseEntity<ExtratoResponseDTO> {
-        // TODO: Implementar consulta de extrato por período (R8)
+    ): ResponseEntity<Any> {
+        // Implementar a lógica de consulta de extrato
         return ResponseEntity.ok().build()
     }
 }
