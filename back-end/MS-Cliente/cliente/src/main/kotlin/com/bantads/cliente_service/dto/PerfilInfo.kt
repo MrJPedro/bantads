@@ -1,4 +1,4 @@
-package com.bantads.cliente.dto
+package com.bantads.cliente_service.dto
 
 data class PerfilInfo(
     val nome: String,

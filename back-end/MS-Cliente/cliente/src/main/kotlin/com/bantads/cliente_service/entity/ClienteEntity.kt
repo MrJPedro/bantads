@@ -1,4 +1,4 @@
-package com.bantads.cliente.entity
+package com.bantads.cliente_service.entity
 
 import jakarta.persistence.*
 import java.math.BigDecimal

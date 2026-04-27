@@ -1,8 +1,8 @@
 package com.bantads.conta_service.service
 
-import com.bantads.conta_service.dtos.DepositoRequestDTO
-import com.bantads.conta_service.dtos.SaqueRequestDTO
-import com.bantads.conta_service.dtos.TransferenciaRequestDTO
+import com.bantads.conta_service.dto.DepositoRequestDTO
+import com.bantads.conta_service.dto.SaqueRequestDTO
+import com.bantads.conta_service.dto.TransferenciaRequestDTO
 import com.bantads.conta_service.repository.ContaRepository
 import com.bantads.conta_service.repository.TransferenciaRepository
 import jakarta.transaction.Transactional

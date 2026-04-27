@@ -1,4 +1,4 @@
-package com.bantads.conta_service.dtos
+package com.bantads.conta_service.dto
 
 import java.math.BigDecimal
 

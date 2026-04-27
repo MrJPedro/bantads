@@ -1,7 +1,7 @@
-package com.bantads.cliente.controller
+package com.bantads.cliente_service.controller
 
-import com.bantads.cliente.dto.*
-import com.bantads.cliente.service.ClienteService
+import com.bantads.cliente_service.dto.*
+import com.bantads.cliente_service.service.ClienteService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

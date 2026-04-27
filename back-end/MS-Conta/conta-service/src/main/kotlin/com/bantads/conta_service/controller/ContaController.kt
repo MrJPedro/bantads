@@ -8,44 +8,44 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/contas")
 class ContaController {
 
-    @GetMapping("/{cpf}/saldo")
+    @GetMapping("/{numero}/saldo")
     fun getSaldo(
-        @PathVariable cpf: String
+        @PathVariable numero: String
         ): ResponseEntity<Any> {
         // Implementar a lógica d consulta do saldo
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{cpf}/depositar")
+    @PostMapping("/{numero}/depositar")
     fun depositar(
-        @PathVariable cpf: String, 
+        @PathVariable numero: String, 
         @RequestBody request: DepositoRequestDTO
         ): ResponseEntity<Any> {
         // Implementar a lógica do depósiot
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{cpf}/sacar") 
+    @PostMapping("/{numero}/sacar") 
     fun sacar(
-        @PathVariable cpf: String, 
+        @PathVariable numero: String, 
         @RequestBody request: SaqueRequestDTO
         ): ResponseEntity<Any> {
         // Implementar a lógica do saque
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{cpf}/transferir")
+    @PostMapping("/{numero}/transferir")
     fun transferir(
-    @PathVariable cpf: String, 
+    @PathVariable numero: String, 
     @RequestBody request: TransferenciaRequestDTO
     ): ResponseEntity<Any> {
         // Implementar a lógica da transferência
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/{cpf}/extrato")
+    @GetMapping("/{numero}/extrato")
     fun getExtrato(
-        @PathVariable cpf: String,
+        @PathVariable numero: String,
         @RequestParam(required = false) dataInicio: String?,
         @RequestParam(required = false) dataFim: String?
     ): ResponseEntity<Any> {
