@@ -38,18 +38,18 @@ public class AuthController {
     }
 
     @PostMapping("/cadastros")
-    public String postCadastro(@RequestBody String cadastro){
+    public Cadastro postCadastro(@RequestBody Cadastro cadastro){
         return cadastroService.postCadastro(cadastro);
     }
 
     @PutMapping("/cadastros/{cpfUsuario}")
-    public String putCadastro(@PathVariable("cpfUsuario") String cpfUsuario, @RequestBody String cadastro) {
+    public Cadastro putCadastro(@PathVariable("cpfUsuario") String cpfUsuario, @RequestBody Cadastro cadastro) {
         
         return cadastroService.putCadastro(cadastro);
     }
 
     @DeleteMapping("/cadastros/{cpfUsuario}")
-    public String deleteCadastro(@PathVariable("cpfUsuario") String cpfUsuario) {
+    public Cadastro deleteCadastro(@PathVariable("cpfUsuario") String cpfUsuario) {
         return cadastroService.deleteCadastro(cpfUsuario);
     }
 

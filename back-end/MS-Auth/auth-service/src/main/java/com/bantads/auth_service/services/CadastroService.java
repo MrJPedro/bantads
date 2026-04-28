@@ -3,7 +3,6 @@ package com.bantads.auth_service.services;
 import com.bantads.auth_service.DTOs.Cadastro;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,8 +14,7 @@ public class CadastroService {
     //@Autowired
     //public static List<Cadastro> lista;
 
-    @Autowired
-    public static HashMap<String, Cadastro> listaMap;
+    public static HashMap<String, Cadastro> listaMap = new HashMap<>();
 
     static {
         listaMap.put(
@@ -66,7 +64,7 @@ public class CadastroService {
     public Cadastro getCadastro(String cpfReq) {
         
         if(listaMap.containsKey(cpfReq))
-            return cadastros.get(cpfReq);
+            return listaMap.get(cpfReq);
         
         return null;
     }
@@ -78,7 +76,7 @@ public class CadastroService {
         if (listaMap.containsKey(cadastro.cpfUsuario()))
             return null;
         
-        listaMap.put(cadastro.cpfUsuario(), cadaatro);
+        listaMap.put(cadastro.cpfUsuario(), cadastro);
 
         return cadastro;
     }
