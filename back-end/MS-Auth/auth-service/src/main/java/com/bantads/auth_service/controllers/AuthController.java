@@ -26,7 +26,9 @@ public class AuthController {
     @GetMapping("/cadastros")
     public List<Cadastro> getAllCadastros(){
         
-        return cadastroService.getAllCadastros();
+        List<Cadastro> response = cadastroService.getAllCadastros();
+
+        return response;
     }
 
     // ===== Pronto para uso com dados mockados =====
@@ -37,18 +39,18 @@ public class AuthController {
 
     @PostMapping("/cadastros")
     public String postCadastro(@RequestBody String cadastro){
-        return "Not Implemented Yet";
+        return cadastroService.postCadastro(cadastro);
     }
 
     @PutMapping("/cadastros/{cpfUsuario}")
     public String putCadastro(@PathVariable("cpfUsuario") String cpfUsuario, @RequestBody String cadastro) {
         
-        return "Not Implemented Yet";
+        return cadastroService.putCadastro(cadastro);
     }
 
     @DeleteMapping("/cadastros/{cpfUsuario}")
     public String deleteCadastro(@PathVariable("cpfUsuario") String cpfUsuario) {
-        return "Not Implemented Yet";
+        return cadastroService.deleteCadastro(cpfUsuario);
     }
 
     @PostMapping("/login")
