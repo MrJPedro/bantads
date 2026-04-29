@@ -18,39 +18,39 @@ public class CadastroService {
 
     static {
         listaMap.put(
-            "12912861012",
+            "cli1@bantads.com.br",
             new Cadastro("12912861012", "CLIENTE", "cli1@bantads.com.br", "tads")
         );
         listaMap.put(
-            "09506382000",
+            "cli2@bantads.com.br",
             new Cadastro("09506382000", "CLIENTE", "cli2@bantads.com.br", "tads")
         );
         listaMap.put(
-            "85733854057",
+            "cli3@bantads.com.br",
             new Cadastro("85733854057", "CLIENTE", "cli3@bantads.com.br", "tads")
         );
         listaMap.put(
-            "58872160006",
+            "cli4@bantads.com.br",
             new Cadastro("58872160006", "CLIENTE", "cli4@bantads.com.br", "tads")
         );
         listaMap.put(
-            "76179646090",
+            "cli5@bantads.com.br",
             new Cadastro("76179646090", "CLIENTE", "cli5@bantads.com.br", "tads")
         );
         listaMap.put(
-            "98574307084",
+            "ger1@bantads.com.br",
             new Cadastro("98574307084", "GERENTE", "ger1@bantads.com.br", "tads")
         );
         listaMap.put(
-            "64065268052",
+            "ger2@bantads.com.br",
             new Cadastro("64065268052", "GERENTE", "ger2@bantads.com.br", "tads")
         );
         listaMap.put(
-            "23862179060",
+            "ger3@bantads.com.br",
             new Cadastro("23862179060", "GERENTE", "ger3@bantads.com.br", "tads")
         );
         listaMap.put(
-            "40501740066",
+            "adm1@bantads.com.br",
             new Cadastro("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "tads")
         );
 
@@ -61,10 +61,10 @@ public class CadastroService {
         return cadastros;
     }
 
-    public Cadastro getCadastro(String cpfReq) {
+    public Cadastro getCadastro(String loginReq) {
         
-        if(listaMap.containsKey(cpfReq))
-            return listaMap.get(cpfReq);
+        if(listaMap.containsKey(loginReq))
+            return listaMap.get(loginReq);
         
         return null;
     }
@@ -73,10 +73,10 @@ public class CadastroService {
         if (cadastro == null)
             return null;
         
-        if (listaMap.containsKey(cadastro.cpfUsuario()))
+        if (listaMap.containsKey(cadastro.loginUsuario()))
             return null;
         
-        listaMap.put(cadastro.cpfUsuario(), cadastro);
+        listaMap.put(cadastro.loginUsuario(), cadastro);
 
         return cadastro;
     }
@@ -85,12 +85,12 @@ public class CadastroService {
         if (cadastro == null)
             return null;
 
-        if (!listaMap.containsKey(cadastro.cpfUsuario()))
+        if (!listaMap.containsKey(cadastro.loginUsuario()))
             return null;
 
-        listaMap.replace(cadastro.cpfUsuario(), cadastro);
+        listaMap.replace(cadastro.loginUsuario(), cadastro);
 
-        return listaMap.get(cadastro.cpfUsuario());
+        return listaMap.get(cadastro.loginUsuario());
     }
 
     public Cadastro deleteCadastro(String cpfCadastro){
@@ -104,6 +104,47 @@ public class CadastroService {
         listaMap.remove(cpfCadastro);
 
         return cadastro;
+    }
+
+    public void reboot(){
+        listaMap.clear();
+
+        listaMap.put(
+            "cli1@bantads.com.br",
+            new Cadastro("12912861012", "CLIENTE", "cli1@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "cli2@bantads.com.br",
+            new Cadastro("09506382000", "CLIENTE", "cli2@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "cli3@bantads.com.br",
+            new Cadastro("85733854057", "CLIENTE", "cli3@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "cli4@bantads.com.br",
+            new Cadastro("58872160006", "CLIENTE", "cli4@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "cli5@bantads.com.br",
+            new Cadastro("76179646090", "CLIENTE", "cli5@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "ger1@bantads.com.br",
+            new Cadastro("98574307084", "GERENTE", "ger1@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "ger2@bantads.com.br",
+            new Cadastro("64065268052", "GERENTE", "ger2@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "ger3@bantads.com.br",
+            new Cadastro("23862179060", "GERENTE", "ger3@bantads.com.br", "tads")
+        );
+        listaMap.put(
+            "adm1@bantads.com.br",
+            new Cadastro("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "tads")
+        );
     }
     
 }

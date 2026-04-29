@@ -12,15 +12,19 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.List;
 import com.bantads.auth_service.DTOs.Cadastro;
 import com.bantads.auth_service.services.CadastroService;
+import com.bantads.auth_service.DTOs.Login;
+import com.bantads.auth_service.services.LoginService;
 
 @CrossOrigin
 @RestController
 public class AuthController {
     
+    private final LoginService loginService;
     @Autowired
     CadastroService cadastroService;
     
-    public AuthController(){}
+    public AuthController(LoginService loginService){
+        this.loginService = loginService;}
 
     // ===== Pronto para uso com dados mockados =====
     @GetMapping("/cadastros")
@@ -54,10 +58,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String autenticar(@RequestBody String login){
-        return "Not Implemented Yet";
+    public Login autenticar(@RequestBody Login login){
+        return loginService.autenticar(login);
     }
 
     @GetMapping("/reboot")
-    public void reboot(){}
+    public void reboot(){
+        cadastroService.reboot();
+    }
 }
