@@ -1,1 +1,18 @@
-# Template de Dockerignore para o microsserviço MS-Gerente
+# Git
+.git
+.gitignore
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+src/
+pom.xml
+build.gradle.kts
+settings.gradle.kts
+
+# Outros
+*.md
+*.log
+.env

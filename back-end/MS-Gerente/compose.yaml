@@ -1,21 +1,40 @@
-# ===== Microsserviço do gerente
+services:
   ms-gerente:
     image: ms-gerente-spring
     container_name: ms-gerente
-    build: ./MS-Gerente/ms-gerente.Dockerfile
-    networks: backend
+    build:
+      context: .
+      dockerfile: ms-gerente.Dockerfile
+    networks:
+      - backend
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ms-gerente-db:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      rabbitmq:
-      ms-gerente-db:
+      - ms-gerente-db
 
-# ===== BD (Postgres)
+  # BD (Postgres)
   ms-gerente-db:
-    image: postgres
+    image: postgres:15-alpine
     container_name: ms-gerente-db
     environment:
-    #  - usuário
-    #  - senha
-    # E outras variáveis relevantes
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT_LOCAL}:5432"
     volumes:
-    #  - dados:/dados
-    networks: backend
+      - ms_gerente_dados:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  ms_gerente_dados:
