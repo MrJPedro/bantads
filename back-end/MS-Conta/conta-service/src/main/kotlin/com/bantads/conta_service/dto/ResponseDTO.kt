@@ -29,3 +29,11 @@ data class ExtratoResponseDTO(
     val movimentacoes: List<MovimentacaoDTO>,
     val saldosDiarios: List<SaldoDiarioDTO> 
 )
+
+data class TransferenciaResponse(
+    val conta: String,
+    val data: String,
+    val destino: String,
+    val saldo: Double,
+    val valor: Double
+)

@@ -1,18 +1,20 @@
 package com.bantads.conta_service.controller
 
-import com.bantads.conta_service.dtos.*
+import com.bantads.conta_service.dto.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.math.BigDecimal
+import com.bantads.conta_service.service.TransferenciaService
 
 @RestController
 @RequestMapping("/contas")
-class ContaController {
+class ContaController(private val transferenciaService: TransferenciaService) {
 
     @GetMapping("/{numero}/saldo")
     fun getSaldo(
         @PathVariable numero: String
         ): ResponseEntity<Any> {
-        // Implementar a lógica d consulta do saldo
+        transferenciaService.obterSaldo(numero)
         return ResponseEntity.ok().build()
     }
 
@@ -21,7 +23,7 @@ class ContaController {
         @PathVariable numero: String, 
         @RequestBody request: DepositoRequestDTO
         ): ResponseEntity<Any> {
-        // Implementar a lógica do depósiot
+        transferenciaService.depositar(numero, request)
         return ResponseEntity.ok().build()
     }
 
@@ -30,7 +32,7 @@ class ContaController {
         @PathVariable numero: String, 
         @RequestBody request: SaqueRequestDTO
         ): ResponseEntity<Any> {
-        // Implementar a lógica do saque
+        transferenciaService.sacar(numero, request)
         return ResponseEntity.ok().build()
     }
 
@@ -39,7 +41,7 @@ class ContaController {
     @PathVariable numero: String, 
     @RequestBody request: TransferenciaRequestDTO
     ): ResponseEntity<Any> {
-        // Implementar a lógica da transferência
+        transferenciaService.transferir(numero, request)
         return ResponseEntity.ok().build()
     }
 

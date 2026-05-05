@@ -18,13 +18,13 @@ data class Conta(
     val numero: String,
 
     @Column(name = "saldo", nullable = false)
-    val saldo: BigDecimal,
+    var saldo: BigDecimal,
 
     @Column(name = "limite", nullable = false)
-    val limite: BigDecimal,
+    var limite: BigDecimal,
 
     @Column(name = "gerente", nullable = false)
-    val gerente: String,
+    var gerente: String,
 
     @Column(name = "criacao", nullable = false)
     val criacao: LocalDateTime

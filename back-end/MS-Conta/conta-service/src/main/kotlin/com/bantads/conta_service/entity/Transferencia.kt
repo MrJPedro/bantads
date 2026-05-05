@@ -14,23 +14,17 @@ data class Transferencia(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    
-    @Column(name = "cliente", nullable = false)
-    val cliente: String,
 
-    @Column(name = "numero", nullable = false)
-    val numero: String,
+    @Column(nullable = false)
+    val contaOrigem: Conta,
 
-    @Column(name = "saldo", nullable = false)
-    val saldo: BigDecimal,
+    @Column(nullable = false)
+    val contaDestino: Conta,
 
-    @Column(name = "limite", nullable = false)
-    val limite: BigDecimal,
+    @Column(nullable = false)
+    val valor: BigDecimal,
 
-    @Column(name = "gerente", nullable = false)
-    val gerente: String,
-
-    @Column(name = "criacao", nullable = false)
-    val criacao: LocalDateTime
+    @Column(nullable = false)
+    val data: LocalDateTime
     
 )
