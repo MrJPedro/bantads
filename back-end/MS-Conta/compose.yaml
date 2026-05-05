@@ -1,1 +1,40 @@
-# Não segue o template padrão, devido ao CQRS
+services:
+  ms-conta:
+    image: ms-conta-spring
+    container_name: ms-conta
+    build:
+      context: .
+      dockerfile: ms-conta.Dockerfile
+    networks:
+      - backend
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ms-conta-db:5442/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - ms-conta-db
+
+  # BD (Postgres)
+  ms-conta-db:
+    image: postgres:15-alpine
+    container_name: ms-conta-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT_LOCAL}:5442"
+    volumes:
+      - ms_conta_dados:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  ms_conta_dados:
