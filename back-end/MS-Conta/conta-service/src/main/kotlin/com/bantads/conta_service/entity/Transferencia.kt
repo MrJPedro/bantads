@@ -10,21 +10,22 @@ import jakarta.persistence.GenerationType
 import java.math.BigDecimal
 
 @Entity
+@Table(name = "transferencia")
 data class Transferencia(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(nullable = false)
+    @Column(name = "conta_origem_id", nullable = false)
     val contaOrigem: Conta,
 
-    @Column(nullable = false)
+    @Column(name = "conta_destino_id", nullable = false)
     val contaDestino: Conta,
 
-    @Column(nullable = false)
+    @Column(name = "valor", nullable = false)
     val valor: BigDecimal,
 
-    @Column(nullable = false)
+    @Column(name = "data", nullable = false)
     val data: LocalDateTime
     
 )
