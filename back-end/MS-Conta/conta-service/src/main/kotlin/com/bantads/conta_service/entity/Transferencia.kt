@@ -7,6 +7,9 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import java.math.BigDecimal
 
 @Entity
@@ -16,10 +19,12 @@ data class Transferencia(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(name = "conta_origem_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "conta_origem_id", nullable = false)
     val contaOrigem: Conta,
 
-    @Column(name = "conta_destino_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "conta_destino_id", nullable = false)
     val contaDestino: Conta,
 
     @Column(name = "valor", nullable = false)

@@ -1,14 +1,15 @@
-package com.bantads.conta_service.repository
+package com.bantads.conta_service.repository.leitura
 
+import com.bantads.conta_service.entity.Conta
 import com.bantads.conta_service.entity.Transferencia
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 interface TransferenciaRepositoryRead : JpaRepository<Transferencia, Long> {
 
-    fun findByCliente(cliente: String): List<Transferencia>
+    fun findByContaOrigem(contaOrigem: Conta): List<Transferencia>
 
-    fun findByNumero(numero: String): List<Transferencia>
+    fun findByContaDestino(contaDestino: Conta): List<Transferencia>
+
 }

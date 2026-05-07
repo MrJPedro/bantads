@@ -1,6 +1,9 @@
 package com.bantads.conta_service.dto
 
+import com.bantads.conta_service.entity.Conta
+import jakarta.persistence.Column
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 data class DepositoRequestDTO(
     val valor: BigDecimal
@@ -13,4 +16,13 @@ data class SaqueRequestDTO(
 data class TransferenciaRequestDTO(
     val contaDestino: String,
     val valor: BigDecimal
+)
+
+data class criarContaDTO(
+    val cliente: String,
+    val numero: String,
+    val saldo: BigDecimal,
+    val limite: BigDecimal,
+    var gerente: String,
+    val criacao: LocalDateTime
 )

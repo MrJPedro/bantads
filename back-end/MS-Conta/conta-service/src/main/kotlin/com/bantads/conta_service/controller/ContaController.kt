@@ -5,10 +5,23 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import com.bantads.conta_service.service.TransferenciaService
+import com.bantads.conta_service.service.ContaService
 
 @RestController
 @RequestMapping("/contas")
-class ContaController(private val transferenciaService: TransferenciaService) {
+class ContaController(
+    private val transferenciaService: TransferenciaService,
+    private val contaService: ContaService
+) {
+
+    @PostMapping("/{numero}")
+    fun criarConta(
+        @PathVariable numero: String,
+        @RequestBody request: criarContaDTO
+    ): ResponseEntity<Any>{
+        contaService.criar(numero, request);
+        return ResponseEntity.ok().build()
+    }
 
     @GetMapping("/{numero}/saldo")
     fun getSaldo(

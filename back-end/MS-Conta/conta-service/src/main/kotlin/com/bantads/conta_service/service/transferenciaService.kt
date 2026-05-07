@@ -3,8 +3,10 @@ package com.bantads.conta_service.service
 import com.bantads.conta_service.dto.DepositoRequestDTO
 import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
-import com.bantads.conta_service.repository.ContaRepository
-import com.bantads.conta_service.repository.TransferenciaRepository
+import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
+import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
+import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
+import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import jakarta.transaction.Transactional
