@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
-interface TransferenciaRepository : JpaRepository<Transferencia, Long> {
+interface TransferenciaRepositoryRead : JpaRepository<Transferencia, Long> {
 
     fun findByCliente(cliente: String): List<Transferencia>
 

@@ -6,12 +6,8 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
-interface ContaRepository : JpaRepository<Conta, Long> {
-    
+interface ContaRepositoryWrite: JpaRepository<Conta, Long> {
 
-    fun findByCliente(cliente: String): List<Conta>
-    
-
-    fun findByNumero(numero: String): Conta?
+    fun save(conta: Conta): Conta
     
 }
