@@ -26,8 +26,8 @@ class ContaController(
     fun getSaldo(
         @PathVariable numero: String
         ): ResponseEntity<Any> {
-        transferenciaService.obterSaldo(numero)
-        return ResponseEntity.ok().build()
+        val saldo = transferenciaService.obterSaldo(numero)
+        return ResponseEntity.ok(SaldoResponseDTO(numero, saldo))
     }
 
     @PostMapping("/{numero}/depositar")

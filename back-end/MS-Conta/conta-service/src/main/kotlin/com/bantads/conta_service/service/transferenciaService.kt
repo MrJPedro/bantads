@@ -21,29 +21,29 @@ class TransferenciaService(
     private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite
 ) {
 
-    fun obterSaldo(cpf: String): BigDecimal {
-        val conta = contaRepositoryRead.findByCliente(cpf).firstOrNull() ?: return BigDecimal.ZERO
+    fun obterSaldo(numero: String): BigDecimal {
+        val conta = contaRepositoryRead.findByNumero(numero) ?: return BigDecimal.ZERO
         return conta.saldo
     }
 
-    fun depositar(cpf: String, request: DepositoRequestDTO): Any {
-        val conta = contaRepositoryRead.findByCliente(cpf).firstOrNull() ?: return Any()
+    fun depositar(numero: String, request: DepositoRequestDTO): Any {
+        val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
         conta.saldo += request.valor
         contaRepositoryWrite.save(conta)
         return Any()
     }
 
-    fun sacar(cpf: String, request: SaqueRequestDTO): Any {
-        val conta = contaRepositoryRead.findByCliente(cpf).firstOrNull() ?: return Any()
+    fun sacar(numero: String, request: SaqueRequestDTO): Any {
+        val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
         if (conta.saldo < request.valor) return Any()
         conta.saldo = conta.saldo - request.valor
         contaRepositoryWrite.save(conta)
         return Any()
     }
 
-    fun transferir(cpf: String, request: TransferenciaRequestDTO): Any {
-        val contaOrigem = contaRepositoryRead.findByCliente(cpf).firstOrNull() ?: return Any()
-        val contaDestino = contaRepositoryRead.findByCliente(request.contaDestino).firstOrNull() ?: return Any()
+    fun transferir(numero: String, request: TransferenciaRequestDTO): Any {
+        val contaOrigem = contaRepositoryRead.findByNumero(numero) ?: return Any()
+        val contaDestino = contaRepositoryRead.findByNumero(request.contaDestino) ?: return Any()
         if (contaOrigem.saldo < request.valor) return Any()
         contaOrigem.saldo = contaOrigem.saldo - request.valor
         contaDestino.saldo += request.valor
