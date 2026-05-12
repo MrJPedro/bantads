@@ -4,6 +4,10 @@
     container_name: ms-cliente
     build: ./MS-Cliente/ms-cliente.Dockerfile
     networks: backend
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_USERNAME=rabbit
+      - SPRING_RABBITMQ_PASSWORD=rabbitpass
     depends_on:
       rabbitmq:
       ms-cliente-db:
