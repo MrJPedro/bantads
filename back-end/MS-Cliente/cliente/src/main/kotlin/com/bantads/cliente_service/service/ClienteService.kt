@@ -36,10 +36,17 @@ class ClienteService(
       email = dto.email,
       cpf = dto.cpf,
       telefone = dto.telefone,
-      salario = dto.salario
+      salario = dto.salario.toDouble().toBigDecimal(),
+      endereco = "Rua Desconhecida", // MOCK
+      cep = "00000000",              // MOCK
+      cidade = "Desconhecida",       // MOCK
+      estado = "ST",                 // MOCK
+      status = "AGUARDANDO_APROVACAO"
     )
     
     novoCliente = clienteRepository.save(novoCliente)
+
+    println("[MOCK RABBITMQ] Evento de autocadastro enviado para SAGA (Conta & Auth): ${novoCliente.cpf}")
 
     return toDTO(novoCliente)
   }
@@ -51,9 +58,11 @@ class ClienteService(
     cliente.nome = dto.nome
     cliente.email = dto.email
     cliente.telefone = dto.telefone
-    cliente.salario = dto.salario
+    cliente.salario = dto.salario.toDouble().toBigDecimal()
 
     clienteRepository.save(cliente)
+
+    println("[MOCK RABBITMQ] Evento enviado para MS-Conta solicitando recálculo do limite para: $cpf")
 
     return toDTO(cliente)
 
@@ -63,7 +72,11 @@ class ClienteService(
   fun aprovar(cpf: String): DadosClienteResponse{
 
     val cliente = clienteRepository.findByCpf(cpf)?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
-    //a ser implementada aprovação
+    
+    cliente.status = "APROVADO"
+    clienteRepository.save(cliente)
+
+    println("[MOCK RABBITMQ] Evento de aprovação enviado (Criação de Conta e Envio de Email): $cpf")
 
     return toDTO(cliente)
   }
@@ -72,14 +85,18 @@ class ClienteService(
   fun rejeitar(cpf: String, dto: RejeicaoRequest): DadosClienteResponse{
 
     val cliente = clienteRepository.findByCpf(cpf)?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
-    //a ser implementada rejeição
+    
+    cliente.status = "REJEITADO"
+    clienteRepository.save(cliente)
+
+    println("[MOCK RABBITMQ] Evento de rejeição enviado via Rabbit (Motivo: ${dto.motivo}) para: $cpf")
 
     return toDTO(cliente)
   }
 
   private fun toDTO(entity: ClienteEntity): DadosClienteResponse{
     return DadosClienteResponse(
-      id = entity.id,
+      id = entity.id ?: 0,
       nome = entity.nome,
       cpf = entity.cpf,
       email = entity.email,

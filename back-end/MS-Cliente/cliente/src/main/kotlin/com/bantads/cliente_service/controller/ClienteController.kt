@@ -20,8 +20,15 @@ class ClienteController (
     @GetMapping
     fun listarClientes(
         @RequestParam(name = "filtro", required = false) filtro: String?
-    ): ResponseEntity<Any> {
-        return ResponseEntity.ok().build()
+    ): ResponseEntity<List<DadosClienteResponse>> {
+        val clientes = clienteService.listarTodos()
+        // Opcional: implementar filtro real se necessário mais tarde.
+        val filtrados = if (!filtro.isNullOrBlank()) {
+            clientes.filter { it.nome.contains(filtro, ignoreCase = true) || it.cpf.contains(filtro) }
+        } else {
+            clientes
+        }
+        return ResponseEntity.ok(filtrados)
     }
 
     /**
@@ -31,11 +38,9 @@ class ClienteController (
     @PostMapping
     fun autocadastro(
         @RequestBody request: AutocadastroInfo
-    ): ResponseEntity<Void> {
-        // Lógica de salvar cliente
-
-        // Retorna HTTP 201 (Created) em caso de sucesso
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+    ): ResponseEntity<DadosClienteResponse> {
+        val response = clienteService.autocadastro(request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 
     /**
@@ -46,9 +51,8 @@ class ClienteController (
     fun consultarCliente(
         @PathVariable cpf: String
     ): ResponseEntity<DadosClienteResponse> {
-        // Lógica de busca por CPF
-
-        return ResponseEntity.ok().build() // Substituir pelo objeto DadosClienteResponse
+        val response = clienteService.buscarPorCpf(cpf)
+        return ResponseEntity.ok(response)
     }
 
     /**
@@ -59,10 +63,9 @@ class ClienteController (
     fun alterarPerfil(
         @PathVariable cpf: String,
         @RequestBody request: PerfilInfo
-    ): ResponseEntity<Void> {
-        // Lógica de atualização
-
-        return ResponseEntity.ok().build()
+    ): ResponseEntity<DadosClienteResponse> {
+        val response = clienteService.alterar(cpf, request)
+        return ResponseEntity.ok(response)
     }
 
     /**
@@ -72,10 +75,9 @@ class ClienteController (
     @PostMapping("/{cpf}/aprovar")
     fun aprovarCliente(
         @PathVariable cpf: String
-    ): ResponseEntity<ContaResponse> {
-        // Lógica de aprovação
-
-        return ResponseEntity.ok().build() // Substituir pelo objeto ContaResponse
+    ): ResponseEntity<DadosClienteResponse> {
+        val response = clienteService.aprovar(cpf)
+        return ResponseEntity.ok(response) 
     }
 
     /**
@@ -86,9 +88,8 @@ class ClienteController (
     fun rejeitarCliente(
         @PathVariable cpf: String,
         @RequestBody request: RejeicaoRequest
-    ): ResponseEntity<Void> {
-        // Lógica de rejeição usando o request.motivo
-
-        return ResponseEntity.ok().build()
+    ): ResponseEntity<DadosClienteResponse> {
+        val response = clienteService.rejeitar(cpf, request)
+        return ResponseEntity.ok(response)
     }
 }

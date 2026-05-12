@@ -36,5 +36,8 @@ class ClienteEntity (
     var cidade: String,
 
     @Column(nullable = false)
-    var estado: String
+    var estado: String,
+
+    @Column(nullable = false)
+    var status: String = "AGUARDANDO_APROVACAO" // AGUARDANDO_APROVACAO, APROVADO, REJEITADO
 )
