@@ -3,7 +3,6 @@ package com.bantads.conta_service.controller
 import com.bantads.conta_service.dto.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.math.BigDecimal
 import com.bantads.conta_service.service.TransferenciaService
 import com.bantads.conta_service.service.ContaService
 
@@ -17,7 +16,7 @@ class ContaController(
     @PostMapping("/{numero}")
     fun criarConta(
         @PathVariable numero: String,
-        @RequestBody request: criarContaDTO
+        @RequestBody request: CriarContaDTO
     ): ResponseEntity<Any>{
         contaService.criar(numero, request);
         return ResponseEntity.ok().build()

@@ -36,6 +36,12 @@ class ComandoConfig {
         em.dataSource = dataSource
         em.setPackagesToScan("com.bantads.conta_service.entity")
         em.jpaVendorAdapter = HibernateJpaVendorAdapter()
+
+        val jpaProperties = java.util.Properties()
+        jpaProperties["hibernate.hbm2ddl.auto"] = "update"
+        jpaProperties["hibernate.dialect"] = "org.hibernate.dialect.PostgreSQLDialect"
+        em.setJpaProperties(jpaProperties)
+
         return em
     }
 

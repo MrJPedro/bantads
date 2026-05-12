@@ -1,7 +1,5 @@
 package com.bantads.conta_service.dto
 
-import com.bantads.conta_service.entity.Conta
-import jakarta.persistence.Column
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -18,7 +16,8 @@ data class TransferenciaRequestDTO(
     val valor: BigDecimal
 )
 
-data class criarContaDTO(
+//temporario, esse DTO e o endpoint de criar conta via HTTP será removido
+data class CriarContaDTO(
     val cliente: String,
     val numero: String,
     val saldo: BigDecimal,

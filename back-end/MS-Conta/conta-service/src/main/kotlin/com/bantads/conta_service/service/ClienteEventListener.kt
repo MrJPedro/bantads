@@ -1,10 +1,12 @@
 package com.bantads.conta_service.service
 
 import com.bantads.conta_service.dto.ClienteEvent
-import com.bantads.conta_service.dto.criarContaDTO
+import com.bantads.conta_service.dto.CriarContaDTO
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Component
 class ClienteEventListener(
@@ -19,11 +21,13 @@ class ClienteEventListener(
     // Ver isso melhor dpois
 
         if (evento.tipo == "autocadastro") {
-            val request = criarContaDTO(
+            val request = CriarContaDTO(
                 cliente = evento.cpf,
+                numero = evento.cpf,
                 saldo = BigDecimal.ZERO,
                 limite = BigDecimal(1000),
-                gerente = "TESTE"
+                gerente = "TESTE",
+                criacao = LocalDateTime.now()
             )
             contaService.criar(evento.cpf, request)
             println("[RABBITMQ] Conta criada automaticamente para cliente ${evento.cpf}")
