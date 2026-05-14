@@ -1,21 +1,26 @@
-package com.bantads.conta_service.entity
+package com.bantads.conta_service.entity.comando
 
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "conta")
-data class Conta(
+class Conta(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    var id: Long? = null,
 
     @Column(name = "cliente", nullable = false)
-    val cliente: String,
+    var cliente: String,
 
     @Column(name = "numero", nullable = false, unique = true)
-    val numero: String,
+    var numero: String,
 
     @Column(name = "saldo", nullable = false)
     var saldo: BigDecimal,
@@ -27,6 +32,6 @@ data class Conta(
     var gerente: String,
 
     @Column(name = "criacao", nullable = false)
-    val criacao: LocalDateTime
-    
+    var criacao: LocalDateTime
+
 )

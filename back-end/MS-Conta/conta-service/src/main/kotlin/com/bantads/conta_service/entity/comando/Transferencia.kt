@@ -1,36 +1,38 @@
-package com.bantads.conta_service.entity
-
-import java.time.LocalDateTime
+package com.bantads.conta_service.entity.comando
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.Id
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "transferencia")
-data class Transferencia(
+class Transferencia(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    var id: Long? = null,
 
     @ManyToOne
     @JoinColumn(name = "conta_origem_id", nullable = false)
-    val contaOrigem: Conta,
+    var contaOrigem: Conta,
 
     @ManyToOne
-    @JoinColumn(name = "conta_destino_id", nullable = false)
-    val contaDestino: Conta,
+    @JoinColumn(name = "conta_destino_id", nullable = true)
+    var contaDestino: Conta,
 
     @Column(name = "valor", nullable = false)
-    val valor: BigDecimal,
+    var valor: BigDecimal,
+
+    @Column(name = "saldofinal", nullable = false)
+    var saldofinal: BigDecimal,
 
     @Column(name = "data", nullable = false)
-    val data: LocalDateTime
-    
+    var data: LocalDateTime
+
 )

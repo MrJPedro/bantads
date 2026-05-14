@@ -3,6 +3,7 @@ package com.bantads.conta_service.service
 import com.bantads.conta_service.dto.DepositoRequestDTO
 import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
+import com.bantads.conta_service.entity.comando.Transferencia
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
 import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
@@ -50,11 +51,12 @@ class TransferenciaService(
         contaRepositoryWrite.save(contaOrigem)
         contaRepositoryWrite.save(contaDestino) 
         val transferencia = transferenciaRepositoryWrite.save(
-            com.bantads.conta_service.entity.Transferencia(
+            Transferencia(
                 contaOrigem = contaOrigem,
                 contaDestino = contaDestino,
                 valor = request.valor,
-                data = LocalDateTime.now() 
+                data = LocalDateTime.now(),
+                saldofinal =  contaOrigem.saldo
             )
         )
         return Any()

@@ -1,6 +1,7 @@
 package com.bantads.conta_service.service
 
 import com.bantads.conta_service.dto.CriarContaDTO
+import com.bantads.conta_service.entity.comando.Conta
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
 import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
@@ -20,7 +21,7 @@ class ContaService(
         fun criar(numero : String, request : CriarContaDTO): Any
         {
             val conta = contaRepositoryWrite.save(
-                com.bantads.conta_service.entity.Conta(
+                Conta(
                     cliente = request.cliente,
                     numero = numero,
                     saldo = request.saldo,
