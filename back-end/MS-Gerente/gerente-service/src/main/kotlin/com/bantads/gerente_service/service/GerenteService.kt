@@ -8,12 +8,15 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.server.ResponseStatusException
+import java.math.BigDecimal
 
 @Service
 class GerenteService(
     private val gerenteRepository: GerenteRepository,
-    private val rabbitTemplate: RabbitTemplate
+    private val rabbitTemplate: RabbitTemplate,
+    private val restTemplate: RestTemplate
 ) {
 
     fun listarTodos(): List<DadoGerente> {
@@ -44,6 +47,64 @@ class GerenteService(
         )
         
         novoGerente = gerenteRepository.save(novoGerente)
+
+        val eventoCriacao = GerenteEvent(
+            tipo = "insercao",
+            cpfGerente = novoGerente.cpf,
+            nome = novoGerente.nome,
+            email = novoGerente.email,
+            senha = dto.senha
+        )
+        rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.insercao", eventoCriacao)
+
+        val outrosGerentes = gerenteRepository.findAll().filter { it.cpf != novoGerente.cpf }
+        
+        if (outrosGerentes.isEmpty() || (outrosGerentes.size == 1 && outrosGerentes.first().quantidadeClientes <= 1)) {
+            return toDTO(novoGerente)
+        }
+
+        val maxContas = outrosGerentes.maxOf { it.quantidadeClientes }
+        if (maxContas == 0) {
+            return toDTO(novoGerente)
+        }
+
+        val gerentesMax = outrosGerentes.filter { it.quantidadeClientes == maxContas }
+        val contasPossiveis = mutableListOf<ContaDTO>()
+
+        for (g in gerentesMax) {
+            try {
+                val url = "http://ms-conta:8083/contas/gerente/${g.cpf}"
+                val response = restTemplate.getForObject(url, Array<ContaDTO>::class.java)
+                if (response != null) {
+                    contasPossiveis.addAll(response)
+                }
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
+
+        if (contasPossiveis.isNotEmpty()) {
+            val contaEscolhida = contasPossiveis.filter { it.saldo > BigDecimal.ZERO }.minByOrNull { it.saldo }
+                ?: contasPossiveis.minByOrNull { it.saldo }
+
+            if (contaEscolhida != null) {
+                val gerenteDoador = gerentesMax.find { it.cpf == contaEscolhida.gerente }
+                if (gerenteDoador != null) {
+                    gerenteDoador.quantidadeClientes -= 1
+                    novoGerente.quantidadeClientes += 1
+                    gerenteRepository.save(gerenteDoador)
+                    gerenteRepository.save(novoGerente)
+
+                    val eventoTransferencia = GerenteEvent(
+                        tipo = "transferencia_conta",
+                        cpfGerente = novoGerente.cpf,
+                        cpfGerenteAnterior = gerenteDoador.cpf,
+                        numeroConta = contaEscolhida.numero
+                    )
+                    rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.transferencia", eventoTransferencia)
+                }
+            }
+        }
 
         return toDTO(novoGerente)
     }
