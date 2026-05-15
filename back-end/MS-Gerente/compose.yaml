@@ -14,10 +14,12 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_USERNAME=rabbit
+      - SPRING_RABBITMQ_PASSWORD=rabbitpass
     depends_on:
       - ms-gerente-db
 
-  # BD (Postgres)
   ms-gerente-db:
     image: postgres:15-alpine
     container_name: ms-gerente-db

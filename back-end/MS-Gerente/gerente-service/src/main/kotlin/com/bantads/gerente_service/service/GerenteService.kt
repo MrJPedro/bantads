@@ -1,8 +1,10 @@
 package com.bantads.gerente_service.service
 
+import com.bantads.gerente_service.config.GERENTE_EVENT_EXCHANGE
 import com.bantads.gerente_service.dto.*
 import com.bantads.gerente_service.entity.GerenteEntity
 import com.bantads.gerente_service.repository.GerenteRepository
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -10,11 +12,11 @@ import org.springframework.web.server.ResponseStatusException
 
 @Service
 class GerenteService(
-    private val gerenteRepository: GerenteRepository
+    private val gerenteRepository: GerenteRepository,
+    private val rabbitTemplate: RabbitTemplate
 ) {
 
     fun listarTodos(): List<DadoGerente> {
-        // R19: Ordenados de forma crescente por nome
         return gerenteRepository.findAll()
             .sortedBy { it.nome }
             .map { toDTO(it) }
@@ -64,7 +66,6 @@ class GerenteService(
         val gerente = gerenteRepository.findByCpf(cpf)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Gerente não encontrado")
 
-        // R18: Não permitir remoção do último gerente
         if (gerenteRepository.count() <= 1) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível remover o último gerente do sistema.")
         }
@@ -78,6 +79,13 @@ class GerenteService(
 
         gerenteRepository.delete(gerente)
 
+        val evento = GerenteEvent(
+            tipo = "remocao",
+            cpfGerente = cpf,
+            cpfNovoGerente = herdeiro.cpf
+        )
+        
+        rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.remocao", evento)
     }
 
     private fun toDTO(entity: GerenteEntity): DadoGerente {
