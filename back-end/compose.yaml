@@ -5,6 +5,7 @@ include:
   # - ./MS-Conta/compose.yaml
   # - ./MS-Gerente/compose.yaml
   - ./RabbitMQ/compose.yaml
+  - ./PostgreSQL/compose.yaml
   - ./saga/compose.yaml
 
 networks:

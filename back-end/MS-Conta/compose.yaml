@@ -11,57 +11,16 @@ services:
       - "${APP_PORT}:${APP_PORT}"
     environment:
       - SERVER_PORT=${APP_PORT}
-      - SPRING_DATASOURCE_COMMAND_JDBC_URL=jdbc:postgresql://ms-conta-db:5432/conta_comando
-      - SPRING_DATASOURCE_COMMAND_USERNAME=${DB_USER}
-      - SPRING_DATASOURCE_COMMAND_PASSWORD=${DB_PASS}
-      - SPRING_DATASOURCE_QUERY_JDBC_URL=jdbc:postgresql://ms-conta-db:5432/conta_consulta
-      - SPRING_DATASOURCE_QUERY_USERNAME=${DB_USER}
-      - SPRING_DATASOURCE_QUERY_PASSWORD=${DB_PASS}
+      - SPRING_DATASOURCE_COMMAND_JDBC_URL=jdbc:postgresql://postgres-db:5432/conta_comando
+      - SPRING_DATASOURCE_COMMAND_USERNAME=postgres
+      - SPRING_DATASOURCE_COMMAND_PASSWORD=postgrespass
+      - SPRING_DATASOURCE_QUERY_JDBC_URL=jdbc:postgresql://postgres-db:5432/conta_consulta
+      - SPRING_DATASOURCE_QUERY_USERNAME=postgres
+      - SPRING_DATASOURCE_QUERY_PASSWORD=postgrespass
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_USERNAME=rabbit
       - SPRING_RABBITMQ_PASSWORD=rabbitpass
     depends_on:
       - rabbitmq
-      - ms-conta-db
-
-  # RabbitMQ
-  rabbitmq:
-    image: rabbitmq:3.12-management-alpine
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: rabbit
-      RABBITMQ_DEFAULT_PASS: rabbitpass
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # BD (Postgres)
-  ms-conta-db:
-    image: postgres:15-alpine
-    container_name: ms-conta-db
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${DB_PORT_LOCAL}:5432"
-    volumes:
-      - ms_conta_dados:/var/lib/postgresql/data
-      - ./postgres-init/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    networks:
-      - backend
-
-networks:
-  backend:
-    driver: bridge
-
-volumes:
-  ms_conta_dados:
+      - postgres-db
