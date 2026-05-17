@@ -1,0 +1,44 @@
+services:
+  ms-saga:
+    image: ms-saga-spring
+    container_name: ms-saga
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - backend
+    ports:
+      - "8085:8085" # Altere a porta de acordo com o configurado na sua aplicação
+    environment:
+      - SERVER_PORT=8085
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ms-saga-db:5432/saga_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_USERNAME=rabbit
+      - SPRING_RABBITMQ_PASSWORD=rabbitpass
+    depends_on:
+      - rabbitmq
+      - ms-saga-db
+
+  ms-saga-db:
+    image: postgres:15-alpine
+    container_name: ms-saga-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: saga_db
+    ports:
+      - "5435:5432" # Expõe em uma porta local diferente para não dar conflito (ex: 5435)
+    volumes:
+      - ms_saga_dados:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  ms_saga_dados:
