@@ -9,6 +9,7 @@ import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
 import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDateTime
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -28,14 +29,15 @@ class TransferenciaService(
     }
 
     fun depositar(numero: String, request: DepositoRequestDTO): Any {
+        val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
         val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
-        conta.saldo = conta.saldo.plus(request.valor)
+        conta.saldo = conta.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
         val contaSalva = contaRepositoryWrite.save(conta)
         transferenciaRepositoryWrite.save(
             Transferencia(
                 contaOrigem = contaSalva,
                 contaDestino = null,
-                valor = request.valor,
+                valor = valor,
                 saldofinal = contaSalva.saldo,
                 data = LocalDateTime.now()
             )
@@ -44,15 +46,17 @@ class TransferenciaService(
     }
 
     fun sacar(numero: String, request: SaqueRequestDTO): Any {
+        val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
         val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
-        if (conta.saldo < request.valor) return Any()
-        conta.saldo = conta.saldo.minus(request.valor)
+        val disponivel = conta.saldo.plus(conta.limite)
+        if (disponivel < valor) return Any()
+        conta.saldo = conta.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
         val contaSalva = contaRepositoryWrite.save(conta)
         transferenciaRepositoryWrite.save(
             Transferencia(
                 contaOrigem = contaSalva,
                 contaDestino = null,
-                valor = request.valor,
+                valor = valor,
                 saldofinal = contaSalva.saldo,
                 data = LocalDateTime.now()
             )
@@ -61,13 +65,15 @@ class TransferenciaService(
     }
 
     fun transferir(numero: String, request: TransferenciaRequestDTO): Any {
+        val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
         val contaOrigem = contaRepositoryRead.findByNumero(numero) ?: return Any()
         val contaDestino = contaRepositoryRead.findByNumero(request.contaDestino) ?: return Any()
-        if (contaOrigem.saldo < request.valor) return Any()
-        
-        contaOrigem.saldo = contaOrigem.saldo.minus(request.valor)
-        contaDestino.saldo = contaDestino.saldo.plus(request.valor)
-        
+        val disponivel = contaOrigem.saldo.plus(contaOrigem.limite)
+        if (disponivel < valor) return Any()
+
+        contaOrigem.saldo = contaOrigem.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
+        contaDestino.saldo = contaDestino.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
+
         contaRepositoryWrite.save(contaOrigem)
         contaRepositoryWrite.save(contaDestino)
         
@@ -79,7 +85,7 @@ class TransferenciaService(
             Transferencia(
                 contaOrigem = contaOrigemRefresh,
                 contaDestino = contaDestinoRefresh,
-                valor = request.valor,
+                valor = valor,
                 saldofinal = contaOrigemRefresh.saldo,
                 data = LocalDateTime.now()
             )

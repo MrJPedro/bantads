@@ -20,15 +20,9 @@ class ClienteController (
     @GetMapping
     fun listarClientes(
         @RequestParam(name = "filtro", required = false) filtro: String?
-    ): ResponseEntity<List<DadosClienteResponse>> {
-        val clientes = clienteService.listarTodos()
-        // Opcional: implementar filtro real se necessário mais tarde.
-        val filtrados = if (!filtro.isNullOrBlank()) {
-            clientes.filter { it.nome.contains(filtro, ignoreCase = true) || it.cpf.contains(filtro) }
-        } else {
-            clientes
-        }
-        return ResponseEntity.ok(filtrados)
+    ): ResponseEntity<List<Any>> {
+        val clientes = clienteService.listarClientes(filtro)
+        return ResponseEntity.ok(clientes)
     }
 
     /**

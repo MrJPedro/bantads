@@ -26,10 +26,10 @@ class Transferencia(
     @JoinColumn(name = "conta_destino_id", nullable = true)
     var contaDestino: Conta,
 
-    @Column(name = "valor", nullable = false)
+    @Column(name = "valor", nullable = false, precision = 19, scale = 2)
     var valor: BigDecimal,
 
-    @Column(name = "saldofinal", nullable = false)
+    @Column(name = "saldofinal", nullable = false, precision = 19, scale = 2)
     var saldofinal: BigDecimal,
 
     @Column(name = "data", nullable = false)

@@ -66,4 +66,17 @@ class ContaController(
         val transferencias = transferenciaService.obterExtrato(numero, dataInicio, dataFim)
         return ResponseEntity.ok(transferencias)
     }
+
+    @GetMapping("/cliente/{cpf}")
+    fun getContaPorCliente(
+        @PathVariable cpf: String
+    ): ResponseEntity<Any> {
+        val conta = contaService.obterContaPorCliente(cpf) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(conta)
+    }
+
+    @GetMapping("/top3")
+    fun getTop3Contas(): ResponseEntity<List<ContaDetalhesDTO>> {
+        return ResponseEntity.ok(contaService.obterTop3Contas())
+    }
 }
