@@ -10,33 +10,13 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ms-gerente-db:5432/${DB_NAME}
-      - SPRING_DATASOURCE_USERNAME=${DB_USER}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/gerente_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgrespass
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_USERNAME=rabbit
       - SPRING_RABBITMQ_PASSWORD=rabbitpass
     depends_on:
-      - ms-gerente-db
-
-  ms-gerente-db:
-    image: postgres:15-alpine
-    container_name: ms-gerente-db
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${DB_PORT_LOCAL}:5432"
-    volumes:
-      - ms_gerente_dados:/var/lib/postgresql/data
-    networks:
-      - backend
-
-networks:
-  backend:
-    driver: bridge
-
-volumes:
-  ms_gerente_dados:
+      - rabbitmq
+      - postgres-db

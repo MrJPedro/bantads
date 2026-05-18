@@ -1,25 +1,20 @@
-# ===== Microsserviço do cliente
+services:
   ms-cliente:
     image: ms-cliente-spring
     container_name: ms-cliente
-    build: ./MS-Cliente/ms-cliente.Dockerfile
-    networks: backend
+    build: 
+      context: .
+      dockerfile: ms-cliente.Dockerfile
+    networks:
+      - backend
     environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/cliente_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgrespass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_USERNAME=rabbit
       - SPRING_RABBITMQ_PASSWORD=rabbitpass
     depends_on:
-      rabbitmq:
-      ms-cliente-db:
-
-# ===== BD (Postgres)
-  ms-cliente-db:
-    image: postgres
-    container_name: ms-cliente-db
-    environment:
-    #  - usuário
-    #  - senha
-    # E outras variáveis relevantes
-    volumes:
-    #  - dados:/dados
-    networks: backend
+      - rabbitmq
+      - postgres-db
