@@ -29,16 +29,34 @@ class TransferenciaService(
 
     fun depositar(numero: String, request: DepositoRequestDTO): Any {
         val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
-        conta.saldo += request.valor
-        contaRepositoryWrite.save(conta)
+        conta.saldo = conta.saldo.plus(request.valor)
+        val contaSalva = contaRepositoryWrite.save(conta)
+        transferenciaRepositoryWrite.save(
+            Transferencia(
+                contaOrigem = contaSalva,
+                contaDestino = null,
+                valor = request.valor,
+                saldofinal = contaSalva.saldo,
+                data = LocalDateTime.now()
+            )
+        )
         return Any()
     }
 
     fun sacar(numero: String, request: SaqueRequestDTO): Any {
         val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
         if (conta.saldo < request.valor) return Any()
-        conta.saldo = conta.saldo - request.valor
-        contaRepositoryWrite.save(conta)
+        conta.saldo = conta.saldo.minus(request.valor)
+        val contaSalva = contaRepositoryWrite.save(conta)
+        transferenciaRepositoryWrite.save(
+            Transferencia(
+                contaOrigem = contaSalva,
+                contaDestino = null,
+                valor = request.valor,
+                saldofinal = contaSalva.saldo,
+                data = LocalDateTime.now()
+            )
+        )
         return Any()
     }
 
@@ -46,25 +64,40 @@ class TransferenciaService(
         val contaOrigem = contaRepositoryRead.findByNumero(numero) ?: return Any()
         val contaDestino = contaRepositoryRead.findByNumero(request.contaDestino) ?: return Any()
         if (contaOrigem.saldo < request.valor) return Any()
-        contaOrigem.saldo = contaOrigem.saldo - request.valor
-        contaDestino.saldo += request.valor
+        
+        contaOrigem.saldo = contaOrigem.saldo.minus(request.valor)
+        contaDestino.saldo = contaDestino.saldo.plus(request.valor)
+        
         contaRepositoryWrite.save(contaOrigem)
-        contaRepositoryWrite.save(contaDestino) 
-        val transferencia = transferenciaRepositoryWrite.save(
+        contaRepositoryWrite.save(contaDestino)
+        
+        // Refetch entities para evitar problemas com desanexação
+        val contaOrigemRefresh = contaRepositoryRead.findByNumero(numero) ?: return Any()
+        val contaDestinoRefresh = contaRepositoryRead.findByNumero(request.contaDestino) ?: return Any()
+        
+        transferenciaRepositoryWrite.save(
             Transferencia(
-                contaOrigem = contaOrigem,
-                contaDestino = contaDestino,
+                contaOrigem = contaOrigemRefresh,
+                contaDestino = contaDestinoRefresh,
                 valor = request.valor,
-                data = LocalDateTime.now(),
-                saldofinal =  contaOrigem.saldo
+                saldofinal = contaOrigemRefresh.saldo,
+                data = LocalDateTime.now()
             )
         )
         return Any()
     }
 
-    fun obterExtrato(cpf: String, dataInicio: String?, dataFim: String?): Any {
-        // a implementar
-        return Any()
+    fun obterExtrato(numero: String, dataInicio: String?, dataFim: String?): List<Transferencia> {
+        val conta = contaRepositoryRead.findByNumero(numero) ?: return emptyList()
+        val transferencias = transferenciaRepositoryRead.findByContaOrigem(conta)
+        
+        return if (dataInicio != null && dataFim != null) {
+            val inicio = java.time.LocalDateTime.parse(dataInicio)
+            val fim = java.time.LocalDateTime.parse(dataFim)
+            transferencias.filter { it.data in inicio..fim }
+        } else {
+            transferencias
+        }
     }
     
 }

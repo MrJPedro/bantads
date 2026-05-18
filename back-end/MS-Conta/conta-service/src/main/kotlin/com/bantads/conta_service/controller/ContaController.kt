@@ -63,7 +63,7 @@ class ContaController(
         @RequestParam(required = false) dataInicio: String?,
         @RequestParam(required = false) dataFim: String?
     ): ResponseEntity<Any> {
-        // Implementar a lógica de consulta de extrato
-        return ResponseEntity.ok().build()
+        val transferencias = transferenciaService.obterExtrato(numero, dataInicio, dataFim)
+        return ResponseEntity.ok(transferencias)
     }
 }
