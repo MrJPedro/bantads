@@ -1,15 +1,21 @@
 package com.bantads.auth_service.services;
 
+import com.bantads.auth_service.controllers.AuthController;
 //import com.bantads.auth_service.DTOs.UsuarioDTO;
 import com.bantads.auth_service.repositories.UsuarioRepository;
 import com.bantads.auth_service.DTOs.UsuarioDTO;
 import com.bantads.auth_service.models.Usuario;
+import com.bantads.auth_service.models.UsuarioMapper;
+import com.bantads.auth_service.utils.CPFUtil;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 
 //import java.util.ArrayList;
 //import java.util.HashMap;
@@ -17,102 +23,78 @@ import org.springframework.stereotype.Service;
 @Service
 public class UsuarioService {
 
-    
     @Autowired
     UsuarioRepository usuarioRepository;
 
+    @Autowired
+    UsuarioMapper usuarioMapper;
+
+    @Autowired
+    CPFUtil cpfUtil;
 
 
-    /*public static HashMap<String, UsuarioDTO> listaMap = new HashMap<>();
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO> getAllUsuarios() throws Exception{
 
-    static {
-        listaMap.put(
-            "cli1@bantads.com.br",
-            new UsuarioDTO("12912861012", "CLIENTE", "cli1@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "cli2@bantads.com.br",
-            new UsuarioDTO("09506382000", "CLIENTE", "cli2@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "cli3@bantads.com.br",
-            new UsuarioDTO("85733854057", "CLIENTE", "cli3@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "cli4@bantads.com.br",
-            new UsuarioDTO("58872160006", "CLIENTE", "cli4@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "cli5@bantads.com.br",
-            new UsuarioDTO("76179646090", "CLIENTE", "cli5@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "ger1@bantads.com.br",
-            new UsuarioDTO("98574307084", "GERENTE", "ger1@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "ger2@bantads.com.br",
-            new UsuarioDTO("64065268052", "GERENTE", "ger2@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "ger3@bantads.com.br",
-            new UsuarioDTO("23862179060", "GERENTE", "ger3@bantads.com.br", "tads")
-        );
-        listaMap.put(
-            "adm1@bantads.com.br",
-            new UsuarioDTO("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "tads")
-        );
-
-    }*/
-
-    public List<Usuario> getAllUsuarios(){
-        //List<UsuarioDTO> cadastros = new ArrayList<UsuarioDTO>(listaMap.values());
-        //return cadastros;
-
-        return usuarioRepository.findAll();
-        
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<UsuarioDTO> uDTOs = usuarios.stream()
+            .map((Usuario usuario) -> this.usuarioMapper.toDTO(usuario))
+            .toList();
+        return uDTOs;
     }
 
-    public Usuario getUsuario(String loginReq) {
-        
-        /*if(listaMap.containsKey(loginReq))
-            return listaMap.get(loginReq);
-        
-        return null;*/
+    @Transactional(readOnly = true)
+    public UsuarioDTO getUsuario(String loginReq) throws NoSuchElementException {
 
-        Usuario u = null;
+        UsuarioDTO uDTO = null;
         try {
-            u = usuarioRepository.findById(loginReq).get();
+            Usuario u = usuarioRepository.findByLogin(loginReq).orElseThrow(() -> new NoSuchElementException());
+            uDTO = usuarioMapper.toDTO(u);
         } catch (Exception e){
+            System.out.println("==== Classe: UsuarioService ====");
+            System.out.println("==== Chamada: getUsuario ====");
             System.out.println(e);
+            System.out.println("==== ==== ====");
         }
-        return u;
-
-        
+        return uDTO;
     }
 
-    public Usuario postUsuario(Usuario usuario){
-        /*if (cadastro == null)
-            return null;
+    @Transactional
+    public UsuarioDTO postUsuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String senhaUsuario) throws Exception{
+
+        String cpfUsuarioFormatado = cpfUtil.formatarCPF(cpfUsuario);
         
-        if (listaMap.containsKey(cadastro.loginUsuario()))
-            return null;
-        
-        listaMap.put(cadastro.loginUsuario(), cadastro);
+        boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuario);
+        boolean loginUsuarioJaExiste = usuarioRepository.findByLogin(loginUsuario) != null;
+        boolean cpfUsuarioJaExiste = usuarioRepository.findByCpfUsuario(cpfUsuario) != null;
 
-        return cadastro;*/
+        if(!cpfUsuarioEhValido) throw new IllegalArgumentException();
 
-        Usuario u = null;
+        if(loginUsuarioJaExiste) throw new Exception("Login já cadastrado!");
 
+        if(cpfUsuarioJaExiste) throw new Exception("CPF já cadastrado!");
+
+        UsuarioDTO uDTO;
         try {
-            u = usuarioRepository.insert(usuario);
+            uDTO = new UsuarioDTO(cpfUsuario, tipoUsuario, loginUsuario, senhaUsuario);
+            
+            // validar e-mail
+            // criptografar senha
+            Usuario u = usuarioMapper.toUsuario(uDTO);
+            usuarioRepository.insert(u);
         } catch (Exception e){
+            if()
+            System.out.println("==== Classe: UsuarioService ====");
+            System.out.println("==== Chamada: postUsuario ====");
             System.out.println(e);
+            System.out.println("==== ==== ====");
+            uDTO = null;
         }
-        return u;
+        return uDTO;
     }
 
-    public Usuario putCadastro(Usuario usuario){
+    @Transactional
+    public UsuarioDTO putUsuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String senhaUsuario) throws Exception{
         /*if (cadastro == null)
             return null;
 
@@ -122,8 +104,9 @@ public class UsuarioService {
         listaMap.replace(cadastro.loginUsuario(), cadastro);
 
         return listaMap.get(cadastro.loginUsuario());*/
-
-        Usuario uAntigo = usuarioRepository.findById(usuario.getLogin()).get();
+        
+        Usuario uAntigo = usuarioMapper.toUsuario(uDTO);
+        usuarioRepository.findById(uAntigo.getLogin()).get();
         Usuario uNovo = null;
 
         try {
