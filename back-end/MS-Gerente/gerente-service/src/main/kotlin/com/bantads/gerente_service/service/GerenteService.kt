@@ -19,10 +19,35 @@ class GerenteService(
     private val restTemplate: RestTemplate
 ) {
 
-    fun listarTodos(): List<DadoGerente> {
+    fun listarTodos(cpf: String? = null): List<DadoGerente> {
+        if (!cpf.isNullOrBlank()) {
+            val gerente = gerenteRepository.findByCpf(cpf) ?: return emptyList()
+            return listOf(toDTO(gerente))
+        }
+
         return gerenteRepository.findAll()
             .sortedBy { it.nome }
             .map { toDTO(it) }
+    }
+
+    fun listarDashboard(): List<DashboardGerenteItemDTO> {
+        val gerentes = gerenteRepository.findAll()
+            .sortedBy { it.nome }
+
+        val relatorioClientes = buscarRelatorioClientes()
+        val contasPorGerente = relatorioClientes
+            .mapNotNull { toContaDashboard(it) }
+            .groupBy { it.gerente }
+
+        return gerentes.map { gerente ->
+            val contas = contasPorGerente[gerente.cpf].orEmpty()
+            DashboardGerenteItemDTO(
+                gerente = toDTO(gerente),
+                clientes = contas,
+                saldo_positivo = somarSaldoPositivo(contas),
+                saldo_negativo = somarSaldoNegativo(contas)
+            )
+        }
     }
 
     fun buscarPorCpf(cpf: String): DadoGerente {
@@ -123,13 +148,15 @@ class GerenteService(
     }
 
     @Transactional
-    fun remover(cpf: String) {
+    fun remover(cpf: String): DadoGerente {
         val gerente = gerenteRepository.findByCpf(cpf)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Gerente não encontrado")
 
         if (gerenteRepository.count() <= 1) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível remover o último gerente do sistema.")
         }
+
+        val gerenteRemovido = toDTO(gerente)
 
         val todos = gerenteRepository.findAll().filter { it.cpf != cpf }
         val herdeiro = todos.minByOrNull { it.quantidadeClientes }
@@ -147,6 +174,44 @@ class GerenteService(
         )
         
         rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.remocao", evento)
+
+        return gerenteRemovido
+    }
+
+    private fun buscarRelatorioClientes(): List<RelatorioClienteCompostoDTO> {
+        return try {
+            restTemplate.getForObject(
+                "http://ms-cliente:8083/clientes?filtro=adm_relatorio_clientes",
+                Array<RelatorioClienteCompostoDTO>::class.java
+            )?.toList() ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun toContaDashboard(relatorio: RelatorioClienteCompostoDTO): ContaDashboardDTO? {
+        val numeroConta = relatorio.conta ?: return null
+        val cpfGerente = relatorio.gerenteCpf ?: return null
+
+        return ContaDashboardDTO(
+            cliente = relatorio.cpf,
+            numero = numeroConta,
+            saldo = relatorio.saldo ?: BigDecimal.ZERO,
+            limite = relatorio.limite ?: BigDecimal.ZERO,
+            gerente = cpfGerente
+        )
+    }
+
+    private fun somarSaldoPositivo(contas: List<ContaDashboardDTO>): BigDecimal {
+        return contas
+            .filter { it.saldo >= BigDecimal.ZERO }
+            .fold(BigDecimal.ZERO) { total, conta -> total + conta.saldo }
+    }
+
+    private fun somarSaldoNegativo(contas: List<ContaDashboardDTO>): BigDecimal {
+        return contas
+            .filter { it.saldo < BigDecimal.ZERO }
+            .fold(BigDecimal.ZERO) { total, conta -> total + conta.saldo }
     }
 
     private fun toDTO(entity: GerenteEntity): DadoGerente {

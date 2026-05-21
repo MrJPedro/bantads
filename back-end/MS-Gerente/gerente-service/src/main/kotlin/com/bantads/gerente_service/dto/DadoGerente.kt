@@ -6,7 +6,8 @@ data class DadoGerente(
     val nome: String,
     val email: String,
     val telefone: String,
-    val quantidadeClientes: Int
+    val quantidadeClientes: Int,
+    val tipo: String = "GERENTE"
 )
 
 data class DadoGerenteInsercao(
