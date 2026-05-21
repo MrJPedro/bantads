@@ -32,7 +32,7 @@ class ConsultaConfig {
         val em = LocalContainerEntityManagerFactoryBean()
         em.dataSource = dataSource
         
-        em.setPackagesToScan("com.bantads.conta_service.entity") 
+        em.setPackagesToScan("com.bantads.conta_service.entity.comando") 
         em.jpaVendorAdapter = HibernateJpaVendorAdapter()
 
         val jpaProperties = java.util.Properties()

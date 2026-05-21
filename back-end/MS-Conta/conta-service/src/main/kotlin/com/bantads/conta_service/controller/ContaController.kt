@@ -75,6 +75,13 @@ class ContaController(
         return ResponseEntity.ok(conta)
     }
 
+    @GetMapping("/gerente/{cpf}")
+    fun getContasPorGerente(
+        @PathVariable cpf: String
+    ): ResponseEntity<List<ContaDetalhesDTO>> {
+        return ResponseEntity.ok(contaService.obterContasPorGerente(cpf))
+    }
+
     @GetMapping("/top3")
     fun getTop3Contas(): ResponseEntity<List<ContaDetalhesDTO>> {
         return ResponseEntity.ok(contaService.obterTop3Contas())

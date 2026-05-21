@@ -67,6 +67,20 @@ class ContaService(
         )
     }
 
+    fun obterContasPorGerente(cpfGerente: String): List<ContaDetalhesDTO> {
+        return contaRepositoryRead.findByGerente(cpfGerente)
+            .map { conta ->
+                ContaDetalhesDTO(
+                    cliente = conta.cliente,
+                    numero = conta.numero,
+                    saldo = conta.saldo.setScale(2, RoundingMode.HALF_EVEN),
+                    limite = conta.limite.setScale(2, RoundingMode.HALF_EVEN),
+                    gerente = conta.gerente,
+                    criacao = conta.criacao.toString()
+                )
+            }
+    }
+
     fun obterTop3Contas(): List<ContaDetalhesDTO> {
         return contaRepositoryRead.findTop3ByOrderBySaldoDesc()
             .map { conta ->
