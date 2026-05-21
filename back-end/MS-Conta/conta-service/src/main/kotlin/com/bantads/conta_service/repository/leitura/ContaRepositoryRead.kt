@@ -10,6 +10,8 @@ interface ContaRepositoryRead : JpaRepository<Conta, Long> {
 
     fun findByCliente(cliente: String): List<Conta>
 
+    fun findByGerente(gerente: String): List<Conta>
+
     fun findFirstByCliente(cliente: String): Conta?
 
     fun findByNumero(numero: String): Conta?

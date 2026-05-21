@@ -12,7 +12,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "transferencia")
+@Table(name = "transferenciaComando")
 class Transferencia(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,7 @@ class Transferencia(
 
     @ManyToOne
     @JoinColumn(name = "conta_destino_id", nullable = true)
-    var contaDestino: Conta,
+    var contaDestino: Conta?,
 
     @Column(name = "valor", nullable = false, precision = 19, scale = 2)
     var valor: BigDecimal,

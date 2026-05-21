@@ -24,8 +24,3 @@ services:
     depends_on:
       - rabbitmq
       - postgres-db
-
-networks:
-  backend:
-    name: ms-conta_backend
-    external: true

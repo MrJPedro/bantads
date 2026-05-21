@@ -13,7 +13,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "transferencia")
+@Table(name = "transferenciaLeitura")
 class Transferencia(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
