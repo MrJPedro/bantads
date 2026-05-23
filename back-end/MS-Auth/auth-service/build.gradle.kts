@@ -20,7 +20,8 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-	implementation("org.modelMapper")
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
+	implementation("org.modelmapper:modelmapper:3.2.6")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	//testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
