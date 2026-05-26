@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository
 interface ContaRepositoryWrite: JpaRepository<Conta, Long> {
 
     fun save(conta: Conta): Conta
-    
+
+    fun findByNumero(numero: String): Conta?
 }

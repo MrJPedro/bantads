@@ -22,10 +22,15 @@ class Conta(
     @Column(name = "numero", nullable = false, unique = true)
     var numero: String,
 
-    @Column(name = "saldo", nullable = false)
+    @Column(name = "saldo", nullable = false, precision = 19, scale = 2)
     var saldo: BigDecimal,
 
-    @Column(name = "limite", nullable = false)
+    @Column(name = "limite", nullable = false, precision = 19, scale = 2)
     var limite: BigDecimal,
 
+    @Column(name = "gerente", nullable = false)
+    var gerente: String,
+
+    @Column(name = "criacao", nullable = false)
+    var criacao: LocalDateTime
 )

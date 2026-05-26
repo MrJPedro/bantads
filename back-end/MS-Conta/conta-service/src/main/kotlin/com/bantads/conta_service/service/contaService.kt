@@ -3,6 +3,7 @@ package com.bantads.conta_service.service
 import com.bantads.conta_service.dto.CriarContaDTO
 import com.bantads.conta_service.dto.ContaDetalhesDTO
 import com.bantads.conta_service.entity.comando.Conta
+import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
 import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
@@ -53,6 +54,17 @@ class ContaService(
             )
         )
 
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = conta.cliente,
+                numero = conta.numero,
+                saldo = conta.saldo,
+                limite = conta.limite,
+                gerente = conta.gerente,
+                criacao = conta.criacao
+            )
+        )
+
         return conta
     }
 
@@ -66,6 +78,17 @@ class ContaService(
 
         conta.gerente = gerenteCpf
         val contaAtualizada = contaRepositoryWrite.save(conta)
+
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = contaAtualizada.cliente,
+                numero = contaAtualizada.numero,
+                saldo = contaAtualizada.saldo,
+                limite = contaAtualizada.limite,
+                gerente = contaAtualizada.gerente,
+                criacao = contaAtualizada.criacao
+            )
+        )
 
         return ContaDetalhesDTO(
             cliente = contaAtualizada.cliente,

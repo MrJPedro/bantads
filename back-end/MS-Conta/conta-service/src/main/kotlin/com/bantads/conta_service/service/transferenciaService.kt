@@ -4,6 +4,8 @@ import com.bantads.conta_service.dto.DepositoRequestDTO
 import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
 import com.bantads.conta_service.entity.comando.Transferencia
+import com.bantads.conta_service.entity.leitura.Transferencia as TransferenciaLeitura
+import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
 import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
@@ -37,11 +39,27 @@ class TransferenciaService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor do depósito deve ser maior que zero")
         }
 
-        val conta = contaRepositoryRead.findByNumero(numero)
+        val contaRead = contaRepositoryRead.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
-        conta.saldo = conta.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
-        val contaSalva = contaRepositoryWrite.save(conta)
+        val novoSaldo = contaRead.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
+
+        val contaWrite = contaRepositoryWrite.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+        contaWrite.saldo = novoSaldo
+        val contaSalva = contaRepositoryWrite.save(contaWrite)
+
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = contaSalva.cliente,
+                numero = contaSalva.numero,
+                saldo = contaSalva.saldo,
+                limite = contaSalva.limite,
+                gerente = contaSalva.gerente,
+                criacao = contaSalva.criacao
+            )
+        )
+
         transferenciaRepositoryWrite.save(
             Transferencia(
                 contaOrigem = contaSalva,
@@ -59,16 +77,33 @@ class TransferenciaService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor do saque deve ser maior que zero")
         }
 
-        val conta = contaRepositoryRead.findByNumero(numero)
+        val contaRead = contaRepositoryRead.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
-        val disponivel = conta.saldo.plus(conta.limite)
+        val disponivel = contaRead.saldo.plus(contaRead.limite)
         if (disponivel < valor) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente")
         }
 
-        conta.saldo = conta.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
-        val contaSalva = contaRepositoryWrite.save(conta)
+        val novoSaldo = contaRead.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
+
+        val contaWrite = contaRepositoryWrite.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+        contaWrite.saldo = novoSaldo
+        val contaSalva = contaRepositoryWrite.save(contaWrite)
+
+
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = contaSalva.cliente,
+                numero = contaSalva.numero,
+                saldo = contaSalva.saldo,
+                limite = contaSalva.limite,
+                gerente = contaSalva.gerente,
+                criacao = contaSalva.criacao
+            )
+        )
+
         transferenciaRepositoryWrite.save(
             Transferencia(
                 contaOrigem = contaSalva,
@@ -94,9 +129,9 @@ class TransferenciaService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Conta de destino deve ser diferente da conta de origem")
         }
 
-        val contaOrigem = contaRepositoryRead.findByNumero(numero)
+        val contaOrigem = contaRepositoryWrite.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta de origem não encontrada")
-        val contaDestino = contaRepositoryRead.findByNumero(request.contaDestino)
+        val contaDestino = contaRepositoryWrite.findByNumero(request.contaDestino)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta de destino não encontrada")
 
         val disponivel = contaOrigem.saldo.plus(contaOrigem.limite)
@@ -107,39 +142,67 @@ class TransferenciaService(
         contaOrigem.saldo = contaOrigem.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
         contaDestino.saldo = contaDestino.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
 
-        contaRepositoryWrite.save(contaOrigem)
-        contaRepositoryWrite.save(contaDestino)
+        val contaOrigemAtualizada = contaRepositoryWrite.save(contaOrigem)
+        val contaDestinoAtualizada = contaRepositoryWrite.save(contaDestino)
 
-        val contaOrigemRefresh = contaRepositoryRead.findByNumero(numero)
-            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao atualizar conta de origem")
-        val contaDestinoRefresh = contaRepositoryRead.findByNumero(request.contaDestino)
-            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao atualizar conta de destino")
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = contaOrigemAtualizada.cliente,
+                numero = contaOrigemAtualizada.numero,
+                saldo = contaOrigemAtualizada.saldo,
+                limite = contaOrigemAtualizada.limite,
+                gerente = contaOrigemAtualizada.gerente,
+                criacao = contaOrigemAtualizada.criacao
+            )
+        )
+
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = contaDestinoAtualizada.cliente,
+                numero = contaDestinoAtualizada.numero,
+                saldo = contaDestinoAtualizada.saldo,
+                limite = contaDestinoAtualizada.limite,
+                gerente = contaDestinoAtualizada.gerente,
+                criacao = contaDestinoAtualizada.criacao
+            )
+        )
 
         transferenciaRepositoryWrite.save(
             Transferencia(
-                contaOrigem = contaOrigemRefresh,
-                contaDestino = contaDestinoRefresh,
+                contaOrigem = contaOrigemAtualizada,
+                contaDestino = contaDestinoAtualizada,
                 valor = valor,
-                saldofinal = contaOrigemRefresh.saldo,
+                saldofinal = contaOrigemAtualizada.saldo,
                 data = LocalDateTime.now()
+            )
+        )
+        transferenciaRepositoryRead.save(
+            TransferenciaLeitura(
+                contaOrigem = contaOrigemAtualizada.numero,
+                contaDestino = contaDestinoAtualizada.numero,
+                contaDestinoNome = contaDestinoAtualizada.cliente,
+                valor = valor,
+                data = LocalDateTime.now(),
+                saldofinal = contaOrigemAtualizada.saldo
             )
         )
     }
 
-    fun obterExtrato(numero: String, dataInicio: String?, dataFim: String?): List<Transferencia> {
-        val conta = contaRepositoryRead.findByNumero(numero)
+
+    fun obterExtrato(numero: String, dataInicio: String?, dataFim: String?): List<TransferenciaLeitura> {
+        contaRepositoryRead.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
-        val transferencias = transferenciaRepositoryRead.findByContaOrigem(conta)
+        val transferencias = transferenciaRepositoryRead.findByContaOrigem(numero)
 
         return if (!dataInicio.isNullOrBlank() && !dataFim.isNullOrBlank()) {
             val inicio = try {
-                java.time.LocalDateTime.parse(dataInicio)
+                LocalDateTime.parse(dataInicio)
             } catch (ex: Exception) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Data de início inválida")
             }
             val fim = try {
-                java.time.LocalDateTime.parse(dataFim)
+                LocalDateTime.parse(dataFim)
             } catch (ex: Exception) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Data de fim inválida")
             }
@@ -151,5 +214,18 @@ class TransferenciaService(
             transferencias
         }
     }
-    
+
+
+    private fun syncContaReadModel(conta: com.bantads.conta_service.entity.comando.Conta) {
+        contaRepositoryRead.save(
+            ContaLeitura(
+                cliente = conta.cliente,
+                numero = conta.numero,
+                saldo = conta.saldo,
+                limite = conta.limite,
+                gerente = conta.gerente,
+                criacao = conta.criacao
+            )
+        )
+    }
 }
