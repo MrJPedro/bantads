@@ -11,4 +11,5 @@ interface TransferenciaRepositoryRead : JpaRepository<Transferencia, Long> {
 
     fun findByContaDestino(contaDestino: String): List<Transferencia>
 
+    fun save(transferencia: com.bantads.conta_service.entity.comando.Transferencia): Transferencia
 }

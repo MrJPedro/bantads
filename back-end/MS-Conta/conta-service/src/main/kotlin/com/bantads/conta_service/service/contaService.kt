@@ -2,6 +2,7 @@ package com.bantads.conta_service.service
 
 import com.bantads.conta_service.dto.ContaDTO
 import com.bantads.conta_service.dto.ContaDetalhesDTO
+import com.bantads.conta_service.dto.ContaWriteDTO
 import com.bantads.conta_service.entity.comando.Conta
 import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
@@ -53,6 +54,11 @@ class ContaService(
             )
         )
 
+        return conta
+    }
+
+    fun criarContaRead(conta: ContaWriteDTO)
+    {
         contaRepositoryRead.save(
             ContaLeitura(
                 cliente = conta.cliente,
@@ -63,8 +69,6 @@ class ContaService(
                 criacao = conta.criacao
             )
         )
-
-        return conta
     }
 
     fun atualizarGerente(numero: String, gerenteCpf: String): ContaDetalhesDTO {
@@ -72,7 +76,7 @@ class ContaService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF do gerente é obrigatório")
         }
 
-        val conta = contaRepositoryRead.findByNumero(numero)
+        val conta = contaRepositoryWrite.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
         conta.gerente = gerenteCpf

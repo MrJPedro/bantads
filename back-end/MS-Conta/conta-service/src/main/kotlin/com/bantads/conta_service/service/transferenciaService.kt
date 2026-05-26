@@ -3,6 +3,8 @@ package com.bantads.conta_service.service
 import com.bantads.conta_service.dto.DepositoRequestDTO
 import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
+import com.bantads.conta_service.dto.TransferenciaWriteDTO
+import com.bantads.conta_service.entity.comando.Conta
 import com.bantads.conta_service.entity.comando.Transferencia
 import com.bantads.conta_service.entity.leitura.Transferencia as TransferenciaLeitura
 import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
@@ -26,6 +28,18 @@ class TransferenciaService(
     private val contaRepositoryWrite: ContaRepositoryWrite,
     private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite
 ) {
+
+    fun criarTransferenciaRead(transferencia: TransferenciaWriteDTO) {
+        val transferencia = transferenciaRepositoryRead.save(
+            Transferencia(
+                contaOrigem = transferencia.contaOrigem,
+                contaDestino = transferencia.contaDestino,
+                valor = transferencia.valor,
+                saldofinal = transferencia.saldofinal,
+                data = transferencia.data
+            )
+        )
+    }
 
     fun obterSaldo(numero: String): BigDecimal {
         val conta = contaRepositoryRead.findByNumero(numero)
@@ -92,18 +106,6 @@ class TransferenciaService(
         contaWrite.saldo = novoSaldo
         val contaSalva = contaRepositoryWrite.save(contaWrite)
 
-
-        contaRepositoryRead.save(
-            ContaLeitura(
-                cliente = contaSalva.cliente,
-                numero = contaSalva.numero,
-                saldo = contaSalva.saldo,
-                limite = contaSalva.limite,
-                gerente = contaSalva.gerente,
-                criacao = contaSalva.criacao
-            )
-        )
-
         transferenciaRepositoryWrite.save(
             Transferencia(
                 contaOrigem = contaSalva,
@@ -145,8 +147,8 @@ class TransferenciaService(
         val contaOrigemAtualizada = contaRepositoryWrite.save(contaOrigem)
         val contaDestinoAtualizada = contaRepositoryWrite.save(contaDestino)
 
-        contaRepositoryRead.save(
-            ContaLeitura(
+        contaRepositoryWrite.save(
+            Conta(
                 cliente = contaOrigemAtualizada.cliente,
                 numero = contaOrigemAtualizada.numero,
                 saldo = contaOrigemAtualizada.saldo,
@@ -156,8 +158,8 @@ class TransferenciaService(
             )
         )
 
-        contaRepositoryRead.save(
-            ContaLeitura(
+        contaRepositoryWrite.save(
+            Conta(
                 cliente = contaDestinoAtualizada.cliente,
                 numero = contaDestinoAtualizada.numero,
                 saldo = contaDestinoAtualizada.saldo,
