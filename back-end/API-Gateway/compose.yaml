@@ -17,7 +17,4 @@ services:
     networks:
       - backend
     depends_on:
-      - rabbitmq 
-      
-networks:
-  backend:
+      - rabbitmq
