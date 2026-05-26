@@ -12,7 +12,9 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 
 @Service
 @Transactional
@@ -24,13 +26,20 @@ class TransferenciaService(
 ) {
 
     fun obterSaldo(numero: String): BigDecimal {
-        val conta = contaRepositoryRead.findByNumero(numero) ?: return BigDecimal.ZERO
-        return conta.saldo
+        val conta = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+        return conta.saldo.setScale(2, RoundingMode.HALF_EVEN)
     }
 
-    fun depositar(numero: String, request: DepositoRequestDTO): Any {
+    fun depositar(numero: String, request: DepositoRequestDTO) {
         val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
-        val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
+        if (valor <= BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor do depósito deve ser maior que zero")
+        }
+
+        val conta = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+
         conta.saldo = conta.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
         val contaSalva = contaRepositoryWrite.save(conta)
         transferenciaRepositoryWrite.save(
@@ -42,14 +51,22 @@ class TransferenciaService(
                 data = LocalDateTime.now()
             )
         )
-        return Any()
     }
 
-    fun sacar(numero: String, request: SaqueRequestDTO): Any {
+    fun sacar(numero: String, request: SaqueRequestDTO) {
         val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
-        val conta = contaRepositoryRead.findByNumero(numero) ?: return Any()
+        if (valor <= BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor do saque deve ser maior que zero")
+        }
+
+        val conta = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+
         val disponivel = conta.saldo.plus(conta.limite)
-        if (disponivel < valor) return Any()
+        if (disponivel < valor) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente")
+        }
+
         conta.saldo = conta.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
         val contaSalva = contaRepositoryWrite.save(conta)
         transferenciaRepositoryWrite.save(
@@ -61,26 +78,43 @@ class TransferenciaService(
                 data = LocalDateTime.now()
             )
         )
-        return Any()
     }
 
-    fun transferir(numero: String, request: TransferenciaRequestDTO): Any {
+    fun transferir(numero: String, request: TransferenciaRequestDTO) {
         val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
-        val contaOrigem = contaRepositoryRead.findByNumero(numero) ?: return Any()
-        val contaDestino = contaRepositoryRead.findByNumero(request.contaDestino) ?: return Any()
+        if (valor <= BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor da transferência deve ser maior que zero")
+        }
+
+        if (request.contaDestino.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Conta de destino é obrigatória")
+        }
+
+        if (numero == request.contaDestino) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Conta de destino deve ser diferente da conta de origem")
+        }
+
+        val contaOrigem = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta de origem não encontrada")
+        val contaDestino = contaRepositoryRead.findByNumero(request.contaDestino)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta de destino não encontrada")
+
         val disponivel = contaOrigem.saldo.plus(contaOrigem.limite)
-        if (disponivel < valor) return Any()
+        if (disponivel < valor) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente para transferência")
+        }
 
         contaOrigem.saldo = contaOrigem.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
         contaDestino.saldo = contaDestino.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
 
         contaRepositoryWrite.save(contaOrigem)
         contaRepositoryWrite.save(contaDestino)
-        
-        // Refetch entities para evitar problemas com desanexação
-        val contaOrigemRefresh = contaRepositoryRead.findByNumero(numero) ?: return Any()
-        val contaDestinoRefresh = contaRepositoryRead.findByNumero(request.contaDestino) ?: return Any()
-        
+
+        val contaOrigemRefresh = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao atualizar conta de origem")
+        val contaDestinoRefresh = contaRepositoryRead.findByNumero(request.contaDestino)
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao atualizar conta de destino")
+
         transferenciaRepositoryWrite.save(
             Transferencia(
                 contaOrigem = contaOrigemRefresh,
@@ -90,16 +124,28 @@ class TransferenciaService(
                 data = LocalDateTime.now()
             )
         )
-        return Any()
     }
 
     fun obterExtrato(numero: String, dataInicio: String?, dataFim: String?): List<Transferencia> {
-        val conta = contaRepositoryRead.findByNumero(numero) ?: return emptyList()
+        val conta = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+
         val transferencias = transferenciaRepositoryRead.findByContaOrigem(conta)
-        
-        return if (dataInicio != null && dataFim != null) {
-            val inicio = java.time.LocalDateTime.parse(dataInicio)
-            val fim = java.time.LocalDateTime.parse(dataFim)
+
+        return if (!dataInicio.isNullOrBlank() && !dataFim.isNullOrBlank()) {
+            val inicio = try {
+                java.time.LocalDateTime.parse(dataInicio)
+            } catch (ex: Exception) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Data de início inválida")
+            }
+            val fim = try {
+                java.time.LocalDateTime.parse(dataFim)
+            } catch (ex: Exception) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Data de fim inválida")
+            }
+            if (fim.isBefore(inicio)) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Intervalo inválido: data de fim anterior à data de início")
+            }
             transferencias.filter { it.data in inicio..fim }
         } else {
             transferencias

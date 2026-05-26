@@ -63,6 +63,19 @@ class ClienteController (
     }
 
     /**
+     * PUT /clientes/{cpf}/gerente
+     * Atribui ou atualiza o gerente do cliente.
+     */
+    @PutMapping("/{cpf}/gerente")
+    fun atualizarGerente(
+        @PathVariable cpf: String,
+        @RequestBody request: GerenteUpdateRequest
+    ): ResponseEntity<DadosClienteResponse> {
+        val response = clienteService.atualizarGerente(cpf, request.gerenteCpf)
+        return ResponseEntity.ok(response)
+    }
+
+    /**
      * POST /clientes/{cpf}/aprovar
      * Aprova o cliente com o CPF passado e cria a conta.
      */

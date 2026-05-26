@@ -8,7 +8,9 @@ import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
 import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
@@ -24,6 +26,22 @@ class ContaService(
 ) {
 
     fun criar(numero: String, request: CriarContaDTO): Any {
+        if (request.cliente.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente é obrigatório")
+        }
+
+        if (request.saldo < BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo inicial não pode ser negativo")
+        }
+
+        if (request.limite < BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Limite não pode ser negativo")
+        }
+
+        if (contaRepositoryRead.findByNumero(numero) != null) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Número de conta já existe")
+        }
+
         val conta = contaRepositoryWrite.save(
             Conta(
                 cliente = request.cliente,
@@ -36,6 +54,27 @@ class ContaService(
         )
 
         return conta
+    }
+
+    fun atualizarGerente(numero: String, gerenteCpf: String): ContaDetalhesDTO {
+        if (gerenteCpf.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF do gerente é obrigatório")
+        }
+
+        val conta = contaRepositoryRead.findByNumero(numero)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
+
+        conta.gerente = gerenteCpf
+        val contaAtualizada = contaRepositoryWrite.save(conta)
+
+        return ContaDetalhesDTO(
+            cliente = contaAtualizada.cliente,
+            numero = contaAtualizada.numero,
+            saldo = contaAtualizada.saldo.setScale(2, RoundingMode.HALF_EVEN),
+            limite = contaAtualizada.limite.setScale(2, RoundingMode.HALF_EVEN),
+            gerente = contaAtualizada.gerente,
+            criacao = contaAtualizada.criacao.toString()
+        )
     }
 
     fun gerarNumeroContaUnico(): String {

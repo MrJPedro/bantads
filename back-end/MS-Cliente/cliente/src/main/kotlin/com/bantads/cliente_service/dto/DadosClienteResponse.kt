@@ -6,5 +6,6 @@ data class DadosClienteResponse(
     val cpf: String,
     val email: String,
     val telefone: String,
-    val salario: Number
+    val salario: Number,
+    val gerenteCpf: String? = null
 )

@@ -82,6 +82,15 @@ class ContaController(
         return ResponseEntity.ok(contaService.obterContasPorGerente(cpf))
     }
 
+    @PutMapping("/{numero}/gerente")
+    fun atualizarGerente(
+        @PathVariable numero: String,
+        @RequestBody request: AtualizarGerenteDTO
+    ): ResponseEntity<ContaDetalhesDTO> {
+        val response = contaService.atualizarGerente(numero, request.gerente)
+        return ResponseEntity.ok(response)
+    }
+
     @GetMapping("/top3")
     fun getTop3Contas(): ResponseEntity<List<ContaDetalhesDTO>> {
         return ResponseEntity.ok(contaService.obterTop3Contas())

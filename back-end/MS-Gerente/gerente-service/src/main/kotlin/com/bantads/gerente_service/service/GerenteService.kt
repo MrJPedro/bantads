@@ -115,18 +115,21 @@ class GerenteService(
             if (contaEscolhida != null) {
                 val gerenteDoador = gerentesMax.find { it.cpf == contaEscolhida.gerente }
                 if (gerenteDoador != null) {
-                    gerenteDoador.quantidadeClientes -= 1
-                    novoGerente.quantidadeClientes += 1
-                    gerenteRepository.save(gerenteDoador)
-                    gerenteRepository.save(novoGerente)
+                    if (atualizarContaGerente(contaEscolhida.numero, novoGerente.cpf)) {
+                        atualizarClienteGerente(contaEscolhida.cliente, novoGerente.cpf)
+                        gerenteDoador.quantidadeClientes -= 1
+                        novoGerente.quantidadeClientes += 1
+                        gerenteRepository.save(gerenteDoador)
+                        gerenteRepository.save(novoGerente)
 
-                    val eventoTransferencia = GerenteEvent(
-                        tipo = "transferencia_conta",
-                        cpfGerente = novoGerente.cpf,
-                        cpfGerenteAnterior = gerenteDoador.cpf,
-                        numeroConta = contaEscolhida.numero
-                    )
-                    rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.transferencia", eventoTransferencia)
+                        val eventoTransferencia = GerenteEvent(
+                            tipo = "transferencia_conta",
+                            cpfGerente = novoGerente.cpf,
+                            cpfGerenteAnterior = gerenteDoador.cpf,
+                            numeroConta = contaEscolhida.numero
+                        )
+                        rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.transferencia", eventoTransferencia)
+                    }
                 }
             }
         }
@@ -162,7 +165,23 @@ class GerenteService(
         val herdeiro = todos.minByOrNull { it.quantidadeClientes }
             ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Nenhum herdeiro encontrado.")
 
-        herdeiro.quantidadeClientes += gerente.quantidadeClientes
+        val contasGerente = try {
+            restTemplate.getForObject("http://ms-conta:8083/contas/gerente/$cpf", Array<ContaDTO>::class.java)
+                ?.toList()
+                .orEmpty()
+        } catch (e: Exception) {
+            emptyList()
+        }
+
+        val contasAtualizadas = contasGerente.count { conta ->
+            val sucessoConta = atualizarContaGerente(conta.numero, herdeiro.cpf)
+            if (sucessoConta) {
+                atualizarClienteGerente(conta.cliente, herdeiro.cpf)
+            }
+            sucessoConta
+        }
+
+        herdeiro.quantidadeClientes += contasAtualizadas
         gerenteRepository.save(herdeiro)
 
         gerenteRepository.delete(gerente)

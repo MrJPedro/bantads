@@ -44,20 +44,34 @@ class ClienteService(
 
   @Transactional
   fun autocadastro(dto: AutocadastroInfo): DadosClienteResponse {
-    if (clienteRepository.findByCpf(dto.cpf) != null) {
-      throw ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado")
-    }
+        if (clienteRepository.findByCpf(dto.cpf) != null) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado")
+        }
+
+        if (dto.nome.isBlank() || dto.email.isBlank() || dto.cpf.isBlank() || dto.telefone.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome, email, CPF e telefone são obrigatórios")
+        }
+
+        val salario = dto.salario.toString().toBigDecimalOrNull()
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Salário inválido")
+
+        if (salario <= BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Salário deve ser maior que zero")
+        }
+
+        val gerenteCpf = escolherGerente()
 
         var novoCliente = ClienteEntity(
             nome = dto.nome,
             email = dto.email,
             cpf = dto.cpf,
             telefone = dto.telefone,
-            salario = dto.salario.setScale(2, RoundingMode.HALF_EVEN),
+            salario = salario.setScale(2, RoundingMode.HALF_EVEN),
             endereco = "Rua Desconhecida", // MOCK
             cep = "00000000",              // MOCK
             cidade = "Desconhecida",       // MOCK
             estado = "ST",                 // MOCK
+            gerenteCpf = gerenteCpf,
             status = "AGUARDANDO_APROVACAO"
         )
 
@@ -68,6 +82,19 @@ class ClienteService(
         return toDTO(novoCliente)
     }
 
+    @Transactional
+    fun atualizarGerente(cpf: String, gerenteCpf: String): DadosClienteResponse {
+        if (gerenteCpf.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF do gerente é obrigatório")
+        }
+
+        val cliente = clienteRepository.findByCpf(cpf)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
+
+        cliente.gerenteCpf = gerenteCpf
+        clienteRepository.save(cliente)
+
+        return toDTO(cliente)
     @Transactional
     fun alterar(cpf: String, dto: PerfilInfo): DadosClienteResponse {
         val cliente = clienteRepository.findByCpf(cpf) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
@@ -157,6 +184,17 @@ class ClienteService(
         }
     }
 
+    private fun escolherGerente(): String? {
+        return try {
+            restTemplate.getForObject("http://ms-gerente:8082/gerentes", Array<GerenteInfoDTO>::class.java)
+                ?.toList()
+                ?.minByOrNull { it.quantidadeClientes }
+                ?.cpf
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
     private fun toRelatorioDTO(
         cliente: ClienteEntity,
         conta: ContaResumoDTO?,
@@ -189,7 +227,8 @@ class ClienteService(
             telefone = cliente.telefone,
             salario = cliente.salario,
             status = cliente.status,
-            motivo = motivo
+            motivo = motivo,
+            gerenteCpf = cliente.gerenteCpf
         )
 
         rabbitTemplate.convertAndSend(CLIENTE_EVENT_EXCHANGE, "cliente.event.$tipo", evento)
@@ -203,7 +242,8 @@ class ClienteService(
             cpf = entity.cpf,
             email = entity.email,
             telefone = entity.telefone,
-            salario = entity.salario
+            salario = entity.salario,
+            gerenteCpf = entity.gerenteCpf
         )
     }
 }

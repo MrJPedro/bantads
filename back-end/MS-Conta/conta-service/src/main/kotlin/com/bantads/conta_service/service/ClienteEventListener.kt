@@ -25,7 +25,7 @@ class ClienteEventListener(
                 numero = numeroConta,
                 saldo = BigDecimal.ZERO.setScale(2),
                 limite = limite.setScale(2, RoundingMode.HALF_EVEN),
-                gerente = "SEM_GERENTE",
+                gerente = evento.gerenteCpf ?: "SEM_GERENTE",
                 criacao = LocalDateTime.now()
             )
             contaService.criar(numeroConta, request)
