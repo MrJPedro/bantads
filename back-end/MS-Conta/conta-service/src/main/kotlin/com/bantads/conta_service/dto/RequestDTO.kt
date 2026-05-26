@@ -16,8 +16,7 @@ data class TransferenciaRequestDTO(
     val valor: BigDecimal
 )
 
-//temporario, esse DTO e o endpoint de criar conta via HTTP será removido
-data class CriarContaDTO(
+data class ContaDTO(
     val cliente: String,
     val numero: String,
     val saldo: BigDecimal,

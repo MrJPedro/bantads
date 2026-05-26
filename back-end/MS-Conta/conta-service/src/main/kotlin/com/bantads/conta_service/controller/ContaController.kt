@@ -16,7 +16,7 @@ class ContaController(
     @PostMapping("/{numero}")
     fun criarConta(
         @PathVariable numero: String,
-        @RequestBody request: CriarContaDTO
+        @RequestBody request: ContaDTO
     ): ResponseEntity<Any>{
         contaService.criar(numero, request);
         return ResponseEntity.ok().build()

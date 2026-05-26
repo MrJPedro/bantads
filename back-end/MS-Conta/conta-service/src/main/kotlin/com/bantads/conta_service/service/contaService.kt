@@ -1,6 +1,6 @@
 package com.bantads.conta_service.service
 
-import com.bantads.conta_service.dto.CriarContaDTO
+import com.bantads.conta_service.dto.ContaDTO
 import com.bantads.conta_service.dto.ContaDetalhesDTO
 import com.bantads.conta_service.entity.comando.Conta
 import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.LocalDateTime
 import kotlin.random.Random
 
 @Service
@@ -26,7 +25,7 @@ class ContaService(
     private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite
 ) {
 
-    fun criar(numero: String, request: CriarContaDTO): Any {
+    fun criar(numero: String, request: ContaDTO): Any {
         if (request.cliente.isBlank()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente é obrigatório")
         }

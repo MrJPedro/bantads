@@ -1,7 +1,7 @@
 package com.bantads.conta_service.service
 
 import com.bantads.conta_service.dto.ClienteEvent
-import com.bantads.conta_service.dto.CriarContaDTO
+import com.bantads.conta_service.dto.ContaDTO
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -20,7 +20,7 @@ class ClienteEventListener(
         if (evento.tipo == "aprovacao") {
             val numeroConta = contaService.gerarNumeroContaUnico()
             val limite = evento.salario?.let { contaService.calcularLimite(it) } ?: BigDecimal.ZERO
-            val request = CriarContaDTO(
+            val request = ContaDTO(
                 cliente = evento.cpf,
                 numero = numeroConta,
                 saldo = BigDecimal.ZERO.setScale(2),
