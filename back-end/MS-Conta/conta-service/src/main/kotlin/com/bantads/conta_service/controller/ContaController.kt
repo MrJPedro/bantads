@@ -16,7 +16,7 @@ class ContaController(
     @PostMapping("/{numero}")
     fun criarConta(
         @PathVariable numero: String,
-        @RequestBody request: CriarContaDTO
+        @RequestBody request: ContaDTO
     ): ResponseEntity<Any>{
         contaService.criar(numero, request);
         return ResponseEntity.ok().build()
@@ -80,6 +80,15 @@ class ContaController(
         @PathVariable cpf: String
     ): ResponseEntity<List<ContaDetalhesDTO>> {
         return ResponseEntity.ok(contaService.obterContasPorGerente(cpf))
+    }
+
+    @PutMapping("/{numero}/gerente")
+    fun atualizarGerente(
+        @PathVariable numero: String,
+        @RequestBody request: AtualizarGerenteDTO
+    ): ResponseEntity<ContaDetalhesDTO> {
+        val response = contaService.atualizarGerente(numero, request.gerente)
+        return ResponseEntity.ok(response)
     }
 
     @GetMapping("/top3")

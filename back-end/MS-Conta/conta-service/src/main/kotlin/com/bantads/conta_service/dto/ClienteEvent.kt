@@ -10,5 +10,6 @@ data class ClienteEvent(
     val telefone: String?,
     val salario: BigDecimal?,
     val status: String?,
-    val motivo: String?
+    val motivo: String?,
+    val gerenteCpf: String? = null
 )

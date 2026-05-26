@@ -1,6 +1,6 @@
 package com.bantads.conta_service.repository.leitura
 
-import com.bantads.conta_service.entity.comando.Conta
+import com.bantads.conta_service.entity.leitura.Conta
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
