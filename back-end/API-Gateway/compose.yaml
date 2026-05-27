@@ -18,6 +18,3 @@ services:
       - backend
     depends_on:
       - rabbitmq 
-      
-networks:
-  backend:

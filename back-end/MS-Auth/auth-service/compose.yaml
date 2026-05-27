@@ -1,21 +1,23 @@
-# ===== Microsserviço de autenticação
+services:
   ms-auth:
     image: ms-auth-spring
     container_name: ms-auth
-    build: ./MS-Auth/ms-auth.Dockerfile
-    networks: backend
+    build: 
+      context: ../
+      dockerfile: ms-auth.Dockerfile
+    networks:
+      - backend
     depends_on:
-      rabbitmq:
-      ms-auth-db:
+      - rabbitmq
+      - ms-auth-db
 
-# ===== BD (Mongo)
   ms-auth-db:
     image: mongodb/mongodb-community-server:latest
     container_name: ms-auth-db
-    environment:
-    #  - usuário
-    #  - senha
-    # E outras variáveis relevantes
     volumes:
-    #  - dados:/dados
-    networks: backend
+      - ms_auth_dados:/data/db
+    networks:
+      - backend
+
+volumes:
+  ms_auth_dados:
