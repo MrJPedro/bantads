@@ -2,7 +2,6 @@ package com.bantads.gerente_service.controller
 
 import com.bantads.gerente_service.dto.*
 import com.bantads.gerente_service.service.GerenteService
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -14,8 +13,15 @@ class GerenteController(
 
     /*GET /gerentes*/
     @GetMapping
-    fun listarGerentes(): ResponseEntity<List<DadoGerente>> {
-        val gerentes = gerenteService.listarTodos()
+    fun listarGerentes(
+        @RequestParam(name = "numero", required = false) numero: String?,
+        @RequestParam(name = "cpf", required = false) cpf: String?
+    ): ResponseEntity<Any> {
+        if (numero == "dashboard") {
+            return ResponseEntity.ok(gerenteService.listarDashboard())
+        }
+
+        val gerentes = gerenteService.listarTodos(cpf)
         return ResponseEntity.ok(gerentes)
     }
 
@@ -30,7 +36,7 @@ class GerenteController(
     @PostMapping
     fun inserirGerente(@RequestBody request: DadoGerenteInsercao): ResponseEntity<DadoGerente> {
         val novoGerente = gerenteService.inserir(request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoGerente)
+        return ResponseEntity.ok(novoGerente)
     }
 
     /*PUT /gerentes/{cpf}*/
@@ -45,8 +51,8 @@ class GerenteController(
 
     /*DELETE /gerentes/{cpf}*/
     @DeleteMapping("/{cpf}")
-    fun removerGerente(@PathVariable cpf: String): ResponseEntity<Void> {
-        gerenteService.remover(cpf)
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build() 
+    fun removerGerente(@PathVariable cpf: String): ResponseEntity<DadoGerente> {
+        val gerenteRemovido = gerenteService.remover(cpf)
+        return ResponseEntity.ok(gerenteRemovido)
     }
 }

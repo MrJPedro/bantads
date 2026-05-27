@@ -13,7 +13,7 @@ services:
       - AUTH_URI=http://ms-auth:8081
       - GERENTES_URI=http://ms-gerente:8082
       - CLIENTES_URI=http://ms-cliente:8083
-      - CONTAS_URI=http://ms-conta:8084
+      - CONTAS_URI=http://ms-conta:8083
     networks:
       - backend
     depends_on:

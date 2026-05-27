@@ -16,7 +16,7 @@ class ContaController(
     @PostMapping("/{numero}")
     fun criarConta(
         @PathVariable numero: String,
-        @RequestBody request: CriarContaDTO
+        @RequestBody request: ContaDTO
     ): ResponseEntity<Any>{
         contaService.criar(numero, request);
         return ResponseEntity.ok().build()
@@ -63,7 +63,36 @@ class ContaController(
         @RequestParam(required = false) dataInicio: String?,
         @RequestParam(required = false) dataFim: String?
     ): ResponseEntity<Any> {
-        // Implementar a lógica de consulta de extrato
-        return ResponseEntity.ok().build()
+        val transferencias = transferenciaService.obterExtrato(numero, dataInicio, dataFim)
+        return ResponseEntity.ok(transferencias)
+    }
+
+    @GetMapping("/cliente/{cpf}")
+    fun getContaPorCliente(
+        @PathVariable cpf: String
+    ): ResponseEntity<Any> {
+        val conta = contaService.obterContaPorCliente(cpf) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(conta)
+    }
+
+    @GetMapping("/gerente/{cpf}")
+    fun getContasPorGerente(
+        @PathVariable cpf: String
+    ): ResponseEntity<List<ContaDetalhesDTO>> {
+        return ResponseEntity.ok(contaService.obterContasPorGerente(cpf))
+    }
+
+    @PutMapping("/{numero}/gerente")
+    fun atualizarGerente(
+        @PathVariable numero: String,
+        @RequestBody request: AtualizarGerenteDTO
+    ): ResponseEntity<ContaDetalhesDTO> {
+        val response = contaService.atualizarGerente(numero, request.gerente)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/top3")
+    fun getTop3Contas(): ResponseEntity<List<ContaDetalhesDTO>> {
+        return ResponseEntity.ok(contaService.obterTop3Contas())
     }
 }

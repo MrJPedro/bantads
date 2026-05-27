@@ -23,7 +23,7 @@ class ClienteEntity (
     @Column(nullable = false, length = 20)
     var telefone: String,
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     var salario: BigDecimal,
 
     @Column(nullable = false)
@@ -37,6 +37,9 @@ class ClienteEntity (
 
     @Column(nullable = false)
     var estado: String,
+
+    @Column(nullable = true, length = 11)
+    var gerenteCpf: String? = null,
 
     @Column(nullable = false)
     var status: String = "AGUARDANDO_APROVACAO" // AGUARDANDO_APROVACAO, APROVADO, REJEITADO

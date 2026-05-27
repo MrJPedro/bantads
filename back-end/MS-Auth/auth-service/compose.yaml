@@ -10,14 +10,18 @@ services:
     depends_on:
       - rabbitmq
       - ms-auth-db
+    environment:
+      - SPRING_MONGODB_HOST=ms-auth-db
+      - SPRING_MONGODB_PORT=27017
+      - SPRING_MONGODB_DATABASE=auth
 
   ms-auth-db:
     image: mongodb/mongodb-community-server:latest
     container_name: ms-auth-db
-    volumes:
-      - ms_auth_dados:/data/db
     networks:
       - backend
+    volumes:
+      - ms_auth_db_data:/data/db
 
 volumes:
-  ms_auth_dados:
+  ms_auth_db_data:

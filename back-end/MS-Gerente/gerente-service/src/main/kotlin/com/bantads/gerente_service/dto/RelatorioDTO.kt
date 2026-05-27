@@ -18,3 +18,27 @@ data class DashboardAdminDTO(
     val saldoPositivo: BigDecimal,
     val saldoNegativo: BigDecimal
 )
+
+data class DashboardGerenteItemDTO(
+    val gerente: DadoGerente,
+    val clientes: List<ContaDashboardDTO>,
+    val saldo_positivo: BigDecimal,
+    val saldo_negativo: BigDecimal
+)
+
+data class ContaDashboardDTO(
+    val cliente: String,
+    val numero: String,
+    val saldo: BigDecimal,
+    val limite: BigDecimal,
+    val gerente: String,
+    val criacao: String? = null
+)
+
+data class RelatorioClienteCompostoDTO(
+    val cpf: String,
+    val conta: String? = null,
+    val saldo: BigDecimal? = null,
+    val limite: BigDecimal? = null,
+    val gerenteCpf: String? = null
+)
