@@ -7,6 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { finalize } from 'rxjs';
 import { ClienteParaAprovarResponse } from '../../../DTO/cliente/cliente-para-aprovar-response.dto';
 import { Gerente } from '../../../services/gerente-service';
 import { ParaAprovarResponse } from '../../../DTO/cliente';
@@ -33,6 +34,8 @@ export class TelaInicialGerente implements OnInit {
 
   dialogRecusa: boolean = false;
   dialogAceita: boolean = false;
+  processandoRecusa: boolean = false;
+  processandoAceite: boolean = false;
 
   clienteSelecionado?: ClienteParaAprovarResponse;
 
@@ -44,31 +47,7 @@ export class TelaInicialGerente implements OnInit {
   ) {}
 
   ngOnInit() {
-    // this.mockDados();
     this.carregarClientes();
-  }
-
-  mockDados() {
-    this.clientes.set([
-      {
-        cpf: '123.456.789-00',
-        nome: 'Ricardo Silva',
-        email: 'ricardo@email.com',
-        salario: 3500.0,
-        endereco: 'Rua A',
-        cidade: 'Curitiba',
-        estado: 'PR',
-      },
-      {
-        cpf: '987.654.321-11',
-        nome: 'Ana Souza',
-        email: 'ana@email.com',
-        salario: 1500.0,
-        endereco: 'Rua B',
-        cidade: 'Pinhais',
-        estado: 'PR',
-      },
-    ]);
   }
 
   aprovar(cliente: ClienteParaAprovarResponse) {
@@ -94,36 +73,71 @@ export class TelaInicialGerente implements OnInit {
   }
 
   confirmarRecusa() {
-    if (this.motivoRecusa.trim() && this.clienteSelecionado) {
-      this.clientes.set(this.clientes().filter((c) => c.cpf !== this.clienteSelecionado?.cpf));
-      this.dialogRecusa = false;
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Rejeitado',
-        detail: 'Cadastro removido da lista',
-      });
-    }
+    if (!this.motivoRecusa.trim() || !this.clienteSelecionado) return;
+
+    this.processandoRecusa = true;
+    const cpf = this.clienteSelecionado.cpf;
+    const motivo = this.motivoRecusa.trim();
+
+    this.gerenteService.rejeitarCliente(cpf, motivo).pipe(
+      finalize(() => {
+        this.processandoRecusa = false;
+      })
+    ).subscribe({
+      next: () => {
+        this.fecharDialogRecusa();
+        this.carregarClientes();
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Rejeitado',
+          detail: 'Cadastro rejeitado com sucesso.',
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível rejeitar o cadastro.',
+        });
+      }
+    });
   }
 
   confirmarAceite() {
-    if (this.clienteSelecionado) {
-      this.clientes.set(this.clientes().filter((c) => c.cpf !== this.clienteSelecionado?.cpf));
+    if (!this.clienteSelecionado) return;
 
-      this.dialogAceita = false;
-      this.clienteSelecionado = undefined;
+    this.processandoAceite = true;
+    const cpf = this.clienteSelecionado.cpf;
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Aceito',
-        detail: 'Cadastro aprovado',
-      });
-    }
+    this.gerenteService.aprovarCliente(cpf).pipe(
+      finalize(() => {
+        this.processandoAceite = false;
+      })
+    ).subscribe({
+      next: () => {
+        this.fecharDialogAceite();
+        this.carregarClientes();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Aceito',
+          detail: 'Cadastro aprovado com sucesso.',
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível aprovar o cadastro.',
+        });
+      }
+    });
   }
 
   carregarClientes() {
     this.gerenteService.clientesParaAprovar().subscribe({
       next: (clientes: ParaAprovarResponse) => {
-        // se encontrou
         this.clientes.set(clientes);
       },
 

@@ -20,7 +20,7 @@ class GerenteService(
     private val gerenteRepository: GerenteRepository,
     private val rabbitTemplate: RabbitTemplate,
     private val restTemplate: RestTemplate,
-    @Value("\${services.ms-cliente.base-url:http://ms-cliente:8083}")
+    @Value("\${services.ms-cliente.base-url:http://ms-cliente:8080}")
     private val msClienteBaseUrl: String,
     @Value("\${services.ms-conta.base-url:http://ms-conta:8083}")
     private val msContaBaseUrl: String
