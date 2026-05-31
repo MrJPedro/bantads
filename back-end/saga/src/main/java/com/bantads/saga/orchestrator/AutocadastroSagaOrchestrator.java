@@ -37,6 +37,7 @@ public class AutocadastroSagaOrchestrator {
     public static final String ACAO_CRIAR_CONTA = "CRIAR_CONTA_INICIAL";
     public static final String ACAO_ROLLBACK_CLIENTE = "ROLLBACK_CLIENTE";
     public static final String ACAO_ROLLBACK_AUTH = "ROLLBACK_AUTH";
+    public static final String ACAO_ROLLBACK_GERENTE = "ROLLBACK_GERENTE";
 
     /**
      * Inicia a saga de Autocadastro.
@@ -113,10 +114,11 @@ public class AutocadastroSagaOrchestrator {
         // Dependendo de onde falhou, mandamos as mensagens de compensação
         switch (state.getEstadoAtual()) {
             case ESTADO_CONTA_PENDENTE:
-                // Falhou na conta: manda o Auth desfazer
+                // Falhou na conta: manda o Gerente, Auth e Cliente desfazerem
+                rabbitTemplate.convertAndSend(RabbitConfig.SAGA_EXCHANGE, "gerente.command",
+                    new SagaMessage(state.getSagaId(), TIPO_SAGA.name(), ACAO_ROLLBACK_GERENTE, null, errorReply.getPayload()));
                 rabbitTemplate.convertAndSend(RabbitConfig.SAGA_EXCHANGE, "auth.command", 
                     new SagaMessage(state.getSagaId(), TIPO_SAGA.name(), ACAO_ROLLBACK_AUTH, null, errorReply.getPayload()));
-                // Manda o Cliente desfazer (apagar o registro no banco Cliente)
                 rabbitTemplate.convertAndSend(RabbitConfig.SAGA_EXCHANGE, "cliente.command", 
                     new SagaMessage(state.getSagaId(), TIPO_SAGA.name(), ACAO_ROLLBACK_CLIENTE, null, errorReply.getPayload()));
                 break;
