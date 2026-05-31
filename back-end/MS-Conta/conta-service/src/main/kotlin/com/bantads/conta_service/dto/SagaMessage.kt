@@ -1,4 +1,4 @@
-package com.bantads.gerente_service.dto
+package com.bantads.conta_service.dto
 
 import java.io.Serializable
 
