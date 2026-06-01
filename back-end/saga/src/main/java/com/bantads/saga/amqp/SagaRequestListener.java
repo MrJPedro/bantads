@@ -23,7 +23,7 @@ public class SagaRequestListener {
     public void onSagaRequest(SagaMessage request) {
         System.out.println("[SAGA] Pedido para iniciar SAGA recebido: " + request.getTipoSaga());
 
-        if (AutocadastroSagaOrchestrator.TIPO_SAGA.equals(request.getTipoSaga())) {
+        if (AutocadastroSagaOrchestrator.TIPO_SAGA.name().equals(request.getTipoSaga())) {
             // Repassamos o payload do cliente salvo preliminarmente para começar as transações distribuídas
             autocadastroOrchestrator.iniciarSaga(request.getPayload());
         }

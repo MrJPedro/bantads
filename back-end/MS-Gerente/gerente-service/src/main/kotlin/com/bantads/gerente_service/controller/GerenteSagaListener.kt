@@ -27,23 +27,24 @@ class GerenteSagaListener(
                 gerente.quantidadeClientes += 1
                 gerenteRepository.save(gerente)
 
-                // 3. Montar o payload com o gerente_cpf e dados originais
-                val dados = message.dados?.toMutableMap() ?: mutableMapOf()
-                dados["gerente_cpf"] = gerente.cpf
-                dados["gerente_nome"] = gerente.nome
+                // 3. Montar o JSON payload com o gerenteCpf e dados originais
+                val jsonNode = objectMapper.readTree(message.payload ?: "{}") as com.fasterxml.jackson.databind.node.ObjectNode
+                jsonNode.put("gerenteCpf", gerente.cpf)
 
                 val reply = SagaMessage(
                     sagaId = message.sagaId,
+                    tipoSaga = message.tipoSaga,
                     acao = message.acao,
-                    dados = dados,
+                    payload = objectMapper.writeValueAsString(jsonNode),
                     sucesso = true
                 )
                 rabbitTemplate.convertAndSend(SAGA_EXCHANGE, "saga.reply", reply)
             } catch (e: Exception) {
                 val errorReply = SagaMessage(
                     sagaId = message.sagaId,
+                    tipoSaga = message.tipoSaga,
                     acao = message.acao,
-                    erro = e.message,
+                    payload = message.payload,
                     sucesso = false
                 )
                 rabbitTemplate.convertAndSend(SAGA_EXCHANGE, "saga.reply", errorReply)
@@ -51,8 +52,8 @@ class GerenteSagaListener(
         } 
         else if ("ROLLBACK_GERENTE" == message.acao) {
             try {
-                val dados = message.dados ?: emptyMap()
-                val cpfGerente = dados["gerente_cpf"] as? String
+                val jsonNode = objectMapper.readTree(message.payload ?: "{}")
+                val cpfGerente = if (jsonNode.has("gerenteCpf")) jsonNode.get("gerenteCpf").asText() else null
                 if (cpfGerente != null) {
                     val gerente = gerenteRepository.findByCpf(cpfGerente)
                     if (gerente != null) {

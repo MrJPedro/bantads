@@ -19,6 +19,9 @@ public class Usuario {
     @Field("senha")
     private String senha;
 
+    public Usuario() {
+    }
+
     public Usuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String senhaUsuario){
         this.cpf = cpfUsuario;
         this.tipo = tipoUsuario;
