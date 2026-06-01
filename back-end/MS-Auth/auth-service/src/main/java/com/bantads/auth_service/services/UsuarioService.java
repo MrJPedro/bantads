@@ -12,31 +12,21 @@ import com.bantads.auth_service.utils.UsuarioUtil;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    UsuarioRepository usuarioRepository;
-
-    @Autowired
-    UsuarioMapper usuarioMapper;
-
-    @Autowired
-    CPFUtil cpfUtil;
-
-    @Autowired
-    EmailUtil emailUtil;
-
-    @Autowired
-    UsuarioUtil usuarioUtil;
-
-    @Autowired
-    AuthUtil authUtil;
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioMapper usuarioMapper;
+    private final CPFUtil cpfUtil;
+    private final EmailUtil emailUtil;
+    private final UsuarioUtil usuarioUtil;
+    private final AuthUtil authUtil;
 
 
     @Transactional(readOnly = true)

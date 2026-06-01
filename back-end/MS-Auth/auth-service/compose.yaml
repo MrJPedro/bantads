@@ -3,7 +3,7 @@ services:
     image: ms-auth-spring
     container_name: ms-auth
     build: 
-      context: ../
+      context: ./
       dockerfile: ms-auth.Dockerfile
     networks:
       - backend

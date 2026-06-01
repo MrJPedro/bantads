@@ -9,7 +9,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(26)
+		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
 
@@ -18,10 +18,12 @@ repositories {
 }
 
 dependencies {
+	implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
-	implementation("org.modelmapper:modelmapper:3.2.6")
+	implementation("org.mapstruct:mapstruct:1.6.3")
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	//testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

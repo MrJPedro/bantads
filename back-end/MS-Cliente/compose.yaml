@@ -7,7 +7,11 @@ services:
       dockerfile: ms-cliente.Dockerfile
     networks:
       - backend
+    ports:
+      - 8086:8086
     environment:
+      - SERVER_PORT=8086
+
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/cliente_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgrespass

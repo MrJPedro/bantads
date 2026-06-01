@@ -20,11 +20,12 @@ import com.bantads.auth_service.services.LoginService;
 public class AuthController {
     
     private final LoginService loginService;
-    @Autowired
-    UsuarioService cadastroService;
+    private final UsuarioService cadastroService;
     
-    public AuthController(LoginService loginService){
-        this.loginService = loginService;}
+    public AuthController(LoginService loginService, UsuarioService cadastroService){
+        this.loginService = loginService;
+        this.cadastroService = cadastroService;
+    }
 
     // ===== Pronto para uso com dados mockados =====
     @GetMapping("/cadastros")
