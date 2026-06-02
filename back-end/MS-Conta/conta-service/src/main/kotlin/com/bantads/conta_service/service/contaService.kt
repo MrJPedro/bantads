@@ -3,8 +3,8 @@ package com.bantads.conta_service.service
 import com.bantads.conta_service.dto.ContaDTO
 import com.bantads.conta_service.dto.ContaDetalhesDTO
 import com.bantads.conta_service.dto.ContaWriteDTO
-import com.bantads.conta_service.entity.comando.Conta
-import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
+import com.bantads.conta_service.entity.comando.ContaWrite
+import com.bantads.conta_service.entity.leitura.ContaRead as ContaLeitura
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
 import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
@@ -47,7 +47,7 @@ class ContaService(
         }
 
         val conta = contaRepositoryWrite.save(
-            Conta(
+            ContaWrite(
                 cliente = request.cliente,
                 numero = numero,
                 saldo = request.saldo.setScale(2, RoundingMode.HALF_EVEN),

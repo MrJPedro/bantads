@@ -1,31 +1,33 @@
 package com.bantads.conta_service.entity.leitura
 
-import com.bantads.conta_service.entity.comando.Conta
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "transferenciaLeitura")
-class Transferencia(
+@Table(name = "transferenciaLeitura",
+    indexes = [Index(name = "idx_conta", columnList = "conta_origem")])
+class TransferenciaRead(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @JoinColumn(name = "conta_origem", nullable = false)
+    @Column(name = "conta_origem", nullable = false)
     var contaOrigem: String,
 
-    @JoinColumn(name = "conta_destino", nullable = true)
+    @Column(name = "conta_origem_nome", nullable = false)
+    var contaOrigemNome: String,
+
+    @Column(name = "conta_destino", nullable = true)
     var contaDestino: String,
 
-    @JoinColumn(name = "conta_destino_nome", nullable = true)
+    @Column(name = "conta_destino_nome", nullable = true)
     var contaDestinoNome: String,
 
     @Column(name = "valor", nullable = false)
@@ -33,6 +35,12 @@ class Transferencia(
 
     @Column(name = "data", nullable = false)
     var data: LocalDateTime,
+
+    @Column(name = "tipo", nullable = false)
+    var tipo: String,
+
+    @Column(name = "saldoanterior", nullable = false)
+    var saldoanterior: BigDecimal,
 
     @Column(name = "saldofinal", nullable = false)
     var saldofinal: BigDecimal

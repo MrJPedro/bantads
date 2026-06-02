@@ -1,4 +1,4 @@
-package com.bantads.conta_service.entity.leitura
+package com.bantads.conta_service.entity.comando
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,15 +10,12 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "contaLeitura")
-class Conta(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
-
+@Table(name = "contaComando")
+class ContaWrite(
     @Column(name = "cliente", nullable = false)
     var cliente: String,
 
+    @Id
     @Column(name = "numero", nullable = false, unique = true)
     var numero: String,
 
@@ -33,4 +30,5 @@ class Conta(
 
     @Column(name = "criacao", nullable = false)
     var criacao: LocalDateTime
+
 )

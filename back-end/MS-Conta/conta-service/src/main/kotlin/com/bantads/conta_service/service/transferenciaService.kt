@@ -1,13 +1,15 @@
 package com.bantads.conta_service.service
 
+import com.bantads.conta_service.config.CQRS_EVENT_EXCHANGE
+import com.bantads.conta_service.dto.ContaWriteDTO
 import com.bantads.conta_service.dto.DepositoRequestDTO
 import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
 import com.bantads.conta_service.dto.TransferenciaWriteDTO
-import com.bantads.conta_service.entity.comando.Conta
-import com.bantads.conta_service.entity.comando.Transferencia
-import com.bantads.conta_service.entity.leitura.Transferencia as TransferenciaLeitura
-import com.bantads.conta_service.entity.leitura.Conta as ContaLeitura
+import com.bantads.conta_service.entity.comando.TransferenciaWrite
+import com.bantads.conta_service.entity.comando.ContaWrite
+import com.bantads.conta_service.entity.leitura.TransferenciaRead
+import com.bantads.conta_service.entity.leitura.ContaRead
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
 import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
@@ -16,6 +18,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
 import jakarta.transaction.Transactional
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -26,17 +29,22 @@ class TransferenciaService(
     private val contaRepositoryRead: ContaRepositoryRead,
     private val transferenciaRepositoryRead: TransferenciaRepositoryRead,
     private val contaRepositoryWrite: ContaRepositoryWrite,
-    private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite
+    private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite,
+    private val rabbitTemplate: RabbitTemplate
 ) {
 
     fun criarTransferenciaRead(transferencia: TransferenciaWriteDTO) {
         transferenciaRepositoryRead.save(
-            Transferencia(
+            TransferenciaRead(
                 contaOrigem = transferencia.contaOrigem,
+                contaOrigemNome = transferencia.contaOrigemNome,
                 contaDestino = transferencia.contaDestino,
+                contaDestinoNome = transferencia.contaDestinoNome,
                 valor = transferencia.valor,
-                saldofinal = transferencia.saldofinal,
-                data = transferencia.data
+                data = transferencia.data,
+                tipo = transferencia.tipo,
+                saldoanterior = BigDecimal.ZERO, // O DTO precisaria ter esse campo para ser exato
+                saldofinal = transferencia.saldofinal ?: BigDecimal.ZERO
             )
         )
     }
@@ -56,24 +64,41 @@ class TransferenciaService(
         val contaRead = contaRepositoryRead.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
+        val saldoAnterior = contaRead.saldo
         val novoSaldo = contaRead.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
 
         val contaWrite = contaRepositoryWrite.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
         contaWrite.saldo = novoSaldo
+
         val contaSalva = contaRepositoryWrite.save(contaWrite)
 
-        syncContaReadModel(contaSalva)
+        val dataAtual = LocalDateTime.now()
 
         transferenciaRepositoryWrite.save(
-            Transferencia(
+            TransferenciaWrite(
                 contaOrigem = contaSalva,
                 contaDestino = null,
                 valor = valor,
-                saldofinal = contaSalva.saldo,
+                tipo = "DEPOSITO",
                 data = LocalDateTime.now()
             )
         )
+
+        syncContaReadModel(contaSalva)
+
+        val eventoTransferencia = TransferenciaWriteDTO(
+            contaOrigem = contaSalva.numero,
+            contaOrigemNome = contaSalva.cliente,
+            contaDestino = "",
+            contaDestinoNome = "",
+            tipo = "DEPOSITO",
+            valor = valor,
+            saldofinal = contaSalva.saldo,
+            saldoanterior = saldoAnterior,
+            data = dataAtual
+        )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.transferencia", eventoTransferencia)
     }
 
     fun sacar(numero: String, request: SaqueRequestDTO) {
@@ -90,24 +115,40 @@ class TransferenciaService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente")
         }
 
+        val saldoAnterior = contaRead.saldo
         val novoSaldo = contaRead.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
 
         val contaWrite = contaRepositoryWrite.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
         contaWrite.saldo = novoSaldo
-        val contaSalva = contaRepositoryWrite.save(contaWrite)
 
-        syncContaReadModel(contaSalva)
+        val contaSalva = contaRepositoryWrite.save(contaWrite)
+        val dataAtual = LocalDateTime.now()
 
         transferenciaRepositoryWrite.save(
-            Transferencia(
+            TransferenciaWrite(
                 contaOrigem = contaSalva,
                 contaDestino = null,
                 valor = valor,
-                saldofinal = contaSalva.saldo,
-                data = LocalDateTime.now()
+                tipo = "SAQUE",
+                data = dataAtual
             )
         )
+
+        syncContaReadModel(contaSalva)
+
+        val eventoTransferencia = TransferenciaWriteDTO(
+            contaOrigem = contaSalva.numero,
+            contaOrigemNome = contaSalva.cliente,
+            contaDestino = "",
+            contaDestinoNome = "",
+            tipo = "SAQUE",
+            valor = valor,
+            saldofinal = contaSalva.saldo,
+            saldoanterior = saldoAnterior,
+            data = dataAtual
+        )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.transferencia", eventoTransferencia)
     }
 
     fun transferir(numero: String, request: TransferenciaRequestDTO) {
@@ -134,38 +175,43 @@ class TransferenciaService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente para transferência")
         }
 
+        val saldoAnteriorOrigem = contaOrigem.saldo
         contaOrigem.saldo = contaOrigem.saldo.minus(valor).setScale(2, RoundingMode.HALF_EVEN)
         contaDestino.saldo = contaDestino.saldo.plus(valor).setScale(2, RoundingMode.HALF_EVEN)
 
         val contaOrigemAtualizada = contaRepositoryWrite.save(contaOrigem)
         val contaDestinoAtualizada = contaRepositoryWrite.save(contaDestino)
+        val dataAtual = LocalDateTime.now()
+
+        transferenciaRepositoryWrite.save(
+            TransferenciaWrite(
+                contaOrigem = contaOrigemAtualizada,
+                contaDestino = contaDestinoAtualizada,
+                valor = valor,
+                tipo = "TRANSFERENCIA",
+                data = dataAtual
+            )
+        )
 
         syncContaReadModel(contaOrigemAtualizada)
         syncContaReadModel(contaDestinoAtualizada)
 
-        transferenciaRepositoryWrite.save(
-            Transferencia(
-                contaOrigem = contaOrigemAtualizada,
-                contaDestino = contaDestinoAtualizada,
-                valor = valor,
-                saldofinal = contaOrigemAtualizada.saldo,
-                data = LocalDateTime.now()
-            )
+        val eventoTransferencia = TransferenciaWriteDTO(
+            contaOrigem = contaOrigemAtualizada.numero,
+            contaOrigemNome = contaOrigemAtualizada.cliente,
+            contaDestino = contaDestinoAtualizada.numero,
+            contaDestinoNome = contaDestinoAtualizada.cliente,
+            tipo = "TRANSFERENCIA",
+            valor = valor,
+            saldofinal = contaOrigemAtualizada.saldo,
+            saldoanterior = saldoAnteriorOrigem,
+            data = dataAtual
         )
-        transferenciaRepositoryRead.save(
-            TransferenciaLeitura(
-                contaOrigem = contaOrigemAtualizada.numero,
-                contaDestino = contaDestinoAtualizada.numero,
-                contaDestinoNome = contaDestinoAtualizada.cliente,
-                valor = valor,
-                data = LocalDateTime.now(),
-                saldofinal = contaOrigemAtualizada.saldo
-            )
-        )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.transferencia", eventoTransferencia)
     }
 
 
-    fun obterExtrato(numero: String, dataInicio: String?, dataFim: String?): List<TransferenciaLeitura> {
+    fun obterExtrato(numero: String, dataInicio: String?, dataFim: String?): List<TransferenciaRead> {
         contaRepositoryRead.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
@@ -192,16 +238,15 @@ class TransferenciaService(
     }
 
 
-    private fun syncContaReadModel(conta: com.bantads.conta_service.entity.comando.Conta) {
-        contaRepositoryRead.save(
-            ContaLeitura(
-                cliente = conta.cliente,
-                numero = conta.numero,
-                saldo = conta.saldo,
-                limite = conta.limite,
-                gerente = conta.gerente,
-                criacao = conta.criacao
-            )
+    private fun syncContaReadModel(conta: com.bantads.conta_service.entity.comando.ContaWrite) {
+        val eventoCqrs = ContaWriteDTO(
+            cliente = conta.cliente,
+            numero = conta.numero,
+            saldo = conta.saldo,
+            limite = conta.limite,
+            gerente = conta.gerente,
+            criacao = conta.criacao
         )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.conta", eventoCqrs)
     }
 }
