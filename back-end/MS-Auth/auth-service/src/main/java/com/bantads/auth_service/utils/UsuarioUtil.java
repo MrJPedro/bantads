@@ -1,8 +1,11 @@
 package com.bantads.auth_service.utils;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.ArrayList;
 
+@Component
 public class UsuarioUtil {
 
         public final List<String> tiposUsuarioPermitidos = new ArrayList<String>();

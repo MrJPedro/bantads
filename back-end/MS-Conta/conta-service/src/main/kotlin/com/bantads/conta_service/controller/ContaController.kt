@@ -1,6 +1,7 @@
 package com.bantads.conta_service.controller
 
 import com.bantads.conta_service.dto.*
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import com.bantads.conta_service.service.TransferenciaService
@@ -16,7 +17,7 @@ class ContaController(
     @PostMapping("/{numero}")
     fun criarConta(
         @PathVariable numero: String,
-        @RequestBody request: ContaDTO
+        @Valid @RequestBody request: ContaDTO
     ): ResponseEntity<Any>{
         contaService.criar(numero, request);
         return ResponseEntity.ok().build()
@@ -33,7 +34,7 @@ class ContaController(
     @PostMapping("/{numero}/depositar")
     fun depositar(
         @PathVariable numero: String, 
-        @RequestBody request: DepositoRequestDTO
+        @Valid @RequestBody request: DepositoRequestDTO
         ): ResponseEntity<Any> {
         transferenciaService.depositar(numero, request)
         return ResponseEntity.ok().build()
@@ -42,7 +43,7 @@ class ContaController(
     @PostMapping("/{numero}/sacar") 
     fun sacar(
         @PathVariable numero: String, 
-        @RequestBody request: SaqueRequestDTO
+        @Valid @RequestBody request: SaqueRequestDTO
         ): ResponseEntity<Any> {
         transferenciaService.sacar(numero, request)
         return ResponseEntity.ok().build()
@@ -51,7 +52,7 @@ class ContaController(
     @PostMapping("/{numero}/transferir")
     fun transferir(
     @PathVariable numero: String, 
-    @RequestBody request: TransferenciaRequestDTO
+    @Valid @RequestBody request: TransferenciaRequestDTO
     ): ResponseEntity<Any> {
         transferenciaService.transferir(numero, request)
         return ResponseEntity.ok().build()
@@ -70,7 +71,7 @@ class ContaController(
     @GetMapping("/cliente/{cpf}")
     fun getContaPorCliente(
         @PathVariable cpf: String
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<ContaDetalhesDTO> {
         val conta = contaService.obterContaPorCliente(cpf) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(conta)
     }
@@ -85,10 +86,18 @@ class ContaController(
     @PutMapping("/{numero}/gerente")
     fun atualizarGerente(
         @PathVariable numero: String,
-        @RequestBody request: AtualizarGerenteDTO
+        @Valid @RequestBody request: AtualizarGerenteDTO
     ): ResponseEntity<ContaDetalhesDTO> {
         val response = contaService.atualizarGerente(numero, request.gerente)
         return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/{numero}")
+    fun getContaPorNumero(
+        @PathVariable numero: String
+    ): ResponseEntity<ContaDetalhesDTO> {
+        val conta = contaService.obterContaPorNumero(numero) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(conta)
     }
 
     @GetMapping("/top3")

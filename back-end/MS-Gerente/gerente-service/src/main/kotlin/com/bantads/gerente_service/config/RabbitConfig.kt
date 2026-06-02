@@ -15,8 +15,21 @@ const val GERENTE_EVENT_QUEUE = "gerente-event-queue"
 const val GERENTE_EVENT_EXCHANGE = "gerente-event-exchange"
 const val GERENTE_EVENT_ROUTING_KEY = "gerente.event.#"
 
+const val GERENTE_COMMAND_QUEUE = "gerente-command-queue"
+const val SAGA_EXCHANGE = "saga-exchange"
+
 @Configuration
 class RabbitConfig {
+
+    @Bean
+    fun gerenteCommandQueue(): Queue {
+        return Queue(GERENTE_COMMAND_QUEUE, true)
+    }
+
+    @Bean
+    fun sagaExchange(): TopicExchange {
+        return TopicExchange(SAGA_EXCHANGE)
+    }
 
     @Bean
     fun gerenteEventQueue(): Queue {

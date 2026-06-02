@@ -19,8 +19,21 @@ const val CQRS_EVENT_QUEUE = "cqrs-event-queue"
 const val CQRS_EVENT_EXCHANGE = "cqrs-event-exchange"
 const val CQRS_EVENT_ROUTING_KEY = "cqrs.event.#"
 
+const val CONTA_COMMAND_QUEUE = "conta-command-queue"
+const val SAGA_EXCHANGE = "saga-exchange"
+
 @Configuration
 class RabbitConfig {
+
+    @Bean
+    fun contaCommandQueue(): Queue {
+        return Queue(CONTA_COMMAND_QUEUE, true)
+    }
+
+    @Bean
+    fun sagaExchange(): TopicExchange {
+        return TopicExchange(SAGA_EXCHANGE)
+    }
 
     @Bean
     fun clienteEventQueue(): Queue {

@@ -2,12 +2,13 @@ services:
   ms-auth:
     image: ms-auth-spring
     container_name: ms-auth
-    build:
-      context: .
+    build: 
+      context: ./
       dockerfile: ms-auth.Dockerfile
     networks:
       - backend
     depends_on:
+      - rabbitmq
       - ms-auth-db
     environment:
       - SPRING_MONGODB_HOST=ms-auth-db

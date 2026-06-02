@@ -23,6 +23,12 @@ class RabbitConfig {
         return Queue(CLIENTE_EVENT_QUEUE, true)
     }
 
+    // Fila que o MS Cliente escutara da Saga
+    @Bean
+    fun clienteCommandQueue(): Queue {
+        return Queue("cliente-command-queue", true)
+    }
+
     @Bean
     fun clienteEventExchange(): TopicExchange {
         return TopicExchange(CLIENTE_EVENT_EXCHANGE)

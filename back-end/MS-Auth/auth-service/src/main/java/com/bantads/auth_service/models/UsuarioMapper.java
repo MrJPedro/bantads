@@ -32,5 +32,4 @@ public class UsuarioMapper {
         return usuarioDTOs.stream()
             .map((UsuarioDTO usuarioDTO) -> this.toUsuario(usuarioDTO))
             .toList();
-    };
-}
+    }

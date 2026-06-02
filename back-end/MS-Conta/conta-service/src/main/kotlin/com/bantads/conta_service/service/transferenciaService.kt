@@ -30,7 +30,7 @@ class TransferenciaService(
 ) {
 
     fun criarTransferenciaRead(transferencia: TransferenciaWriteDTO) {
-        val transferencia = transferenciaRepositoryRead.save(
+        transferenciaRepositoryRead.save(
             Transferencia(
                 contaOrigem = transferencia.contaOrigem,
                 contaDestino = transferencia.contaDestino,
@@ -63,16 +63,7 @@ class TransferenciaService(
         contaWrite.saldo = novoSaldo
         val contaSalva = contaRepositoryWrite.save(contaWrite)
 
-        contaRepositoryRead.save(
-            ContaLeitura(
-                cliente = contaSalva.cliente,
-                numero = contaSalva.numero,
-                saldo = contaSalva.saldo,
-                limite = contaSalva.limite,
-                gerente = contaSalva.gerente,
-                criacao = contaSalva.criacao
-            )
-        )
+        syncContaReadModel(contaSalva)
 
         transferenciaRepositoryWrite.save(
             Transferencia(
@@ -105,6 +96,8 @@ class TransferenciaService(
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
         contaWrite.saldo = novoSaldo
         val contaSalva = contaRepositoryWrite.save(contaWrite)
+
+        syncContaReadModel(contaSalva)
 
         transferenciaRepositoryWrite.save(
             Transferencia(
@@ -147,27 +140,8 @@ class TransferenciaService(
         val contaOrigemAtualizada = contaRepositoryWrite.save(contaOrigem)
         val contaDestinoAtualizada = contaRepositoryWrite.save(contaDestino)
 
-        contaRepositoryWrite.save(
-            Conta(
-                cliente = contaOrigemAtualizada.cliente,
-                numero = contaOrigemAtualizada.numero,
-                saldo = contaOrigemAtualizada.saldo,
-                limite = contaOrigemAtualizada.limite,
-                gerente = contaOrigemAtualizada.gerente,
-                criacao = contaOrigemAtualizada.criacao
-            )
-        )
-
-        contaRepositoryWrite.save(
-            Conta(
-                cliente = contaDestinoAtualizada.cliente,
-                numero = contaDestinoAtualizada.numero,
-                saldo = contaDestinoAtualizada.saldo,
-                limite = contaDestinoAtualizada.limite,
-                gerente = contaDestinoAtualizada.gerente,
-                criacao = contaDestinoAtualizada.criacao
-            )
-        )
+        syncContaReadModel(contaOrigemAtualizada)
+        syncContaReadModel(contaDestinoAtualizada)
 
         transferenciaRepositoryWrite.save(
             Transferencia(

@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.random.Random
+import org.springframework.amqp.rabbit.core.RabbitTemplate
+import com.bantads.conta_service.config.CQRS_EVENT_EXCHANGE
 
 @Service
 @Transactional
@@ -23,7 +25,8 @@ class ContaService(
     private val contaRepositoryRead: ContaRepositoryRead,
     private val transferenciaRepositoryRead: TransferenciaRepositoryRead,
     private val contaRepositoryWrite: ContaRepositoryWrite,
-    private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite
+    private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite,
+    private val rabbitTemplate: RabbitTemplate
 ) {
 
     fun criar(numero: String, request: ContaDTO): Any {
@@ -53,6 +56,16 @@ class ContaService(
                 criacao = request.criacao
             )
         )
+
+        val eventoCqrs = ContaWriteDTO(
+            cliente = request.cliente,
+            numero = numero,
+            saldo = request.saldo.setScale(2, RoundingMode.HALF_EVEN),
+            limite = request.limite.setScale(2, RoundingMode.HALF_EVEN),
+            gerente = request.gerente,
+            criacao = request.criacao
+        )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.conta", eventoCqrs)
 
         return conta
     }

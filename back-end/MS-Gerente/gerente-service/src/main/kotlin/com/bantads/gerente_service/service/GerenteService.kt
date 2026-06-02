@@ -20,7 +20,7 @@ class GerenteService(
     private val gerenteRepository: GerenteRepository,
     private val rabbitTemplate: RabbitTemplate,
     private val restTemplate: RestTemplate,
-    @Value("\${services.ms-cliente.base-url:http://ms-cliente:8083}")
+    @Value("\${services.ms-cliente.base-url:http://ms-cliente:8080}")
     private val msClienteBaseUrl: String,
     @Value("\${services.ms-conta.base-url:http://ms-conta:8083}")
     private val msContaBaseUrl: String
@@ -244,12 +244,34 @@ class GerenteService(
         if (dto.cpf.isBlank() || dto.nome.isBlank() || dto.email.isBlank() || dto.telefone.isBlank() || dto.senha.isBlank()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF, nome, email, telefone e senha são obrigatórios")
         }
+        if (!validarCpf(dto.cpf)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF inválido")
+        }
+        if (!validarEmail(dto.email)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Email inválido")
+        }
+        if (dto.senha.length < 6) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha deve ter no mínimo 6 caracteres")
+        }
     }
 
     private fun validarDadosAlteracao(dto: DadoGerenteAtualizacao) {
         if (dto.nome.isBlank() || dto.email.isBlank()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome e email são obrigatórios")
         }
+        if (!validarEmail(dto.email)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Email inválido")
+        }
+    }
+
+    private fun validarCpf(cpf: String): Boolean {
+        val numeros = cpf.filter { it.isDigit() }
+        return numeros.length == 11
+    }
+
+    private fun validarEmail(email: String): Boolean {
+        val regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+        return email.isNotBlank() && regex.matches(email)
     }
 
     private fun atualizarClienteGerente(cpfCliente: String, cpfNovoGerente: String): Boolean {

@@ -25,13 +25,11 @@ import org.springframework.http.HttpStatus;
 @RestController
 public class AuthController {
     
-    private final LoginService loginService;
     @Autowired
     UsuarioService usuarioService;
-    
-    public AuthController(LoginService loginService){
-        this.loginService = loginService;
-    }
+
+    @Autowired
+    LoginService loginService;
 
     // ===== Pronto para uso com dados mockados =====
     @GetMapping("/Usuarios")

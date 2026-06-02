@@ -1,10 +1,13 @@
 package com.bantads.auth_service.utils;
 
+import org.springframework.stereotype.Component;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
+@Component
 public class AuthUtil {    
     public String hashearSenha(String senha) {
         
