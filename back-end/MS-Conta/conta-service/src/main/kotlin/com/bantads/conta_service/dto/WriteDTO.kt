@@ -1,9 +1,5 @@
 package com.bantads.conta_service.dto
 
-import com.bantads.conta_service.entity.comando.Conta
-import jakarta.persistence.Column
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -17,10 +13,14 @@ data class ContaWriteDTO (
 )
 
 data class TransferenciaWriteDTO(
-    val contaOrigem: Conta,
-    val contaDestino: Conta?,
+    val contaOrigem: String,
+    val contaOrigemNome: String,
+    val contaDestino: String,
+    val contaDestinoNome: String,
+    val tipo: String,
     val valor: BigDecimal,
     val saldofinal: BigDecimal,
+    val saldoanterior: BigDecimal,
     val data: LocalDateTime
 )
 

@@ -27,5 +27,7 @@ class CQRSEventListener(
     @RabbitHandler
     fun receberTransferencia(evento: TransferenciaWriteDTO) {
         println("[RABBITMQ] Transferencia recebida do CQRS")
+
+        transferenciaService.criarTransferenciaRead(evento)
     }
 }
