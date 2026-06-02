@@ -43,9 +43,7 @@ public class UsuarioService {
     public List<UsuarioDTO> getAllUsuarios() {
 
         List<Usuario> usuarios = usuarioRepository.findAll();
-        List<UsuarioDTO> uDTOs = usuarios.stream()
-            .map((Usuario usuario) -> this.usuarioMapper.toDTO(usuario))
-            .toList();
+        List<UsuarioDTO> uDTOs = usuarioMapper.toDTOs(usuarios);
         return uDTOs;
     }
 
@@ -58,7 +56,6 @@ public class UsuarioService {
         Usuario u = usuarioRepository.findByLogin(loginReq).orElseThrow(() -> new NoSuchElementException(
             "Login não encontrado!"
         ));
-
 
         UsuarioDTO uDTO = usuarioMapper.toDTO(u);
         return uDTO;
@@ -78,15 +75,15 @@ public class UsuarioService {
     } */
 
     @Transactional
-    public UsuarioDTO insertUsuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String senhaUsuario) throws Exception, IllegalArgumentException{
+    public UsuarioDTO insertUsuario(UsuarioDTO usuarioDTO) throws Exception, IllegalArgumentException{
 
-        String cpfUsuarioFormatado = cpfUtil.formatarCPF(cpfUsuario);
+        String cpfUsuarioFormatado = cpfUtil.formatarCPF(usuarioDTO.cpf());
         
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
-        boolean loginEhValido = emailUtil.validarEmail(loginUsuario);
-        boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(tipoUsuario);
+        boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
+        boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.tipo());
         boolean cpfUsuarioJaExiste = !usuarioRepository.findByCpfUsuario(cpfUsuarioFormatado).equals(null);
-        boolean loginUsuarioJaExiste = !usuarioRepository.findByLogin(loginUsuario).equals(null);
+        boolean loginUsuarioJaExiste = !usuarioRepository.findByLogin(usuarioDTO.login()).equals(null);
 
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
@@ -94,28 +91,26 @@ public class UsuarioService {
         if(loginUsuarioJaExiste) throw new Exception("Login já cadastrado!");
         if(cpfUsuarioJaExiste) throw new Exception("CPF já cadastrado!");
 
-        UsuarioDTO uDTO = new UsuarioDTO(cpfUsuarioFormatado, tipoUsuario, loginUsuario);
-        Usuario u = usuarioMapper.toUsuario(uDTO);
-        u.setSenha(authUtil.hashearSenha(senhaUsuario));
+        Usuario u = usuarioMapper.toUsuario(usuarioDTO);
+        u.setSenha(authUtil.hashearSenha(usuarioDTO.senha()));
         usuarioRepository.insert(u);
-        return uDTO;
+        return usuarioDTO;
     }
 
     @Transactional
-    public UsuarioDTO editUsuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String senhaUsuario) throws Exception, IllegalArgumentException{
+    public UsuarioDTO editUsuario(UsuarioDTO usuarioDTO) throws Exception, IllegalArgumentException{
         
-        String cpfUsuarioFormatado = cpfUtil.formatarCPF(cpfUsuario);
+        String cpfUsuarioFormatado = cpfUtil.formatarCPF(usuarioDTO.cpf());
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
-        boolean loginEhValido = emailUtil.validarEmail(loginUsuario);
-        boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(tipoUsuario);
+        boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
+        boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.login());
 
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");
 
-        UsuarioDTO uDTOnovo = new UsuarioDTO(cpfUsuarioFormatado, tipoUsuario, loginUsuario);
-        Usuario uNovo = usuarioMapper.toUsuario(uDTOnovo);
-        uNovo.setSenha(authUtil.hashearSenha(senhaUsuario));
+        Usuario uNovo = usuarioMapper.toUsuario(usuarioDTO);
+        uNovo.setSenha(authUtil.hashearSenha(usuarioDTO.senha()));
 
         Usuario uAntigo = usuarioRepository.findByCpfUsuario(cpfUsuarioFormatado).orElseThrow(() -> new NoSuchElementException("Usuário não cadastrado!"));
         try {
@@ -127,33 +122,35 @@ public class UsuarioService {
             usuarioRepository.save(uAntigo);
             throw e;
         }
-        return uDTOnovo;
+        return usuarioDTO;
     }
 
-    public Usuario deleteUsuario(String loginUsuario){
+    public UsuarioDTO deleteUsuario(String loginUsuario){
         boolean loginEhValido = emailUtil.validarEmail(loginUsuario);
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
 
         Usuario u = usuarioRepository.findByCpfUsuario(loginUsuario).orElseThrow(() -> new NoSuchElementException("Usuário não cadastrado!"));
+
+        UsuarioDTO uDTO = usuarioMapper.toDTO(u);
         
         usuarioRepository.delete(u);
 
-        return u;
+        return uDTO;
     }
 
     public void reboot(){
         usuarioRepository.deleteAll();
 
         try {
-            this.insertUsuario("12912861012", "CLIENTE", "cli1@bantads.com.br", "tads");
-            this.insertUsuario("09506382000", "CLIENTE", "cli2@bantads.com.br", "tads");
-            this.insertUsuario("85733854057", "CLIENTE", "cli3@bantads.com.br", "tads");
-            this.insertUsuario("58872160006", "CLIENTE", "cli4@bantads.com.br", "tads");
-            this.insertUsuario("76179646090", "CLIENTE", "cli5@bantads.com.br", "tads");
-            this.insertUsuario("98574307084", "GERENTE", "ger1@bantads.com.br", "tads");
-            this.insertUsuario("64065268052", "GERENTE", "ger2@bantads.com.br", "tads");
-            this.insertUsuario("23862179060", "GERENTE", "ger3@bantads.com.br", "tads");
-            this.insertUsuario("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "tads");
+            this.insertUsuario(new UsuarioDTO("12912861012", "CLIENTE", "cli1@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("09506382000", "CLIENTE", "cli2@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("85733854057", "CLIENTE", "cli3@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("58872160006", "CLIENTE", "cli4@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("76179646090", "CLIENTE", "cli5@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("98574307084", "GERENTE", "ger1@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("64065268052", "GERENTE", "ger2@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("23862179060", "GERENTE", "ger3@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "tads"));
         } catch(Exception e){
             System.out.println(e);
         }

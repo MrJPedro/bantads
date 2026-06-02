@@ -1,5 +1,5 @@
 package com.bantads.auth_service.DTOs;
 
-public record UsuarioDTO (String cpf, String tipo, String login) {
+public record UsuarioDTO (String cpf, String tipo, String login, String senha) {
 
 }

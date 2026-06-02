@@ -5,12 +5,13 @@ import java.util.ArrayList;
 
 public class UsuarioUtil {
 
+        public final List<String> tiposUsuarioPermitidos = new ArrayList<String>();
+
         public UsuarioUtil(){
             tiposUsuarioPermitidos.add(new String("ADMINISTRADOR"));
             tiposUsuarioPermitidos.add(new String("GERENTE"));
             tiposUsuarioPermitidos.add(new String("CLIENTE"));
         };
-        public final List<String> tiposUsuarioPermitidos = new ArrayList<String>();
 
         public boolean validarTipoUsuario(String tipo){
             return tiposUsuarioPermitidos.stream().anyMatch(item -> item == tipo);

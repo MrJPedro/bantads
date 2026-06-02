@@ -1,26 +1,36 @@
 package com.bantads.auth_service.models;
 
 import com.bantads.auth_service.DTOs.UsuarioDTO;
-import com.bantads.auth_service.models.Usuario;
+//import com.bantads.auth_service.models.Usuario;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import org.mapstruct.Mapper;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;;;
 
-@Mapper(componentModel="spring")
-public interface UsuarioMapper {
-    UsuarioDTO toDTO(Usuario usuario);
-    Usuario toUsuario(UsuarioDTO usuarioDTO);
 
-    /*List<UsuarioDTO> toDTO(List<Usuario> usuarios) {
-        ArrayList<UsuarioDTO> uDTOs = new ArrayList<>();
-        
-        for (Usuario usuario : usuarios) {
-            uDTOs.add(
-                this.toDTO(usuario)
-            );
-        }
+public class UsuarioMapper {
 
-        return uDTOs;
-    };*/
+    @Autowired
+    ModelMapper modelMapper;
+
+    public UsuarioDTO toDTO(Usuario usuario){
+        return  modelMapper.map(usuario, UsuarioDTO.class);
+    };
+
+    public List<UsuarioDTO> toDTOs(List<Usuario> usuarios){
+        return usuarios.stream()
+            .map((Usuario usuario) -> this.toDTO(usuario))
+            .toList();
+    };
+
+    public Usuario toUsuario(UsuarioDTO usuarioDTO){
+        return modelMapper.map(usuarioDTO, Usuario.class);
+    };
+
+    public List<Usuario> toUsuarios(List<UsuarioDTO> usuarioDTOs){
+        return usuarioDTOs.stream()
+            .map((UsuarioDTO usuarioDTO) -> this.toUsuario(usuarioDTO))
+            .toList();
+    };
 }
