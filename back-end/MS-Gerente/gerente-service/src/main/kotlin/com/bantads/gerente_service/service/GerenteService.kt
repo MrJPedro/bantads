@@ -40,13 +40,8 @@ class GerenteService(
     fun listarDashboard(): List<DashboardGerenteItemDTO> {
         val gerentes = gerenteRepository.findAll()
 
-        val relatorioClientes = buscarRelatorioClientes()
-        val contasPorGerente = relatorioClientes
-            .mapNotNull { toContaDashboard(it) }
-            .groupBy { it.gerente }
-
         return gerentes.map { gerente ->
-            val contas = contasPorGerente[gerente.cpf].orEmpty()
+            val contas = recuperarContasPorGerente(gerente.cpf).map { toContaDashboard(it) }
             DashboardGerenteItemDTO(
                 gerente = toDTO(gerente),
                 clientes = contas,
@@ -185,6 +180,10 @@ class GerenteService(
             sucessoConta && sucessoCliente
         }
 
+        if (contasAtualizadas != contasGerente.size) {
+            throw ResponseStatusException(HttpStatus.BAD_GATEWAY, "Não foi possível transferir todas as contas do gerente.")
+        }
+
         herdeiro.quantidadeClientes += contasAtualizadas
         gerenteRepository.save(herdeiro)
 
@@ -199,17 +198,6 @@ class GerenteService(
         rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.remocao", evento)
 
         return gerenteRemovido
-    }
-
-    private fun buscarRelatorioClientes(): List<RelatorioClienteCompostoDTO> {
-        return try {
-            restTemplate.getForObject(
-                "${baseClienteUrl()}/clientes?filtro=adm_relatorio_clientes",
-                Array<RelatorioClienteCompostoDTO>::class.java
-            )?.toList() ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
     }
 
     private fun atualizarContaGerente(numeroConta: String, cpfNovoGerente: String): Boolean {
@@ -295,16 +283,14 @@ class GerenteService(
     private fun baseClienteUrl(): String = msClienteBaseUrl.trimEnd('/')
     private fun baseContaUrl(): String = msContaBaseUrl.trimEnd('/')
 
-    private fun toContaDashboard(relatorio: RelatorioClienteCompostoDTO): ContaDashboardDTO? {
-        val numeroConta = relatorio.conta ?: return null
-        val cpfGerente = relatorio.gerenteCpf ?: return null
-
+    private fun toContaDashboard(conta: ContaDTO): ContaDashboardDTO {
         return ContaDashboardDTO(
-            cliente = relatorio.cpf,
-            numero = numeroConta,
-            saldo = relatorio.saldo ?: BigDecimal.ZERO,
-            limite = relatorio.limite ?: BigDecimal.ZERO,
-            gerente = cpfGerente
+            cliente = conta.cliente,
+            numero = conta.numero,
+            saldo = conta.saldo,
+            limite = conta.limite,
+            gerente = conta.gerente,
+            criacao = conta.criacao
         )
     }
 
