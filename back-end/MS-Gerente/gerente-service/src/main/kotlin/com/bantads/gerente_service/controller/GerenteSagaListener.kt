@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Component
+import kotlin.math.max
 
 @Component
 class GerenteSagaListener(
@@ -19,16 +20,16 @@ class GerenteSagaListener(
     fun handleCommand(message: SagaMessage) {
         if ("OBTER_GERENTE_DISPONIVEL" == message.acao) {
             try {
-                // 1. Encontrar o gerente com menos clientes
-                val gerente = gerenteRepository.findTopByOrderByQuantidadeClientesAsc()
+                val jsonNode = objectMapper.readTree(message.payload ?: "{}") as com.fasterxml.jackson.databind.node.ObjectNode
+                val cpfGerenteAtual = jsonNode.get("gerenteCpf")?.asText()?.takeIf { it.isNotBlank() }
+
+                val gerente = cpfGerenteAtual?.let { gerenteRepository.findByCpf(it) }
+                    ?: gerenteRepository.findTopByOrderByQuantidadeClientesAsc()
                     ?: throw RuntimeException("Nenhum gerente encontrado no sistema.")
 
-                // 2. Incrementar a quantidade de clientes dele (otimista)
                 gerente.quantidadeClientes += 1
                 gerenteRepository.save(gerente)
 
-                // 3. Montar o JSON payload com o gerenteCpf e dados originais
-                val jsonNode = objectMapper.readTree(message.payload ?: "{}") as com.fasterxml.jackson.databind.node.ObjectNode
                 jsonNode.put("gerenteCpf", gerente.cpf)
 
                 val reply = SagaMessage(
@@ -57,13 +58,12 @@ class GerenteSagaListener(
                 if (cpfGerente != null) {
                     val gerente = gerenteRepository.findByCpf(cpfGerente)
                     if (gerente != null) {
-                        gerente.quantidadeClientes -= 1
+                        gerente.quantidadeClientes = max(0, gerente.quantidadeClientes - 1)
                         gerenteRepository.save(gerente)
                     }
                 }
             } catch (e: Exception) {
-                // Aqui não precisamos emitir erro pra SAGA, rollback geralmente tenta e morre quieto ou deixa na DLT
-                println("Erro ao realizar rollback de gerente: \${e.message}")
+                println("Erro ao realizar rollback de gerente: ${e.message}")
             }
         }
     }

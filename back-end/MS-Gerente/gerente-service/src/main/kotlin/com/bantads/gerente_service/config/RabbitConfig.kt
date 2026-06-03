@@ -2,6 +2,7 @@ package com.bantads.gerente_service.config
 
 import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
+import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.core.TopicExchange
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
@@ -16,6 +17,7 @@ const val GERENTE_EVENT_EXCHANGE = "gerente-event-exchange"
 const val GERENTE_EVENT_ROUTING_KEY = "gerente.event.#"
 
 const val GERENTE_COMMAND_QUEUE = "gerente-command-queue"
+const val GERENTE_COMMAND_ROUTING_KEY = "gerente.command"
 const val SAGA_EXCHANGE = "saga-exchange"
 
 @Configuration
@@ -27,8 +29,8 @@ class RabbitConfig {
     }
 
     @Bean
-    fun sagaExchange(): TopicExchange {
-        return TopicExchange(SAGA_EXCHANGE)
+    fun sagaExchange(): DirectExchange {
+        return DirectExchange(SAGA_EXCHANGE)
     }
 
     @Bean
@@ -46,6 +48,13 @@ class RabbitConfig {
         return BindingBuilder.bind(gerenteEventQueue)
             .to(gerenteEventExchange)
             .with(GERENTE_EVENT_ROUTING_KEY)
+    }
+
+    @Bean
+    fun gerenteCommandBinding(gerenteCommandQueue: Queue, sagaExchange: DirectExchange): Binding {
+        return BindingBuilder.bind(gerenteCommandQueue)
+            .to(sagaExchange)
+            .with(GERENTE_COMMAND_ROUTING_KEY)
     }
 
     @Bean

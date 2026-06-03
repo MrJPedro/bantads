@@ -28,7 +28,7 @@ public class SagaReplyListener {
         Optional<SagaState> stateOpt = sagaStateRepository.findBySagaId(message.getSagaId());
         
         if (stateOpt.isEmpty()) {
-            System.err.println("[SAGA] Erro: Saga nÃ£o encontrada para ID: " + message.getSagaId());
+            System.err.println("[SAGA] Erro: Saga não encontrada para ID: " + message.getSagaId());
             return;
         }
 

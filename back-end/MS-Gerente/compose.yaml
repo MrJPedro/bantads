@@ -17,6 +17,8 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_USERNAME=rabbit
       - SPRING_RABBITMQ_PASSWORD=rabbitpass
+      - MS_CLIENTE_URL=http://ms-cliente:8086
+      - MS_CONTA_URL=http://ms-conta:8083
     depends_on:
       - rabbitmq
       - postgres-db
