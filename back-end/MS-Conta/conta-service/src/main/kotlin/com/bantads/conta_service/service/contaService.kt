@@ -6,9 +6,7 @@ import com.bantads.conta_service.dto.ContaWriteDTO
 import com.bantads.conta_service.entity.comando.ContaWrite
 import com.bantads.conta_service.entity.leitura.ContaRead as ContaLeitura
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite
-import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
-import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -23,9 +21,7 @@ import com.bantads.conta_service.config.CQRS_EVENT_EXCHANGE
 @Transactional
 class ContaService(
     private val contaRepositoryRead: ContaRepositoryRead,
-    private val transferenciaRepositoryRead: TransferenciaRepositoryRead,
     private val contaRepositoryWrite: ContaRepositoryWrite,
-    private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite,
     private val rabbitTemplate: RabbitTemplate
 ) {
 
@@ -70,6 +66,7 @@ class ContaService(
         return conta
     }
 
+    // apenas para uso do CQRS
     fun criarContaRead(conta: ContaWriteDTO)
     {
         contaRepositoryRead.save(
@@ -95,16 +92,15 @@ class ContaService(
         conta.gerente = gerenteCpf
         val contaAtualizada = contaRepositoryWrite.save(conta)
 
-        contaRepositoryRead.save(
-            ContaLeitura(
-                cliente = contaAtualizada.cliente,
-                numero = contaAtualizada.numero,
-                saldo = contaAtualizada.saldo,
-                limite = contaAtualizada.limite,
-                gerente = contaAtualizada.gerente,
-                criacao = contaAtualizada.criacao
-            )
+        val eventoCqrs = ContaWriteDTO(
+            cliente = contaAtualizada.cliente,
+            numero = contaAtualizada.numero,
+            saldo = contaAtualizada.saldo,
+            limite = contaAtualizada.limite,
+            gerente = contaAtualizada.gerente,
+            criacao = contaAtualizada.criacao
         )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.conta", eventoCqrs)
 
         return ContaDetalhesDTO(
             cliente = contaAtualizada.cliente,
@@ -133,8 +129,20 @@ class ContaService(
         }
     }
 
-    fun obterContaPorCliente(cpf: String): ContaDetalhesDTO? {
-        val conta = contaRepositoryRead.findFirstByCliente(cpf) ?: return null
+    fun obterContaPorCliente(cliente: String): ContaDetalhesDTO? {
+        val conta = contaRepositoryRead.findFirstByCliente(cliente) ?: return null
+        return ContaDetalhesDTO(
+            cliente = conta.cliente,
+            numero = conta.numero,
+            saldo = conta.saldo.setScale(2, RoundingMode.HALF_EVEN),
+            limite = conta.limite.setScale(2, RoundingMode.HALF_EVEN),
+            gerente = conta.gerente,
+            criacao = conta.criacao.toString()
+        )
+    }
+
+    fun obterContaPorNumero(numero: String): ContaDetalhesDTO? {
+        val conta = contaRepositoryRead.findByNumero(numero) ?: return null
         return ContaDetalhesDTO(
             cliente = conta.cliente,
             numero = conta.numero,

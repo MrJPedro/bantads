@@ -6,10 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ContaRepositoryRead : JpaRepository<ContaRead, Long> {
-    
-
-    fun findByCliente(cliente: String): List<ContaRead>
-
     fun findByGerente(gerente: String): List<ContaRead>
 
     fun findFirstByCliente(cliente: String): ContaRead?
