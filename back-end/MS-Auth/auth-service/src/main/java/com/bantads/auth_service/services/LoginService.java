@@ -25,7 +25,7 @@ public class LoginService {
     @Autowired
     AuthUtil authUtil;
 
-    public Login autenticar(Login loginReq) throws NoSuchElementException, IllegalArgumentException, LoginException {
+    public LoginResponse autenticar(Login loginReq) throws NoSuchElementException, IllegalArgumentException, LoginException {
         
         String emailEntrada = loginReq.login();
         String senhaEntrada = loginReq.senha();
@@ -38,7 +38,10 @@ public class LoginService {
             "Login não encontrado!"
         ));
 
-        if(emailEntrada == loginCadastrado.getLogin() && hashSenhaEntrada == loginCadastrado.getHashSenha()) return loginReq;
+        if (
+            emailEntrada.equals(loginCadastrado.getLogin()) &&
+            hashSenhaEntrada.equals(loginCadastrado.getHashSenha())
+        )
 
         throw new LoginException("Senha incorreta!");
     }

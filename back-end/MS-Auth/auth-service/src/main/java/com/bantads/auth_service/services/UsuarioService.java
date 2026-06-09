@@ -70,9 +70,7 @@ public class UsuarioService {
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
         boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
         boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.tipo());
-        boolean cpfUsuarioJaExiste = !usuarioRepository.findByCpfUsuario(cpfUsuarioFormatado).equals(null);
-        boolean loginUsuarioJaExiste = !usuarioRepository.findByLogin(usuarioDTO.login()).equals(null);
-
+        boolean cpfUsuarioJaExiste = usuarioRepository.findByCpfUsuario(cpfUsuarioFormatado).isPresent();        boolean loginUsuarioJaExiste = usuarioRepository.findByLogin(usuarioDTO.login()).isPresent();
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");

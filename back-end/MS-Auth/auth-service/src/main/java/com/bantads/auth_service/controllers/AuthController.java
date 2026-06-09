@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bantads.auth_service.DTOs.Login;
+import com.bantads.auth_service.DTOs.LoginResponse;
 import com.bantads.auth_service.DTOs.UsuarioDTO;
 import com.bantads.auth_service.services.LoginService;
 import com.bantads.auth_service.services.UsuarioService;
@@ -151,31 +152,46 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> autenticar(@RequestBody Login login){
-        
-        Login loginDTO = null;
+
+        LoginResponse loginResponse = null;
 
         try {
-            loginDTO = loginService.autenticar(login);
-            if(loginDTO.equals(null)) throw new NullPointerException("Referência a loginDTO é 'null'!");
-        
+            loginResponse = loginService.autenticar(login);
+
+            if(loginResponse == null) {
+                throw new NullPointerException("Referência a loginResponse é 'null'!");
+            }
+
         } catch (IllegalArgumentException exception){
             System.out.println(exception);
-            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST
+            );
 
         } catch (NoSuchElementException exception){
             System.out.println(exception);
-            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
-        
+            return new ResponseEntity<String>(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND
+            );
+
         } catch (LoginException exception){
             System.out.println(exception);
-            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<String>(
+                exception.getMessage(),
+                HttpStatus.UNAUTHORIZED
+            );
 
         } catch (Exception exception){
             System.out.println(exception);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        
-        return new ResponseEntity<Login>(loginDTO, HttpStatus.OK);
+
+        return new ResponseEntity<LoginResponse>(
+            loginResponse,
+            HttpStatus.OK
+        );
     }
 
     @GetMapping("/reboot")

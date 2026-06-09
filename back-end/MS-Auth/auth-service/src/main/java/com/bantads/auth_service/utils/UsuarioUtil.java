@@ -17,6 +17,5 @@ public class UsuarioUtil {
         };
 
         public boolean validarTipoUsuario(String tipo){
-            return tiposUsuarioPermitidos.stream().anyMatch(item -> item == tipo);
-        }
+            return tiposUsuarioPermitidos.stream().anyMatch(item -> item.equals(tipo));        }
 }
