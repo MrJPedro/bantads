@@ -12,25 +12,25 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "transferencia")
-class Transferencia(
+@Table(name = "transferenciaComando")
+class TransferenciaWrite(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
     @ManyToOne
     @JoinColumn(name = "conta_origem_id", nullable = false)
-    var contaOrigem: Conta,
+    var contaOrigem: ContaWrite,
 
     @ManyToOne
     @JoinColumn(name = "conta_destino_id", nullable = true)
-    var contaDestino: Conta,
+    var contaDestino: ContaWrite?,
 
     @Column(name = "valor", nullable = false, precision = 19, scale = 2)
     var valor: BigDecimal,
 
-    @Column(name = "saldofinal", nullable = false, precision = 19, scale = 2)
-    var saldofinal: BigDecimal,
+    @Column(name = "tipo", nullable = false)
+    var tipo: String,
 
     @Column(name = "data", nullable = false)
     var data: LocalDateTime

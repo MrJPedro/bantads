@@ -11,28 +11,62 @@ import org.springframework.amqp.support.converter.MessageConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-const val CONTA_EVENT_QUEUE = "cliente-event-queue"
-const val CONTA_EVENT_EXCHANGE = "cliente-event-exchange"
-const val CONTA_EVENT_ROUTING_KEY = "cliente.event.#"
+const val CLIENTE_EVENT_QUEUE = "cliente-event-queue"
+const val CLIENTE_EVENT_EXCHANGE = "cliente-event-exchange"
+const val CLIENTE_EVENT_ROUTING_KEY = "cliente.event.#"
+
+const val CQRS_EVENT_QUEUE = "cqrs-event-queue"
+const val CQRS_EVENT_EXCHANGE = "cqrs-event-exchange"
+const val CQRS_EVENT_ROUTING_KEY = "cqrs.event.#"
+
+const val CONTA_COMMAND_QUEUE = "conta-command-queue"
+const val SAGA_EXCHANGE = "saga-exchange"
 
 @Configuration
 class RabbitConfig {
 
     @Bean
+    fun contaCommandQueue(): Queue {
+        return Queue(CONTA_COMMAND_QUEUE, true)
+    }
+
+    @Bean
+    fun sagaExchange(): TopicExchange {
+        return TopicExchange(SAGA_EXCHANGE)
+    }
+
+    @Bean
     fun clienteEventQueue(): Queue {
-        return Queue(CONTA_EVENT_QUEUE, true)
+        return Queue(CLIENTE_EVENT_QUEUE, true)
     }
 
     @Bean
     fun clienteEventExchange(): TopicExchange {
-        return TopicExchange(CONTA_EVENT_EXCHANGE)
+        return TopicExchange(CLIENTE_EVENT_EXCHANGE)
     }
 
     @Bean
-    fun binding(clienteEventQueue: Queue, clienteEventExchange: TopicExchange): Binding {
+    fun clienteBinding(clienteEventQueue: Queue, clienteEventExchange: TopicExchange): Binding {
         return BindingBuilder.bind(clienteEventQueue)
             .to(clienteEventExchange)
-            .with(CONTA_EVENT_ROUTING_KEY)
+            .with(CLIENTE_EVENT_ROUTING_KEY)
+    }
+
+    @Bean
+    fun cqrsEventQueue(): Queue {
+        return Queue(CQRS_EVENT_QUEUE, true)
+    }
+
+    @Bean
+    fun cqrsEventExchange(): TopicExchange {
+        return TopicExchange(CQRS_EVENT_EXCHANGE)
+    }
+
+    @Bean
+    fun cqrsBinding(cqrsEventQueue: Queue, cqrsEventExchange: TopicExchange): Binding {
+        return BindingBuilder.bind(cqrsEventQueue)
+            .to(cqrsEventExchange)
+            .with(CQRS_EVENT_ROUTING_KEY)
     }
 
     @Bean

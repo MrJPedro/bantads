@@ -2,6 +2,7 @@ export interface DadoGerenteInsercao {
     cpf: string
     nome: string
     email: string
-    tipo: string
+    telefone: string
+    tipo?: string
     senha: string
 }

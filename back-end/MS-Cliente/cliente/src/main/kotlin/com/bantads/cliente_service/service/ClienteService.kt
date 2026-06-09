@@ -4,6 +4,7 @@ import com.bantads.cliente_service.config.CLIENTE_EVENT_EXCHANGE
 import com.bantads.cliente_service.dto.*
 import com.bantads.cliente_service.entity.ClienteEntity
 import com.bantads.cliente_service.repository.ClienteRepository
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -18,7 +19,8 @@ import java.math.RoundingMode
 class ClienteService(
     private val clienteRepository: ClienteRepository,
     private val rabbitTemplate: RabbitTemplate,
-    private val restTemplate: RestTemplate
+    private val restTemplate: RestTemplate,
+    private val objectMapper: ObjectMapper
 ) {
 
     fun listarClientes(filtro: String?): List<Any> {
@@ -44,28 +46,63 @@ class ClienteService(
 
   @Transactional
   fun autocadastro(dto: AutocadastroInfo): DadosClienteResponse {
-    if (clienteRepository.findByCpf(dto.cpf) != null) {
-      throw ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado")
-    }
+        if (clienteRepository.findByCpf(dto.cpf) != null) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado")
+        }
+
+        if (dto.nome.isBlank() || dto.email.isBlank() || dto.cpf.isBlank() || dto.telefone.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome, email, CPF e telefone são obrigatórios")
+        }
+
+        val salario = dto.salario.toString().toBigDecimalOrNull()
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Salário inválido")
+
+        if (salario <= BigDecimal.ZERO) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Salário deve ser maior que zero")
+        }
+
+        val gerenteCpf = escolherGerente()
 
         var novoCliente = ClienteEntity(
             nome = dto.nome,
             email = dto.email,
             cpf = dto.cpf,
             telefone = dto.telefone,
-            salario = dto.salario.setScale(2, RoundingMode.HALF_EVEN),
-            endereco = "Rua Desconhecida", // MOCK
-            cep = "00000000",              // MOCK
-            cidade = "Desconhecida",       // MOCK
-            estado = "ST",                 // MOCK
+            salario = salario.setScale(2, RoundingMode.HALF_EVEN),
+            endereco = dto.endereco,
+            cep = dto.cep,
+            cidade = dto.cidade,
+            estado = dto.estado,
+            gerenteCpf = gerenteCpf,
             status = "AGUARDANDO_APROVACAO"
         )
 
         novoCliente = clienteRepository.save(novoCliente)
 
-        enviarEvento("autocadastro", novoCliente)
+        // Iniciar Saga de Autocadastro!
+        val payloadJson = objectMapper.writeValueAsString(toDTO(novoCliente))
+        val sagaRequest = SagaMessage(
+            tipoSaga = "AUTOCADASTRO",
+            payload = payloadJson
+        )
+        rabbitTemplate.convertAndSend("saga-exchange", "saga.request", sagaRequest)
 
         return toDTO(novoCliente)
+    }
+
+    @Transactional
+    fun atualizarGerente(cpf: String, gerenteCpf: String): DadosClienteResponse {
+        if (gerenteCpf.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF do gerente é obrigatório")
+        }
+
+        val cliente = clienteRepository.findByCpf(cpf)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
+
+        cliente.gerenteCpf = gerenteCpf
+        clienteRepository.save(cliente)
+
+        return toDTO(cliente)
     }
 
     @Transactional
@@ -75,7 +112,11 @@ class ClienteService(
         cliente.nome = dto.nome
         cliente.email = dto.email
         cliente.telefone = dto.telefone
-        cliente.salario = dto.salario.setScale(2, RoundingMode.HALF_EVEN)
+
+        val novoSalario = dto.salario.toString().toBigDecimalOrNull()
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Salário inválido")
+
+        cliente.salario = novoSalario.setScale(2, RoundingMode.HALF_EVEN)
 
         clienteRepository.save(cliente)
 
@@ -134,7 +175,7 @@ class ClienteService(
                 val gerente = buscarGerente(conta.gerente)
                 toRelatorioDTO(cliente, conta, gerente)
             }
-        } catch (ex: HttpClientErrorException) {
+        } catch (_: HttpClientErrorException) {
             emptyList()
         }
     }
@@ -142,7 +183,7 @@ class ClienteService(
     private fun buscarContaCliente(cpf: String): ContaResumoDTO? {
         return try {
             restTemplate.getForObject("http://ms-conta:8083/contas/cliente/$cpf", ContaResumoDTO::class.java)
-        } catch (ex: HttpClientErrorException) {
+        } catch (_: HttpClientErrorException) {
             null
         }
     }
@@ -152,7 +193,18 @@ class ClienteService(
 
         return try {
             restTemplate.getForObject("http://ms-gerente:8082/gerentes/$cpf", GerenteInfoDTO::class.java)
-        } catch (ex: HttpClientErrorException) {
+        } catch (_: HttpClientErrorException) {
+            null
+        }
+    }
+
+    private fun escolherGerente(): String? {
+        return try {
+            restTemplate.getForObject("http://ms-gerente:8082/gerentes", Array<GerenteInfoDTO>::class.java)
+                ?.toList()
+                ?.minByOrNull { it.quantidadeClientes }
+                ?.cpf
+        } catch (_: Exception) {
             null
         }
     }
@@ -189,7 +241,8 @@ class ClienteService(
             telefone = cliente.telefone,
             salario = cliente.salario,
             status = cliente.status,
-            motivo = motivo
+            motivo = motivo,
+            gerenteCpf = cliente.gerenteCpf
         )
 
         rabbitTemplate.convertAndSend(CLIENTE_EVENT_EXCHANGE, "cliente.event.$tipo", evento)
@@ -203,7 +256,12 @@ class ClienteService(
             cpf = entity.cpf,
             email = entity.email,
             telefone = entity.telefone,
-            salario = entity.salario
+            salario = entity.salario,
+            endereco = entity.endereco,
+            cep = entity.cep,
+            cidade = entity.cidade,
+            estado = entity.estado,
+            gerenteCpf = entity.gerenteCpf
         )
     }
 }

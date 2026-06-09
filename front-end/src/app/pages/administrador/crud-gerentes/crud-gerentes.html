@@ -3,6 +3,7 @@
 <div class="rounded-xl bg-white p-6 shadow-sm">
   <p-table
     [value]="gerentesFiltrados()"
+    [loading]="carregandoGerentes()"
     [rows]="10"
     [paginator]="true"
     [sortField]="'nome'"
@@ -143,10 +144,12 @@
         label="Cancelar"
         severity="secondary"
         [outlined]="true"
+        [disabled]="salvandoGerente()"
         (onClick)="fecharDialogFormulario()"
       />
       <p-button
         [label]="modoEdicao() ? 'Salvar alterações' : 'Criar gerente'"
+        [loading]="salvandoGerente()"
         (onClick)="salvarGerente()"
       />
     </div>
@@ -162,7 +165,7 @@
   [style]="{ width: 'min(92vw, 28rem)' }"
   header="Remover gerente"
 >
-  <p>Tem certeza que deseja remover este gerente da lista mockada?</p>
+  <p>Tem certeza que deseja remover este gerente?</p>
 
   <ng-template #footer>
     <div class="flex justify-content-end gap-2">
@@ -170,9 +173,15 @@
         label="Cancelar"
         severity="secondary"
         [outlined]="true"
+        [disabled]="removendoGerente()"
         (onClick)="cancelarRemocao()"
       />
-      <p-button label="Remover" severity="danger" (onClick)="confirmarRemocao()" />
+      <p-button
+        label="Remover"
+        severity="danger"
+        [loading]="removendoGerente()"
+        (onClick)="confirmarRemocao()"
+      />
     </div>
   </ng-template>
 </p-dialog>

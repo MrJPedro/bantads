@@ -1,5 +1,0 @@
-DB_USER=postgres
-DB_PASS=root
-DB_NAME=db_conta
-DB_PORT_LOCAL=5432
-APP_PORT=8083

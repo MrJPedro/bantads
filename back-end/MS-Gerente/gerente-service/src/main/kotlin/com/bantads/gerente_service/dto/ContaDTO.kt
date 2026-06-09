@@ -7,5 +7,6 @@ data class ContaDTO(
     val numero: String,
     val saldo: BigDecimal,
     val limite: BigDecimal,
-    val gerente: String
+    val gerente: String,
+    val criacao: String? = null
 )

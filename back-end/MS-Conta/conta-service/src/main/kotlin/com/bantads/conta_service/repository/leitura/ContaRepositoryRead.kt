@@ -1,18 +1,16 @@
 package com.bantads.conta_service.repository.leitura
 
-import com.bantads.conta_service.entity.comando.Conta
+import com.bantads.conta_service.entity.leitura.ContaRead
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ContaRepositoryRead : JpaRepository<Conta, Long> {
-    
+interface ContaRepositoryRead : JpaRepository<ContaRead, Long> {
+    fun findByGerente(gerente: String): List<ContaRead>
 
-    fun findByCliente(cliente: String): List<Conta>
+    fun findFirstByCliente(cliente: String): ContaRead?
 
-    fun findFirstByCliente(cliente: String): Conta?
+    fun findByNumero(numero: String): ContaRead?
 
-    fun findByNumero(numero: String): Conta?
-
-    fun findTop3ByOrderBySaldoDesc(): List<Conta>
+    fun findTop3ByOrderBySaldoDesc(): List<ContaRead>
 }

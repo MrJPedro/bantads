@@ -1,21 +1,31 @@
-# ===== Microsserviço de autenticação
+services:
   ms-auth:
     image: ms-auth-spring
     container_name: ms-auth
-    build: ./MS-Auth/ms-auth.Dockerfile
-    networks: backend
+    build: 
+      context: ./
+      dockerfile: ms-auth.Dockerfile
+    networks:
+      - backend
     depends_on:
-      rabbitmq:
-      ms-auth-db:
+      - rabbitmq
+      - ms-auth-db
+    environment:
+      - SPRING_MONGODB_HOST=ms-auth-db
+      - SPRING_MONGODB_PORT=27017
+      - SPRING_MONGODB_DATABASE=auth
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=rabbit
+      - SPRING_RABBITMQ_PASSWORD=rabbitpass
 
-# ===== BD (Mongo)
   ms-auth-db:
     image: mongodb/mongodb-community-server:latest
     container_name: ms-auth-db
-    environment:
-    #  - usuário
-    #  - senha
-    # E outras variáveis relevantes
+    networks:
+      - backend
     volumes:
-    #  - dados:/dados
-    networks: backend
+      - ms_auth_db_data:/data/db
+
+volumes:
+  ms_auth_db_data:

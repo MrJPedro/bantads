@@ -81,12 +81,15 @@
       icon="pi pi-times"
       severity="success"
       text
-      (onClick)="dialogRecusa = false"
+      [disabled]="processandoRecusa"
+      (onClick)="fecharDialogRecusa()"
     />
     <p-button
       label="Confirmar Recusa"
       icon="pi pi-check"
       severity="danger"
+      [loading]="processandoRecusa"
+      [disabled]="!motivoRecusa.trim()"
       (onClick)="confirmarRecusa()"
     />
   </ng-template>
@@ -111,12 +114,14 @@
       label="Cancelar"
       icon="pi pi-times"
       severity="danger"
-      (onClick)="dialogAceita = false"
+      [disabled]="processandoAceite"
+      (onClick)="fecharDialogAceite()"
     />
     <p-button
       label="Confirmar Aceite"
       icon="pi pi-check"
       severity="success"
+      [loading]="processandoAceite"
       (onClick)="confirmarAceite()"
     />
   </ng-template>

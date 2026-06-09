@@ -5,5 +5,9 @@ data class AutocadastroInfo(
     val email: String,
     val cpf: String,
     val telefone: String,
-    val salario: Number
+    val salario: Double,
+    val endereco: String,
+    val cep: String,
+    val cidade: String,
+    val estado: String
 )

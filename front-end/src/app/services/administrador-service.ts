@@ -21,12 +21,6 @@ export class AdministradorService {
     })
   }
 
-  // R15: Tela Inicial Administrador
-  mostraGerentes(){
-
-  }
-
-  // R16: Relatório de Clientes
   consultarTodosClientesAdm(): Observable<RelatorioClientesResponse>{
     const params = new HttpParams().set('filtro', 'adm_relatorio_clientes');
 
@@ -38,21 +32,18 @@ export class AdministradorService {
     )
   }
 
-  // R17: (CRUD de Gerentes) Inserção de Gerente
-  inserirGerente(dados: DTO.DadoGerenteInsercao): Observable<DTO.GerentesResponse>{
-    return this.httpClient.post<DTO.GerentesResponse>(
+  inserirGerente(dados: DTO.DadoGerenteInsercao): Observable<DTO.DadoGerente>{
+    return this.httpClient.post<DTO.DadoGerente>(
       API_URL + "/gerentes", dados, this.httpOptions
     )
   }
 
-  // R18:  (CRUD de Gerentes) Remoção de Gerente
-  removerGerente(cpf: String): Observable<DTO.GerentesResponse> {
-    return this.httpClient.delete<DTO.GerentesResponse>(
+  removerGerente(cpf: string): Observable<DTO.DadoGerente> {
+    return this.httpClient.delete<DTO.DadoGerente>(
       API_URL + "/gerentes/" + cpf, this.httpOptions
     )
   }
 
-  // R19:  (CRUD de Gerentes) Listagem de Gerentes
   consultarTodosGerentes(): Observable<DTO.DashboardResponse> {
     const params = new HttpParams().set('numero', 'dashboard');
 
@@ -72,16 +63,15 @@ export class AdministradorService {
 
   }
 
-  consultarGerente(cpf: String): Observable<DTO.GerentesResponse> {
-    return this.httpClient.get<DTO.GerentesResponse>(
+  consultarGerente(cpf: string): Observable<DTO.DadoGerente> {
+    return this.httpClient.get<DTO.DadoGerente>(
       API_URL + "/gerentes/" + cpf, this.httpOptions
     )
 
   }
 
-  // R20:  (CRUD de Gerentes) Alteração de Gerente
-  alterarGerente(cpf: String, novo: DTO.DadoGerenteAtualizacao): Observable<DTO.GerentesResponse> {
-    return this.httpClient.put<DTO.GerentesResponse>(
+  alterarGerente(cpf: string, novo: DTO.DadoGerenteAtualizacao): Observable<DTO.DadoGerente> {
+    return this.httpClient.put<DTO.DadoGerente>(
       API_URL + "/gerentes/" + cpf, novo, this.httpOptions
     )
   }

@@ -1,9 +1,9 @@
 include:
   # - ./API-Gateway/compose.yaml
   # - ./MS-Auth/auth-service/compose.yaml
-  # - ./MS-Cliente/compose.yaml
-  # - ./MS-Conta/compose.yaml
-  # - ./MS-Gerente/compose.yaml
+  - ./MS-Cliente/compose.yaml
+  - ./MS-Conta/compose.yaml
+  - ./MS-Gerente/compose.yaml
   - ./RabbitMQ/compose.yaml
   - ./PostgreSQL/compose.yaml
   - ./saga/compose.yaml

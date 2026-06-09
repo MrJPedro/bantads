@@ -8,9 +8,9 @@ services:
     networks:
       - backend
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - 8083:8083
     environment:
-      - SERVER_PORT=${APP_PORT}
+      - SERVER_PORT=8083
       - SPRING_DATASOURCE_COMMAND_JDBC_URL=jdbc:postgresql://postgres-db:5432/conta_comando
       - SPRING_DATASOURCE_COMMAND_USERNAME=postgres
       - SPRING_DATASOURCE_COMMAND_PASSWORD=postgrespass
@@ -24,8 +24,3 @@ services:
     depends_on:
       - rabbitmq
       - postgres-db
-
-networks:
-  backend:
-    name: ms-conta_backend
-    external: true
