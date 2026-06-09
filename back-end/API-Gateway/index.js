@@ -13,6 +13,9 @@ app.use(cors({
     credentials: true     
 }));
 
+
+// Rotas Cliente
+
 // Rota: Relatório do Administrador (Composição de Clientes + Conta + Gerente)
 app.get('/clientes', async (req, res, next) => {
     // Lembrar de mandar o filtro no front
@@ -64,6 +67,45 @@ app.get('/clientes', async (req, res, next) => {
     }
 });
 
+
+// Rota: Alteração de Perfil do Cliente (Composição de Cliente + Conta + Gerente)
+app.get('/clientes/:cpf/perfil', async (req, res) => {
+    const { cpf } = req.params;
+
+    try {
+        const config = {
+            headers: { Authorization: req.headers['authorization'] },
+            timeout: 5000
+        };
+
+        const [{ data: cliente }, { data: conta }] = await Promise.all([
+            axios.get(`${process.env.CLIENTES_URI}/clientes/${cpf}`, config),
+            axios.get(`${process.env.CONTAS_URI}/contas/cliente/${cpf}`, config)
+        ]);
+
+        let gerenteNome = null;
+        if (conta?.gerente) {
+            const { data: gerente } = await axios.get(
+                `${process.env.GERENTES_URI}/gerentes/${conta.gerente}`,
+                config
+            );
+            gerenteNome = gerente.nome;
+        }
+
+        return res.json({
+            ...cliente,
+            saldo: conta?.saldo ?? null,
+            gerente_nome: gerenteNome,
+            gerente_cpf: conta?.gerente ?? null
+        });
+    } catch (error) {
+        console.error(`Erro na composition do perfil do cliente ${cpf}:`, error.message);
+        return res.status(500).json({ erro: 'Falha ao gerar perfil do cliente' });
+    }
+});
+
+
+// Rotas Gerente
 
 // Rota: Dashboard do Gerente/Admin (Composição de Gerente + Contas/Saldos)
 app.get('/gerentes', async (req, res, next) => {
@@ -117,6 +159,82 @@ app.get('/gerentes', async (req, res, next) => {
         return res.status(500).json({ erro: "Falha ao gerar dashboard" });
     }
 });
+
+
+// Rota: Consultar todos os clientes de um gerente (R12)
+app.get('/gerentes/:cpf/clientes', async (req, res) => {
+    const { cpf } = req.params;
+
+    try {
+        const config = { headers: { Authorization: req.headers['authorization'] } };
+
+        // Busca todas as contas deste gerente
+        const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${cpf}`, config);
+
+        // Para cada conta, busca dados do cliente
+        const clientesPromises = contas.map(async (conta) => {
+            try {
+                const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
+                
+                return {
+                    cpf: cliente.cpf,
+                    nome: cliente.nome,
+                    cidade: cliente.cidade,
+                    estado: cliente.estado,
+                    saldo: conta.saldo,
+                    limite: conta.limite
+                };
+            } catch (err) {
+                console.error(`Falha ao buscar dados do cliente ${conta.cliente}:`, err.message);
+                return null;
+            }
+        });
+
+        const clientesCompostos = (await Promise.all(clientesPromises)).filter(c => c !== null);
+
+        return res.json(clientesCompostos);
+    } catch (error) {
+        console.error(`Erro ao listar clientes do gerente ${cpf}:`, error.message);
+        return res.status(500).json({ erro: 'Falha ao listar clientes do gerente' });
+    }
+});
+
+
+// Rota: Consultar os 3 melhores clientes por saldo (R14)
+app.get('/contas/top3', async (req, res) => {
+    try {
+        const config = { headers: { Authorization: req.headers['authorization'] } };
+
+        // Busca as 3 contas com maior saldo
+        const { data: top3Contas } = await axios.get(`${process.env.CONTAS_URI}/contas/top3`, config);
+
+        // Para cada conta, busca dados do cliente
+        const clientesPromises = top3Contas.map(async (conta) => {
+            try {
+                const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
+                
+                return {
+                    cpf: cliente.cpf,
+                    nome: cliente.nome,
+                    cidade: cliente.cidade,
+                    estado: cliente.estado,
+                    saldo: conta.saldo
+                };
+            } catch (err) {
+                console.error(`Falha ao buscar dados do cliente ${conta.cliente}:`, err.message);
+                return null;
+            }
+        });
+
+        const top3Compostos = (await Promise.all(clientesPromises)).filter(c => c !== null);
+
+        return res.json(top3Compostos);
+    } catch (error) {
+        console.error('Erro ao listar top 3 clientes:', error.message);
+        return res.status(500).json({ erro: 'Falha ao listar top 3 clientes' });
+    }
+});
+
 
 app.use('/login', createProxyMiddleware({
     target: process.env.AUTH_URI,
