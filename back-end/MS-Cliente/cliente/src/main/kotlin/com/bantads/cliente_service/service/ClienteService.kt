@@ -79,14 +79,6 @@ class ClienteService(
 
         novoCliente = clienteRepository.save(novoCliente)
 
-        // Iniciar Saga de Autocadastro!
-        val payloadJson = objectMapper.writeValueAsString(toDTO(novoCliente))
-        val sagaRequest = SagaMessage(
-            tipoSaga = "AUTOCADASTRO",
-            payload = payloadJson
-        )
-        rabbitTemplate.convertAndSend("saga-exchange", "saga.request", sagaRequest)
-
         return toDTO(novoCliente)
     }
 
@@ -129,10 +121,40 @@ class ClienteService(
     fun aprovar(cpf: String): DadosClienteResponse {
         val cliente = clienteRepository.findByCpf(cpf) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
 
+        if (cliente.status != "AGUARDANDO_APROVACAO") {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente não está aguardando aprovação")
+        }
+
         cliente.status = "APROVADO"
         clienteRepository.save(cliente)
 
         enviarEvento("aprovacao", cliente)
+
+        // 🔥 ETAPA 2.1: Disparar SAGA ao aprovar cliente
+        val sagaMessage = SagaMessage(
+            sagaId = java.util.UUID.randomUUID(),
+            tipoSaga = "AUTOCADASTRO",
+            acao = "INICIAR_SAGA",
+            sucesso = true,
+            payload = objectMapper.writeValueAsString(mapOf(
+                "cpf" to cliente.cpf,
+                "email" to cliente.email,
+                "salario" to cliente.salario,
+                "gerenteCpf" to cliente.gerenteCpf
+            ))
+        )
+
+        try {
+            rabbitTemplate.convertAndSend(
+                "saga-exchange",
+                "saga.request",
+                sagaMessage
+            )
+            println("[MS-CLIENTE] SAGA iniciada para cliente: ${cliente.cpf}")
+        } catch (e: Exception) {
+            println("[MS-CLIENTE] Erro ao disparar SAGA: ${e.message}")
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao iniciar fluxo de aprovação")
+        }
 
         return toDTO(cliente)
     }

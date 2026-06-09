@@ -16,7 +16,10 @@ public class SagaReplyListener {
     private final SagaStateRepository sagaStateRepository;
     private final AutocadastroSagaOrchestrator autocadastroSagaOrchestrator;
 
-    public SagaReplyListener(SagaStateRepository sagaStateRepository, AutocadastroSagaOrchestrator autocadastroSagaOrchestrator) {
+    public SagaReplyListener(
+            SagaStateRepository sagaStateRepository,
+            AutocadastroSagaOrchestrator autocadastroSagaOrchestrator
+    ) {
         this.sagaStateRepository = sagaStateRepository;
         this.autocadastroSagaOrchestrator = autocadastroSagaOrchestrator;
     }
