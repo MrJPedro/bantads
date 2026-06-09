@@ -14,6 +14,10 @@ services:
       - SPRING_MONGODB_HOST=ms-auth-db
       - SPRING_MONGODB_PORT=27017
       - SPRING_MONGODB_DATABASE=auth
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=rabbit
+      - SPRING_RABBITMQ_PASSWORD=rabbitpass
 
   ms-auth-db:
     image: mongodb/mongodb-community-server:latest

@@ -4,11 +4,12 @@ import com.bantads.auth_service.DTOs.UsuarioDTO;
 //import com.bantads.auth_service.models.Usuario;
 
 import java.util.List;
-
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;;;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
+@Component
 public class UsuarioMapper {
 
     @Autowired
@@ -33,3 +34,4 @@ public class UsuarioMapper {
             .map((UsuarioDTO usuarioDTO) -> this.toUsuario(usuarioDTO))
             .toList();
     }
+}

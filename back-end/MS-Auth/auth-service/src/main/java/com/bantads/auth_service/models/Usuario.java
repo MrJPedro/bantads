@@ -16,17 +16,17 @@ public class Usuario {
     private String cpf;
     @Field("tipo")
     private String tipo;
-    @Field("senha")
-    private String senha;
+    @Field("hash_senha")
+    private String hashSenha;
 
     public Usuario() {
     }
 
-    public Usuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String senhaUsuario){
+    public Usuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String hashSenhaUsuario){
         this.cpf = cpfUsuario;
         this.tipo = tipoUsuario;
         this.login = loginUsuario;
-        this.senha = senhaUsuario;
+        this.hashSenha = hashSenhaUsuario;
     }
 
     public String getCpfUsuario() {
@@ -49,10 +49,10 @@ public class Usuario {
     public void setLogin(String loginUsuario) {
         this.login = loginUsuario;
     }
-    public String getSenha() {
-        return senha;
+    public String getHashSenha() {
+        return hashSenha;
     }
-    public void setSenha(String senhaUsuario) {
-        this.senha = senhaUsuario;
+    public void setHashSenha(String hashSenhaUsuario) {
+        this.hashSenha = hashSenhaUsuario;
     }
 }

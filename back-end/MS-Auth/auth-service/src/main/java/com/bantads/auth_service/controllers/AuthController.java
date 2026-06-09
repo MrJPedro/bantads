@@ -1,25 +1,27 @@
 package com.bantads.auth_service.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import com.bantads.auth_service.DTOs.UsuarioDTO;
-import com.bantads.auth_service.services.UsuarioService;
-import com.bantads.auth_service.DTOs.Login;
-import com.bantads.auth_service.services.LoginService;
+import javax.security.auth.login.LoginException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bantads.auth_service.DTOs.Login;
+import com.bantads.auth_service.DTOs.UsuarioDTO;
+import com.bantads.auth_service.services.LoginService;
+import com.bantads.auth_service.services.UsuarioService;
+import com.bantads.auth_service.utils.JaExisteException;
 
 @CrossOrigin
 @RestController
@@ -31,10 +33,9 @@ public class AuthController {
     @Autowired
     LoginService loginService;
 
-    // ===== Pronto para uso com dados mockados =====
     @GetMapping("/Usuarios")
     public ResponseEntity<List<UsuarioDTO>> getAllUsuarios(){
-        
+
         List<UsuarioDTO> usuarios = null;
 
         try {
@@ -48,21 +49,22 @@ public class AuthController {
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 
-    // ===== Pronto para uso com dados mockados =====
     @GetMapping("/Usuarios/{loginUsuario}")
-    public ResponseEntity<UsuarioDTO> getUsuario(@PathVariable("loginUsuario") String loginUsuario){
+    public ResponseEntity<?> getUsuario(@PathVariable("loginUsuario") String loginUsuario){
         
         UsuarioDTO uDTO = null;
         
         try {
 
             uDTO = usuarioService.getUsuario(loginUsuario);
-            if(uDTO.equals(null)) throw new NullPointerException("Referência a usuário é 'null'!");
+            if(uDTO.equals(null)) throw new NullPointerException("Referência a uDTO é 'null'!");
         
         } catch (IllegalArgumentException exception){
-            //
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+
         } catch (NoSuchElementException exception){
-            //
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
+
         } catch (Exception e){
             System.out.println(e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -72,28 +74,119 @@ public class AuthController {
     }
 
     @PostMapping("/Usuarios")
-    public UsuarioDTO postUsuario(@RequestBody UsuarioDTO usuario){
-        return usuarioService.insertUsuario(usuario);
+    public ResponseEntity<?> postUsuario(@RequestBody UsuarioDTO usuario){
+        
+        UsuarioDTO uDTO = null;
+        
+        try {
+            uDTO = usuarioService.insertUsuario(usuario);
+            if(uDTO.equals(null)) throw new NullPointerException("Referência a uDTO é 'null'!");
+
+        } catch (IllegalArgumentException exception) {
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+
+        } catch (JaExisteException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.CONFLICT);
+
+        } catch (Exception exception) {
+            System.out.println(exception);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+        return new ResponseEntity<UsuarioDTO>(uDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/Usuarios/{cpfUsuario}")
-    public UsuarioDTO putUsuario(@PathVariable("cpfUsuario") String cpfUsuario, @RequestBody UsuarioDTO Usuario) {
+    public ResponseEntity<?> putUsuario(@PathVariable("cpfUsuario") String cpfUsuario, @RequestBody UsuarioDTO usuario) {
         
-        return usuarioService.putUsuario(Usuario);
+        UsuarioDTO uDTO = null;
+
+        try{
+            uDTO = usuarioService.editUsuario(usuario);
+            if(uDTO.equals(null)) throw new NullPointerException("Referência a uDTO é 'null'!");
+
+        } catch (IllegalArgumentException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+
+        } catch (NoSuchElementException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
+
+        } catch (Exception exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<UsuarioDTO>(uDTO, HttpStatus.ACCEPTED);
     }
 
-    @DeleteMapping("/Usuarios/{cpfUsuario}")
-    public UsuarioDTO deleteUsuario(@PathVariable("cpfUsuario") String cpfUsuario) {
-        return usuarioService.deleteUsuario(cpfUsuario);
+    @DeleteMapping("/Usuarios/{loginUsuario}")
+    public ResponseEntity<?> deleteUsuario(@PathVariable("loginUsuario") String loginUsuario) {
+        
+        UsuarioDTO uDTO = null;
+
+        try {
+            uDTO = usuarioService.deleteUsuario(loginUsuario);
+            if(uDTO.equals(null)) throw new NullPointerException("Referência a uDTO é 'null'!");
+
+        } catch (IllegalArgumentException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+
+
+        } catch (NoSuchElementException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
+            
+        } catch (Exception exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<UsuarioDTO>(uDTO, HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/login")
-    public Login autenticar(@RequestBody Login login){
-        return loginService.autenticar(login);
+    public ResponseEntity<?> autenticar(@RequestBody Login login){
+        
+        Login loginDTO = null;
+
+        try {
+            loginDTO = loginService.autenticar(login);
+            if(loginDTO.equals(null)) throw new NullPointerException("Referência a loginDTO é 'null'!");
+        
+        } catch (IllegalArgumentException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+
+        } catch (NoSuchElementException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
+        
+        } catch (LoginException exception){
+            System.out.println(exception);
+            return new ResponseEntity<String>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+
+        } catch (Exception exception){
+            System.out.println(exception);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+        return new ResponseEntity<Login>(loginDTO, HttpStatus.OK);
     }
 
     @GetMapping("/reboot")
-    public void reboot(){
-        usuarioService.reboot();
+    public ResponseEntity<?> reboot(){
+        try{
+            usuarioService.reboot();
+        } catch (Exception exception){
+            System.out.println(exception);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        
     }
 }

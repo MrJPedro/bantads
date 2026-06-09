@@ -1,6 +1,7 @@
 package com.bantads.auth_service.amqp;
 
 import com.bantads.auth_service.DTOs.SagaMessage;
+import com.bantads.auth_service.DTOs.UsuarioDTO;
 import com.bantads.auth_service.config.RabbitConfig;
 import com.bantads.auth_service.services.UsuarioService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,7 +41,9 @@ public class AuthSagaListener {
                     String cpf = payloadNode.get("cpf").asText();
                     String email = payloadNode.get("email").asText();
 
-                    usuarioService.insertUsuario(cpf, "CLIENTE", email, senhaTemporaria);
+                    usuarioService.insertUsuario(
+                        new UsuarioDTO(cpf, "CLIENTE", email, senhaTemporaria)
+                    );
                     System.out.println("[MS-AUTH] Usuário de autenticacão criado com sucesso para CPF: " + cpf);
 
                     responderSaga(command, true, command.getPayload());
