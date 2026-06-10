@@ -14,8 +14,6 @@ app.use(cors({
 }));
 
 
-// Rotas Cliente
-
 // Rota: Relatório do Administrador (Composição de Clientes + Conta + Gerente)
 app.get('/clientes', async (req, res, next) => {
     // Lembrar de mandar o filtro no front
@@ -104,9 +102,6 @@ app.get('/clientes/:cpf/perfil', async (req, res) => {
     }
 });
 
-
-// Rotas Gerente
-
 // Rota: Dashboard do Gerente/Admin (Composição de Gerente + Contas/Saldos)
 app.get('/gerentes', async (req, res, next) => {
     // Acho que era para ser filtro em vez de número, mas na especificação da API tá assim, vai saber
@@ -161,17 +156,15 @@ app.get('/gerentes', async (req, res, next) => {
 });
 
 
-// Rota: Consultar todos os clientes de um gerente (R12)
+// Rota: Consultar todos os clientes de um gerente (Composição de Gerente + Clientes + Conta)
 app.get('/gerentes/:cpf/clientes', async (req, res) => {
     const { cpf } = req.params;
 
     try {
         const config = { headers: { Authorization: req.headers['authorization'] } };
 
-        // Busca todas as contas deste gerente
         const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${cpf}`, config);
 
-        // Para cada conta, busca dados do cliente
         const clientesPromises = contas.map(async (conta) => {
             try {
                 const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
@@ -200,15 +193,13 @@ app.get('/gerentes/:cpf/clientes', async (req, res) => {
 });
 
 
-// Rota: Consultar os 3 melhores clientes por saldo (R14)
+// Rota: Consultar os 3 melhores clientes por saldo (Composição de Gerente + Clientes + Conta)
 app.get('/contas/top3', async (req, res) => {
     try {
         const config = { headers: { Authorization: req.headers['authorization'] } };
 
-        // Busca as 3 contas com maior saldo
         const { data: top3Contas } = await axios.get(`${process.env.CONTAS_URI}/contas/top3`, config);
 
-        // Para cada conta, busca dados do cliente
         const clientesPromises = top3Contas.map(async (conta) => {
             try {
                 const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
