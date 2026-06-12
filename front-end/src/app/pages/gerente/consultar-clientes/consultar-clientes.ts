@@ -86,38 +86,24 @@ export class ConsultarClientes implements OnInit {
   }
 
   abrirModalDetalhes(cliente: ClienteResponse) {
-    this.clienteSelecionado.set(cliente);
-    this.modalDetalhesVisivel.set(true);
+    this.gerenteService.consultarCliente(cliente.cpf).subscribe({
+      next: (clienteCompleto) => {
+        this.clienteSelecionado.set(clienteCompleto);
+        this.modalDetalhesVisivel.set(true);
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível carregar os detalhes do cliente.',
+        });
+      },
+    });
   }
 
   fecharModalDetalhes() {
     this.modalDetalhesVisivel.set(false);
     this.clienteSelecionado.set(null);
   }
-  /*  mockDados() {
-        this.clientes.set([
-            {
-                cpf: '123.456.789-00',
-                nome: 'Ricardo Silva',
-                email: 'ricardo@email.com',
-                salario: 3500.00,
-                endereco: 'Rua A',
-                cidade: 'Curitiba',
-                estado: 'PR',
-                saldo: 300.00,
-                limite: 10500.00
-            },
-            {
-                cpf: '987.654.321-11',
-                nome: 'Ana Souza',
-                email: 'ana@email.com',
-                salario: 1500.00,
-                endereco: 'Rua B',
-                cidade: 'Pinhais',
-                estado: 'PR',
-                saldo: 4500.00,
-                limite: 9500.00
-            }
-        ]);
-    } */
 }

@@ -1,8 +1,9 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { forkJoin, map, Observable, throwError } from 'rxjs';
 
 import { ClienteResponse, ParaAprovarResponse, TodosClientesResponse } from '../DTO/cliente';
+import { AuthService } from './auth-service';
 import * as DTO from '../DTO/gerente';
 
 const API_URL = "http://localhost:3001"
@@ -14,7 +15,8 @@ export class Gerente {
 
 
   constructor(
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private authService: AuthService
   ) {}
 
     private httpOptions = {
@@ -46,26 +48,53 @@ export class Gerente {
     )
   }
  
-    consultarTodosClientesGer(): Observable<TodosClientesResponse>{
+  consultarTodosClientesGer(): Observable<TodosClientesResponse>{
+    const cpfGerente = this.authService.getCpf()?.replace(/\D/g, '');
+    if (!cpfGerente) {
+      return throwError(() => new Error('Gerente logado não identificado.'));
+    }
+
     return this.httpClient.get<TodosClientesResponse>(
-      API_URL + "/clientes", this.httpOptions
+      API_URL + "/gerentes/" + cpfGerente + "/clientes", this.httpOptions
+    ).pipe(
+      map((clientes) => [...clientes].sort((a, b) => a.nome.localeCompare(b.nome)))
     )
   }
   
   consultarCliente(cpf: string): Observable<ClienteResponse>{
-    return this.httpClient.get<ClienteResponse>(
-      API_URL + "/clientes/" + cpf, this.httpOptions
+    const cpfCliente = cpf.replace(/\D/g, '');
+    if (cpfCliente.length !== 11) {
+      return throwError(
+        () => new Error('CPF do cliente inválido.')
+      );
+    }
+
+    return forkJoin({
+      cliente: this.httpClient.get<any>(API_URL + "/clientes/" + cpfCliente, this.httpOptions),
+      conta: this.httpClient.get<any>(API_URL + "/contas/cliente/" + cpfCliente, this.httpOptions)
+    }).pipe(
+      map(({ cliente, conta }) => ({
+        cpf: cliente.cpf,
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        endereco: cliente.endereco,
+        cidade: cliente.cidade,
+        estado: cliente.estado,
+        conta: conta.numero,
+        saldo: Number(conta.saldo ?? 0),
+        limite: Number(conta.limite ?? 0)
+      }))
     )
   }
   
   melhoresClientes(): Observable<TodosClientesResponse>{
-    var filtro = "melhores_clientes"
     return this.httpClient.get<TodosClientesResponse>(
-      API_URL + "/clientes",
-      {
-        ...this.httpOptions, 
-        params: { filtro } 
-      }
+      API_URL + "/contas/top3", this.httpOptions
+    ).pipe(
+      map((clientes) =>
+        [...clientes].sort((a, b) => Number(b.saldo) - Number(a.saldo)).slice(0, 3)
+      )
     )
   }
 
