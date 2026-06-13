@@ -17,7 +17,7 @@ app.use(bodyParser.json())
 // > ...
 
 function verifyJWT(req, res, next) {
-    const token = req.headers['x-access-token'];
+    const token = req.headers['Authorization'];
 
     if (!token) return res.status(401).json({auth: false, message: 'Token não fornecido'});
 
@@ -30,14 +30,45 @@ function verifyJWT(req, res, next) {
 }
 
 app.post('/login', urlencodedParser, (req, res, next) => {
-    const response = await fetch(process.env.AUTH_URI, {
-        method: "post",
-        body: JSON.stringify({
-            login: req.body.login,
-            senha: req.body.senha
-        })
-    });
-    const responseJson = await response.json();
+
+    try {
+        const {login, senha} = req.body
+        const response = await fetch(process.env.AUTH_URI + "/login",
+            {
+            method: "post",
+            body: JSON.stringify({
+                login: login,
+                senha: senha
+            })
+        });
+
+        switch(response.status){
+            case 200:
+                const tipoUsuario = response.body.tipo
+                const nomeUsuario = response.body.nome
+                const cpfUsuario = response.body.cpf
+                const token = jwt.sign({login: login, tipoUsuario: tipoUsuario}, process.env.SECRET, {expiresIn: "1h"})
+
+                res.status(200).json({
+                    access_token: token,
+                    token_type: "bearer",
+                    tipo: tipoUsuario,
+                    usuario: {
+                        nome: nomeUsuario,
+                        cpf: cpfUsuario,
+                        email: login
+                    }
+                })
+                break
+
+            default:
+                res = response
+        }
+        return res
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({mensagem: "Erro interno"})
+    }
 });
 
 app.post('/logout', urlencodedParser, (req, res) => {
