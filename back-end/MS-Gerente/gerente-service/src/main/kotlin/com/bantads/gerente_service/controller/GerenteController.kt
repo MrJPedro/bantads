@@ -14,13 +14,8 @@ class GerenteController(
     /*GET /gerentes*/
     @GetMapping
     fun listarGerentes(
-        @RequestParam(name = "numero", required = false) numero: String?,
         @RequestParam(name = "cpf", required = false) cpf: String?
-    ): ResponseEntity<Any> {
-        if (numero == "dashboard") {
-            return ResponseEntity.ok(gerenteService.listarDashboard())
-        }
-
+    ): ResponseEntity<List<DadoGerente>> {
         val gerentes = gerenteService.listarTodos(cpf)
         return ResponseEntity.ok(gerentes)
     }
