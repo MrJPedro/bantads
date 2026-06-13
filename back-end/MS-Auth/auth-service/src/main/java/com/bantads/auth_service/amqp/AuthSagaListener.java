@@ -40,9 +40,10 @@ public class AuthSagaListener {
                     JsonNode payloadNode = objectMapper.readTree(command.getPayload());
                     String cpf = payloadNode.get("cpf").asText();
                     String email = payloadNode.get("email").asText();
+                    String nome = payloadNode.get("nome").asText();
 
                     usuarioService.insertUsuario(
-                        new UsuarioDTO(cpf, "CLIENTE", email, senhaTemporaria)
+                        new UsuarioDTO(cpf, "CLIENTE", email, nome, senhaTemporaria)
                     );
                     System.out.println("[MS-AUTH] Usuário de autenticacão criado com sucesso para CPF: " + cpf);
 

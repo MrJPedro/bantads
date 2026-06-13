@@ -10,6 +10,12 @@ import java.util.Base64;
 
 @Component
 public class AuthUtil {    
+
+    /*public boolean validarNome(String nome){
+        if(nome.matches("[a-zA-ZÀ-Û]+")) return true;
+        return false;
+    }*/
+
     public String hashearSenha(String senha) {
         
 

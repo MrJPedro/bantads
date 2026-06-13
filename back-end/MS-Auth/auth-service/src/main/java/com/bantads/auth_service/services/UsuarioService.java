@@ -67,12 +67,14 @@ public class UsuarioService {
 
         String cpfUsuarioFormatado = cpfUtil.formatarCPF(usuarioDTO.cpf());
         
+        //boolean nomeUsuarioEhValido = authUtil.validarNome(usuarioDTO.nome());
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
         boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
         boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.tipo());
         boolean cpfUsuarioJaExiste = usuarioRepository.findByCpf(cpfUsuarioFormatado).isPresent();
         boolean loginUsuarioJaExiste = usuarioRepository.findByLogin(usuarioDTO.login()).isPresent();
         
+        //if(!nomeUsuarioEhValido) throw new IllegalArgumentException("Nome inválido!");
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");
@@ -91,10 +93,13 @@ public class UsuarioService {
     public UsuarioDTO editUsuario(UsuarioDTO usuarioDTO) throws Exception, IllegalArgumentException{
         
         String cpfUsuarioFormatado = cpfUtil.formatarCPF(usuarioDTO.cpf());
+
+        //boolean nomeUsuarioEhValido = authUtil.validarNome(usuarioDTO.nome());
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
         boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
         boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.tipo());
 
+        //if(!nomeUsuarioEhValido) throw new IllegalArgumentException("Nome inválido!");
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");
@@ -134,15 +139,15 @@ public class UsuarioService {
         usuarioRepository.deleteAll();
 
         try {
-            this.insertUsuario(new UsuarioDTO("12912861012", "CLIENTE", "cli1@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("09506382000", "CLIENTE", "cli2@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("85733854057", "CLIENTE", "cli3@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("58872160006", "CLIENTE", "cli4@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("76179646090", "CLIENTE", "cli5@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("98574307084", "GERENTE", "ger1@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("64065268052", "GERENTE", "ger2@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("23862179060", "GERENTE", "ger3@bantads.com.br", "tads"));
-            this.insertUsuario(new UsuarioDTO("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "tads"));
+            this.insertUsuario(new UsuarioDTO("12912861012", "CLIENTE", "cli1@bantads.com.br", "Catharyna", "tads"));
+            this.insertUsuario(new UsuarioDTO("09506382000", "CLIENTE", "cli2@bantads.com.br", "Cleuddônio", "tads"));
+            this.insertUsuario(new UsuarioDTO("85733854057", "CLIENTE", "cli3@bantads.com.br", "CLIENTE 3", "tads"));
+            this.insertUsuario(new UsuarioDTO("58872160006", "CLIENTE", "cli4@bantads.com.br", "CLIENTE 4", "tads"));
+            this.insertUsuario(new UsuarioDTO("76179646090", "CLIENTE", "cli5@bantads.com.br", "CLIENTE 5", "tads"));
+            this.insertUsuario(new UsuarioDTO("98574307084", "GERENTE", "ger1@bantads.com.br", "GERENTE 1", "tads"));
+            this.insertUsuario(new UsuarioDTO("64065268052", "GERENTE", "ger2@bantads.com.br", "GERENTE 2", "tads"));
+            this.insertUsuario(new UsuarioDTO("23862179060", "GERENTE", "ger3@bantads.com.br", "GERENTE 3", "tads"));
+            this.insertUsuario(new UsuarioDTO("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "Administrador 1", "tads"));
         } catch(Exception e){
             System.out.println(e);
         }

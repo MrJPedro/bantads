@@ -2,7 +2,9 @@ package com.bantads.auth_service.services;
 
 import com.bantads.auth_service.DTOs.Login;
 import com.bantads.auth_service.DTOs.LoginResponse;
+import com.bantads.auth_service.DTOs.UsuarioDTO;
 import com.bantads.auth_service.models.Usuario;
+import com.bantads.auth_service.models.UsuarioMapper;
 import com.bantads.auth_service.repositories.UsuarioRepository;
 import com.bantads.auth_service.utils.AuthUtil;
 import com.bantads.auth_service.utils.EmailUtil;
@@ -26,7 +28,10 @@ public class LoginService {
     @Autowired
     AuthUtil authUtil;
 
-    public LoginResponse autenticar(Login loginReq) throws NoSuchElementException, IllegalArgumentException, LoginException {
+    @Autowired
+    UsuarioMapper usuarioMapper;
+
+    public UsuarioDTO autenticar(Login loginReq) throws NoSuchElementException, IllegalArgumentException, LoginException {
         
         String emailEntrada = loginReq.login();
         String senhaEntrada = loginReq.senha();
@@ -43,12 +48,8 @@ public class LoginService {
             emailEntrada.equals(loginCadastrado.getLogin()) &&
             hashSenhaEntrada.equals(loginCadastrado.getHashSenha())
         ) {
-            LoginResponse loginResponse = new LoginResponse(
-                loginCadastrado.getLogin(),
-                loginCadastrado.getTipoUsuario()
-            );
-
-            return loginResponse;
+            UsuarioDTO uDTO = usuarioMapper.toDTO(loginCadastrado);
+            return uDTO;
         }
 
         throw new LoginException("Senha incorreta!");

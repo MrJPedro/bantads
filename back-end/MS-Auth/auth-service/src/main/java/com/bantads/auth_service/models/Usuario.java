@@ -11,6 +11,8 @@ public class Usuario {
 
     @Id
     private String login;
+    @Field("nome")
+    private String nome;
     @Field("cpf")
     @Indexed(unique = true)
     private String cpf;
@@ -22,10 +24,11 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String hashSenhaUsuario){
+    public Usuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String nomeUsuario, String hashSenhaUsuario){
         this.cpf = cpfUsuario;
         this.tipo = tipoUsuario;
         this.login = loginUsuario;
+        this.nome = nomeUsuario;
         this.hashSenha = hashSenhaUsuario;
     }
 
@@ -49,6 +52,14 @@ public class Usuario {
     public void setLogin(String loginUsuario) {
         this.login = loginUsuario;
     }
+
+    public String getNome() {
+        return nome;
+    }
+    public void setNome(String nomeUsuario) {
+        this.login = nomeUsuario;
+    }
+
     public String getHashSenha() {
         return hashSenha;
     }

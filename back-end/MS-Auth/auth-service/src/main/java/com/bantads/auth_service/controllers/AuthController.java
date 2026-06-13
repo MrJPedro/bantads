@@ -153,7 +153,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> autenticar(@RequestBody Login login){
 
-        LoginResponse loginResponse = null;
+        UsuarioDTO loginResponse = null;
 
         try {
             loginResponse = loginService.autenticar(login);
@@ -188,7 +188,7 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<LoginResponse>(
+        return new ResponseEntity<UsuarioDTO>(
             loginResponse,
             HttpStatus.OK
         );
