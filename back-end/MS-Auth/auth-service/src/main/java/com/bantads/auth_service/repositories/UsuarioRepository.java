@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 
     Optional<Usuario> findByLogin(String login);
-    Optional<Usuario> findByCpfUsuario(String cpfUsuario);
+    Optional<Usuario> findByCpf(String cpf);
     List<Usuario> findByTipoUsuario(String tipoUsuario);
 }

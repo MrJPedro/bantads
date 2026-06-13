@@ -70,7 +70,9 @@ public class UsuarioService {
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
         boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
         boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.tipo());
-        boolean cpfUsuarioJaExiste = usuarioRepository.findByCpfUsuario(cpfUsuarioFormatado).isPresent();        boolean loginUsuarioJaExiste = usuarioRepository.findByLogin(usuarioDTO.login()).isPresent();
+        boolean cpfUsuarioJaExiste = usuarioRepository.findByCpf(cpfUsuarioFormatado).isPresent();
+        boolean loginUsuarioJaExiste = usuarioRepository.findByLogin(usuarioDTO.login()).isPresent();
+        
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");
@@ -78,9 +80,11 @@ public class UsuarioService {
         if(cpfUsuarioJaExiste) throw new JaExisteException("CPF já cadastrado!");
 
         Usuario u = usuarioMapper.toUsuario(usuarioDTO);
+        u.setCpfUsuario(cpfUsuarioFormatado);
         u.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha()));
         usuarioRepository.insert(u);
-        return usuarioDTO;
+
+        return usuarioMapper.toDTO(u);
     }
 
     @Transactional
@@ -89,16 +93,17 @@ public class UsuarioService {
         String cpfUsuarioFormatado = cpfUtil.formatarCPF(usuarioDTO.cpf());
         boolean cpfUsuarioEhValido = cpfUtil.validarCPF(cpfUsuarioFormatado);
         boolean loginEhValido = emailUtil.validarEmail(usuarioDTO.login());
-        boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.login());
+        boolean tipoUsuarioEhValido = usuarioUtil.validarTipoUsuario(usuarioDTO.tipo());
 
         if(!cpfUsuarioEhValido) throw new IllegalArgumentException("CPF inválido!");
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");
 
         Usuario uNovo = usuarioMapper.toUsuario(usuarioDTO);
+        uNovo.setCpfUsuario(cpfUsuarioFormatado);
         uNovo.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha()));
 
-        Usuario uAntigo = usuarioRepository.findByCpfUsuario(cpfUsuarioFormatado).orElseThrow(() -> new NoSuchElementException("Usuário não cadastrado!"));
+        Usuario uAntigo = usuarioRepository.findByCpf(cpfUsuarioFormatado).orElseThrow(() -> new NoSuchElementException("Usuário não cadastrado!"));
         try {
             usuarioRepository.delete(uAntigo);
             usuarioRepository.save(uNovo);
@@ -108,7 +113,8 @@ public class UsuarioService {
             usuarioRepository.save(uAntigo);
             throw e;
         }
-        return usuarioDTO;
+        UsuarioDTO uDtoNovo = usuarioMapper.toDTO(uNovo);
+        return uDtoNovo;
     }
 
     public UsuarioDTO deleteUsuario(String loginUsuario){

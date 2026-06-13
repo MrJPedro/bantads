@@ -15,9 +15,17 @@ public class UsuarioMapper {
     @Autowired
     ModelMapper modelMapper;
 
-    public UsuarioDTO toDTO(Usuario usuario){
+    /*public UsuarioDTO toDTO(Usuario usuario){
         return  modelMapper.map(usuario, UsuarioDTO.class);
-    };
+    };*/
+
+    public UsuarioDTO toDTO(Usuario usuario) {
+    return new UsuarioDTO(
+        usuario.getCpfUsuario(),
+        usuario.getTipoUsuario(),
+        usuario.getLogin(),
+        null);
+}
 
     public List<UsuarioDTO> toDTOs(List<Usuario> usuarios){
         return usuarios.stream()
@@ -25,9 +33,17 @@ public class UsuarioMapper {
             .toList();
     };
 
-    public Usuario toUsuario(UsuarioDTO usuarioDTO){
+    /*public Usuario toUsuario(UsuarioDTO usuarioDTO){
         return modelMapper.map(usuarioDTO, Usuario.class);
-    };
+    };*/
+
+    public Usuario toUsuario(UsuarioDTO usuarioDTO){
+        return new Usuario(
+            usuarioDTO.cpf(),
+            usuarioDTO.tipo(),
+            usuarioDTO.login(),
+            null);
+    }
 
     public List<Usuario> toUsuarios(List<UsuarioDTO> usuarioDTOs){
         return usuarioDTOs.stream()

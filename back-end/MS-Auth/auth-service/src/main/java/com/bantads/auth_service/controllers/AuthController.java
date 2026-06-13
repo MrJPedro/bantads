@@ -34,7 +34,7 @@ public class AuthController {
     @Autowired
     LoginService loginService;
 
-    @GetMapping("/Usuarios")
+    @GetMapping("/usuarios")
     public ResponseEntity<List<UsuarioDTO>> getAllUsuarios(){
 
         List<UsuarioDTO> usuarios = null;
@@ -50,7 +50,7 @@ public class AuthController {
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 
-    @GetMapping("/Usuarios/{loginUsuario}")
+    @GetMapping("/usuarios/{loginUsuario}")
     public ResponseEntity<?> getUsuario(@PathVariable("loginUsuario") String loginUsuario){
         
         UsuarioDTO uDTO = null;
@@ -74,7 +74,7 @@ public class AuthController {
         return new ResponseEntity<>(uDTO, HttpStatus.OK);
     }
 
-    @PostMapping("/Usuarios")
+    @PostMapping("/usuarios")
     public ResponseEntity<?> postUsuario(@RequestBody UsuarioDTO usuario){
         
         UsuarioDTO uDTO = null;
@@ -99,7 +99,7 @@ public class AuthController {
         return new ResponseEntity<UsuarioDTO>(uDTO, HttpStatus.CREATED);
     }
 
-    @PutMapping("/Usuarios/{cpfUsuario}")
+    @PutMapping("/usuarios/{cpfUsuario}")
     public ResponseEntity<?> putUsuario(@PathVariable("cpfUsuario") String cpfUsuario, @RequestBody UsuarioDTO usuario) {
         
         UsuarioDTO uDTO = null;
@@ -124,7 +124,7 @@ public class AuthController {
         return new ResponseEntity<UsuarioDTO>(uDTO, HttpStatus.ACCEPTED);
     }
 
-    @DeleteMapping("/Usuarios/{loginUsuario}")
+    @DeleteMapping("/usuarios/{loginUsuario}")
     public ResponseEntity<?> deleteUsuario(@PathVariable("loginUsuario") String loginUsuario) {
         
         UsuarioDTO uDTO = null;
