@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository
 interface GerenteRepository : JpaRepository<GerenteEntity, Long> {
     
     fun findByCpf(cpf: String): GerenteEntity?
+
+    fun findByEmail(email: String): GerenteEntity?
     
     fun findTopByOrderByQuantidadeClientesAsc(): GerenteEntity?
     

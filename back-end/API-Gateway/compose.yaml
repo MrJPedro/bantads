@@ -6,13 +6,13 @@ services:
       context: .
       dockerfile: api-gateway.Dockerfile
     ports:
-      - "80:80"
+      - "3001:3001"
     environment:
-      - PORT=80
+      - PORT=3001
       - FRONT=http://localhost:4200
-      - AUTH_URI=http://ms-auth:8081
+      - AUTH_URI=http://ms-auth:8080
       - GERENTES_URI=http://ms-gerente:8082
-      - CLIENTES_URI=http://ms-cliente:8083
+      - CLIENTES_URI=http://ms-cliente:8086
       - CONTAS_URI=http://ms-conta:8083
     networks:
       - backend

@@ -5,25 +5,15 @@ import com.bantads.gerente_service.dto.*
 import com.bantads.gerente_service.entity.GerenteEntity
 import com.bantads.gerente_service.repository.GerenteRepository
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.server.ResponseStatusException
-import java.math.BigDecimal
 
 @Service
 class GerenteService(
     private val gerenteRepository: GerenteRepository,
-    private val rabbitTemplate: RabbitTemplate,
-    private val restTemplate: RestTemplate,
-    @Value("\${services.ms-cliente.base-url:http://ms-cliente:8080}")
-    private val msClienteBaseUrl: String,
-    @Value("\${services.ms-conta.base-url:http://ms-conta:8083}")
-    private val msContaBaseUrl: String
+    private val rabbitTemplate: RabbitTemplate
 ) {
 
     fun listarTodos(cpf: String? = null): List<DadoGerente> {
@@ -35,20 +25,6 @@ class GerenteService(
         return gerenteRepository.findAll()
             .sortedBy { it.nome }
             .map { toDTO(it) }
-    }
-
-    fun listarDashboard(): List<DashboardGerenteItemDTO> {
-        val gerentes = gerenteRepository.findAll()
-
-        return gerentes.map { gerente ->
-            val contas = recuperarContasPorGerente(gerente.cpf).map { toContaDashboard(it) }
-            DashboardGerenteItemDTO(
-                gerente = toDTO(gerente),
-                clientes = contas,
-                saldo_positivo = somarSaldoPositivo(contas),
-                saldo_negativo = somarSaldoNegativo(contas)
-            )
-        }.sortedWith(compareByDescending<DashboardGerenteItemDTO> { it.saldo_positivo }.thenBy { it.gerente.nome })
     }
 
     fun buscarPorCpf(cpf: String): DadoGerente {
@@ -64,6 +40,9 @@ class GerenteService(
 
         if (gerenteRepository.findByCpf(dto.cpf) != null) {
             throw ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado")
+        }
+        if (gerenteRepository.findByEmail(dto.email) != null) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Email já cadastrado")
         }
 
         var novoGerente = GerenteEntity(
@@ -85,51 +64,6 @@ class GerenteService(
         )
         rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.insercao", eventoCriacao)
 
-        val outrosGerentes = gerenteRepository.findAll().filter { it.cpf != novoGerente.cpf }
-        
-        if (outrosGerentes.isEmpty() || (outrosGerentes.size == 1 && outrosGerentes.first().quantidadeClientes <= 1)) {
-            return toDTO(novoGerente)
-        }
-
-        val maxContas = outrosGerentes.maxOf { it.quantidadeClientes }
-        if (maxContas == 0) {
-            return toDTO(novoGerente)
-        }
-
-        val gerentesMax = outrosGerentes.filter { it.quantidadeClientes == maxContas }
-        val contasPossiveis = mutableListOf<ContaDTO>()
-
-        for (g in gerentesMax) {
-            contasPossiveis.addAll(recuperarContasPorGerente(g.cpf))
-        }
-
-        if (contasPossiveis.isNotEmpty()) {
-            val contaEscolhida = contasPossiveis.filter { it.saldo > BigDecimal.ZERO }.minByOrNull { it.saldo }
-                ?: contasPossiveis.minByOrNull { it.saldo }
-
-            if (contaEscolhida != null) {
-                val gerenteDoador = gerentesMax.find { it.cpf == contaEscolhida.gerente }
-                if (gerenteDoador != null) {
-                    val contaAtualizada = atualizarContaGerente(contaEscolhida.numero, novoGerente.cpf)
-                    val clienteAtualizado = contaAtualizada && atualizarClienteGerente(contaEscolhida.cliente, novoGerente.cpf)
-                    if (contaAtualizada && clienteAtualizado) {
-                        gerenteDoador.quantidadeClientes -= 1
-                        novoGerente.quantidadeClientes += 1
-                        gerenteRepository.save(gerenteDoador)
-                        gerenteRepository.save(novoGerente)
-
-                        val eventoTransferencia = GerenteEvent(
-                            tipo = "transferencia_conta",
-                            cpfGerente = novoGerente.cpf,
-                            cpfGerenteAnterior = gerenteDoador.cpf,
-                            numeroConta = contaEscolhida.numero
-                        )
-                        rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.transferencia", eventoTransferencia)
-                    }
-                }
-            }
-        }
-
         return toDTO(novoGerente)
     }
 
@@ -139,6 +73,10 @@ class GerenteService(
 
         val gerente = gerenteRepository.findByCpf(cpf)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Gerente não encontrado")
+        val gerenteComMesmoEmail = gerenteRepository.findByEmail(dto.email)
+        if (gerenteComMesmoEmail != null && gerenteComMesmoEmail.cpf != cpf) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Email já cadastrado")
+        }
 
         gerente.nome = dto.nome
         gerente.email = dto.email
@@ -172,60 +110,17 @@ class GerenteService(
         val herdeiro = todos.minByOrNull { it.quantidadeClientes }
             ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Nenhum herdeiro encontrado.")
 
-        val contasGerente = recuperarContasPorGerente(cpf)
-
-        val contasAtualizadas = contasGerente.count { conta ->
-            val sucessoConta = atualizarContaGerente(conta.numero, herdeiro.cpf)
-            val sucessoCliente = sucessoConta && atualizarClienteGerente(conta.cliente, herdeiro.cpf)
-            sucessoConta && sucessoCliente
-        }
-
-        if (contasAtualizadas != contasGerente.size) {
-            throw ResponseStatusException(HttpStatus.BAD_GATEWAY, "Não foi possível transferir todas as contas do gerente.")
-        }
-
-        herdeiro.quantidadeClientes += contasAtualizadas
-        gerenteRepository.save(herdeiro)
-
-        gerenteRepository.delete(gerente)
-
         val evento = GerenteEvent(
             tipo = "remocao",
             cpfGerente = cpf,
             cpfNovoGerente = herdeiro.cpf
         )
+
+        gerenteRepository.delete(gerente)
         
         rabbitTemplate.convertAndSend(GERENTE_EVENT_EXCHANGE, "gerente.event.remocao", evento)
 
         return gerenteRemovido
-    }
-
-    private fun atualizarContaGerente(numeroConta: String, cpfNovoGerente: String): Boolean {
-        return try {
-            val body = mapOf("gerente" to cpfNovoGerente)
-            val request = HttpEntity(body)
-
-            val response = restTemplate.exchange(
-                "${baseContaUrl()}/contas/$numeroConta/gerente",
-                HttpMethod.PUT,
-                request,
-                Any::class.java
-            )
-
-            response.statusCode.is2xxSuccessful
-        } catch (ex: Exception) {
-            false
-        }
-    }
-
-    private fun recuperarContasPorGerente(cpfGerente: String): List<ContaDTO> {
-        return try {
-            restTemplate.getForObject("${baseContaUrl()}/contas/gerente/$cpfGerente", Array<ContaDTO>::class.java)
-                ?.toList()
-                .orEmpty()
-        } catch (ex: Exception) {
-            emptyList()
-        }
     }
 
     private fun validarDadosInsercao(dto: DadoGerenteInsercao) {
@@ -260,50 +155,6 @@ class GerenteService(
     private fun validarEmail(email: String): Boolean {
         val regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
         return email.isNotBlank() && regex.matches(email)
-    }
-
-    private fun atualizarClienteGerente(cpfCliente: String, cpfNovoGerente: String): Boolean {
-        return try {
-            val body = mapOf("gerenteCpf" to cpfNovoGerente)
-            val request = HttpEntity(body)
-
-            val response = restTemplate.exchange(
-                "${baseClienteUrl()}/clientes/$cpfCliente/gerente",
-                HttpMethod.PUT,
-                request,
-                Any::class.java
-            )
-
-            response.statusCode.is2xxSuccessful
-        } catch (ex: Exception) {
-            false
-        }
-    }
-
-    private fun baseClienteUrl(): String = msClienteBaseUrl.trimEnd('/')
-    private fun baseContaUrl(): String = msContaBaseUrl.trimEnd('/')
-
-    private fun toContaDashboard(conta: ContaDTO): ContaDashboardDTO {
-        return ContaDashboardDTO(
-            cliente = conta.cliente,
-            numero = conta.numero,
-            saldo = conta.saldo,
-            limite = conta.limite,
-            gerente = conta.gerente,
-            criacao = conta.criacao
-        )
-    }
-
-    private fun somarSaldoPositivo(contas: List<ContaDashboardDTO>): BigDecimal {
-        return contas
-            .filter { it.saldo >= BigDecimal.ZERO }
-            .fold(BigDecimal.ZERO) { total, conta -> total + conta.saldo }
-    }
-
-    private fun somarSaldoNegativo(contas: List<ContaDashboardDTO>): BigDecimal {
-        return contas
-            .filter { it.saldo < BigDecimal.ZERO }
-            .fold(BigDecimal.ZERO) { total, conta -> total + conta.saldo }
     }
 
     private fun toDTO(entity: GerenteEntity): DadoGerente {

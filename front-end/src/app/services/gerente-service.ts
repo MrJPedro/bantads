@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, map, Observable, throwError } from 'rxjs';
+import { map, Observable, throwError } from 'rxjs';
 
 import { ClienteResponse, ParaAprovarResponse, TodosClientesResponse } from '../DTO/cliente';
 import { AuthService } from './auth-service';
@@ -69,11 +69,11 @@ export class Gerente {
       );
     }
 
-    return forkJoin({
-      cliente: this.httpClient.get<any>(API_URL + "/clientes/" + cpfCliente, this.httpOptions),
-      conta: this.httpClient.get<any>(API_URL + "/contas/cliente/" + cpfCliente, this.httpOptions)
-    }).pipe(
-      map(({ cliente, conta }) => ({
+    return this.httpClient.get<any>(
+      API_URL + "/clientes/" + cpfCliente,
+      this.httpOptions
+    ).pipe(
+      map((cliente) => ({
         cpf: cliente.cpf,
         nome: cliente.nome,
         email: cliente.email,
@@ -81,16 +81,20 @@ export class Gerente {
         endereco: cliente.endereco,
         cidade: cliente.cidade,
         estado: cliente.estado,
-        conta: conta.numero,
-        saldo: Number(conta.saldo ?? 0),
-        limite: Number(conta.limite ?? 0)
+        conta: cliente.conta ?? '',
+        saldo: Number(cliente.saldo ?? 0),
+        limite: Number(cliente.limite ?? 0)
       }))
     )
   }
   
   melhoresClientes(): Observable<TodosClientesResponse>{
     return this.httpClient.get<TodosClientesResponse>(
-      API_URL + "/contas/top3", this.httpOptions
+      API_URL + "/clientes",
+      {
+        ...this.httpOptions,
+        params: { filtro: 'melhores_clientes' }
+      }
     ).pipe(
       map((clientes) =>
         [...clientes].sort((a, b) => Number(b.saldo) - Number(a.saldo)).slice(0, 3)
