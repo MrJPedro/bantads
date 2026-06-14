@@ -16,6 +16,7 @@ class GerenteService(
     private val rabbitTemplate: RabbitTemplate
 ) {
 
+    /*R19 - Lista todos os gerentes ou filtra por CPF*/
     fun listarTodos(cpf: String? = null): List<DadoGerente> {
         if (!cpf.isNullOrBlank()) {
             val gerente = gerenteRepository.findByCpf(cpf) ?: return emptyList()
@@ -27,6 +28,7 @@ class GerenteService(
             .map { toDTO(it) }
     }
 
+    /*Consulta um gerente especifico por CPF*/
     fun buscarPorCpf(cpf: String): DadoGerente {
         val gerente = gerenteRepository.findByCpf(cpf) 
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Gerente não encontrado")
@@ -34,6 +36,7 @@ class GerenteService(
         return toDTO(gerente)
     }
 
+    /*R17 - Insere gerente e publica evento para integracao com Auth/Saga*/
     @Transactional
     fun inserir(dto: DadoGerenteInsercao): DadoGerente {
         validarDadosInsercao(dto)
@@ -67,6 +70,7 @@ class GerenteService(
         return toDTO(novoGerente)
     }
 
+    /*R20 - Altera dados do gerente e publica evento para sincronizar Auth*/
     @Transactional
     fun alterar(cpf: String, dto: DadoGerenteAtualizacao): DadoGerente {
         validarDadosAlteracao(dto)
@@ -95,6 +99,7 @@ class GerenteService(
         return toDTO(gerente)
     }
 
+    /*R18 - Remove gerente e publica evento para redistribuicao das contas*/
     @Transactional
     fun remover(cpf: String): DadoGerente {
         val gerente = gerenteRepository.findByCpf(cpf)
@@ -123,6 +128,7 @@ class GerenteService(
         return gerenteRemovido
     }
 
+    /*Validacoes da insercao de gerente*/
     private fun validarDadosInsercao(dto: DadoGerenteInsercao) {
         if (dto.cpf.isBlank() || dto.nome.isBlank() || dto.email.isBlank() || dto.telefone.isBlank() || dto.senha.isBlank()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF, nome, email, telefone e senha são obrigatórios")
@@ -138,6 +144,7 @@ class GerenteService(
         }
     }
 
+    /*Validacoes da alteracao de gerente*/
     private fun validarDadosAlteracao(dto: DadoGerenteAtualizacao) {
         if (dto.nome.isBlank() || dto.email.isBlank()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome e email são obrigatórios")
@@ -147,16 +154,19 @@ class GerenteService(
         }
     }
 
+    /*Valida se o CPF possui 11 digitos*/
     private fun validarCpf(cpf: String): Boolean {
         val numeros = cpf.filter { it.isDigit() }
         return numeros.length == 11
     }
 
+    /*Valida formato basico de email*/
     private fun validarEmail(email: String): Boolean {
         val regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
         return email.isNotBlank() && regex.matches(email)
     }
 
+    /*Converte entidade JPA para DTO de resposta*/
     private fun toDTO(entity: GerenteEntity): DadoGerente {
         return DadoGerente(
             id = entity.id,
