@@ -307,6 +307,25 @@ function configFrom(req) {
     };
 }
 
+function isDashboardRequest(req) {
+    return req.query.numero === 'dashboard' || req.query.filtro === 'dashboard';
+}
+
+function withProxyPrefix(prefix) {
+    return (path) => {
+        if (path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`)) {
+            return path;
+        }
+        if (path === '/') {
+            return prefix;
+        }
+        if (path.startsWith('/?')) {
+            return `${prefix}${path.substring(1)}`;
+        }
+        return `${prefix}${path}`;
+    };
+}
+
 async function buscarGerente(cpf, config) {
     if (!cpf) {
         return null;
@@ -506,42 +525,6 @@ app.get('/clientes', async (req, res, next) => {
         }
     }
 
-    // Quando GERENTE chama GET /clientes sem filtro: retorna apenas os clientes dele
-    if (!filtro && req.user && req.user.tipo === 'GERENTE') {
-        try {
-            const config = configFrom(req);
-            const gerenteCpf = req.user.cpf;
-            const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${gerenteCpf}`, config);
-
-            const clientesPromises = contas.map(async (conta) => {
-                try {
-                    const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
-                    return {
-                        cpf: cliente.cpf,
-                        nome: cliente.nome,
-                        email: cliente.email,
-                        cidade: cliente.cidade,
-                        estado: cliente.estado,
-                        salario: cliente.salario,
-                        saldo: conta.saldo,
-                        limite: conta.limite
-                    };
-                } catch (err) {
-                    return null;
-                }
-            });
-
-            const clientesCompostos = (await Promise.all(clientesPromises))
-                .filter(c => c !== null)
-                .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
-
-            return res.json(clientesCompostos);
-        } catch (error) {
-            console.error('Erro ao listar clientes do gerente:', error.message);
-            return res.status(500).json({ erro: 'Falha ao listar clientes' });
-        }
-    }
-
     if (filtro !== 'adm_relatorio_clientes') {
         return next();
     }
@@ -588,8 +571,8 @@ app.get('/clientes/:cpf/perfil', autorizar('CLIENTE'), async (req, res) => {
     }
 });
 
-// Rota: Detalhe de Cliente (Composição de Cliente + Conta + Gerente) — GERENTE, ADMINISTRADOR e o próprio CLIENTE
-app.get('/clientes/:cpf', autorizar('GERENTE', 'ADMINISTRADOR', 'CLIENTE'), async (req, res) => {
+// Rota: Detalhe de Cliente (Composição de Cliente + Conta + Gerente)
+app.get('/clientes/:cpf', autorizar('CLIENTE', 'GERENTE', 'ADMINISTRADOR'), async (req, res) => {
     const { cpf } = req.params;
 
     try {
@@ -651,8 +634,8 @@ app.use((req, res, next) => {
         if (req.method === 'GET' && /^\/gerentes\/[^/]+\/clientes\/?$/.test(path)) {
             return next();
         }
-        // Exceção 2: GET /gerentes com ?numero=dashboard -> Permitido para GERENTE e ADMINISTRADOR
-        if (req.method === 'GET' && path === '/gerentes' && req.query.numero === 'dashboard') {
+        // Exceção 2: GET /gerentes com ?numero=dashboard ou ?filtro=dashboard -> Permitido para GERENTE e ADMINISTRADOR
+        if (req.method === 'GET' && path === '/gerentes' && isDashboardRequest(req)) {
             return next();
         }
         // Exceção 3: GET /gerentes com ?cpf=... -> Permitido para obter nome do gerente
@@ -668,13 +651,11 @@ app.use((req, res, next) => {
 // Rota: Dashboard do Gerente/Admin (Composição de Gerente + Contas/Saldos)
 // Rota: Gerentes (Lista Simples) OU Dashboard (Composição se numero === 'dashboard')
 app.get('/gerentes', async (req, res, next) => {
-    const { numero } = req.query;
-
     try {
         const config = configFrom(req);
 
         // 1. Condicional: Se NÃO for solicitado o dashboard, deixa o proxy (http-proxy-middleware) lidar com isso para repassar query params etc.
-        if (numero !== 'dashboard') {
+        if (!isDashboardRequest(req)) {
             return next();
         }
 
@@ -757,15 +738,6 @@ app.get('/contas/top3', autorizar('GERENTE'), async (req, res) => {
 });
 
 
-// Rota: Logout (stateless JWT — apenas confirma o email do token)
-app.post('/logout', express.json(), (req, res) => {
-    const email = req.user?.login;
-    if (!email) {
-        return res.status(401).json({ erro: 'Não autenticado' });
-    }
-    return res.status(200).json({ email });
-});
-
 app.post('/login', express.json(), async (req, res) => {
     try {
         const { login, senha } = req.body;
@@ -793,12 +765,17 @@ app.post('/login', express.json(), async (req, res) => {
         });
     } catch (error) {
         if (error.response) {
-            return res.status(error.response.status).json(error.response.data);
+            const status = error.response.status === 400 ? 401 : error.response.status;
+            return res.status(status).json(error.response.data);
         } else {
             console.error("Erro no login do Gateway:", error.message);
             return res.status(500).json({ erro: "Erro interno no servidor" });
         }
     }
+});
+
+app.post('/logout', (req, res) => {
+    return res.status(200).json({ email: req.user?.login });
 });
 
 // Rota: Reboot - reseta todos os microsserviços para o estado inicial (sem autenticação)
@@ -855,16 +832,19 @@ app.post('/clientes', express.json(), async (req, res) => {
 app.use('/gerentes', createProxyMiddleware({
     target: process.env.GERENTES_URI,
     changeOrigin: true,
+    pathRewrite: withProxyPrefix('/gerentes'),
 }));
 
 app.use('/clientes', createProxyMiddleware({
     target: process.env.CLIENTES_URI,
     changeOrigin: true,
+    pathRewrite: withProxyPrefix('/clientes'),
 }));
 
 app.use('/contas', createProxyMiddleware({
     target: process.env.CONTAS_URI,
     changeOrigin: true,
+    pathRewrite: withProxyPrefix('/contas'),
 }));
 
 app.listen(PORT, () => {
