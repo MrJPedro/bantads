@@ -17,6 +17,7 @@ import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import jakarta.transaction.Transactional
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.http.HttpStatus
@@ -73,7 +74,7 @@ class TransferenciaService(
 
         val contaSalva = contaRepositoryWrite.save(contaWrite)
 
-        val dataAtual = LocalDateTime.now()
+        val dataAtual = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
 
         transferenciaRepositoryWrite.save(
             TransferenciaWrite(
@@ -81,7 +82,7 @@ class TransferenciaService(
                 contaDestino = null,
                 valor = valor,
                 tipo = "DEPOSITO",
-                data = LocalDateTime.now()
+                data = dataAtual
             )
         )
 
@@ -129,7 +130,7 @@ class TransferenciaService(
         contaWrite.saldo = novoSaldo
 
         val contaSalva = contaRepositoryWrite.save(contaWrite)
-        val dataAtual = LocalDateTime.now()
+        val dataAtual = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
 
         transferenciaRepositoryWrite.save(
             TransferenciaWrite(
@@ -193,7 +194,7 @@ class TransferenciaService(
 
         val contaOrigemAtualizada = contaRepositoryWrite.save(contaOrigem)
         val contaDestinoAtualizada = contaRepositoryWrite.save(contaDestino)
-        val dataAtual = LocalDateTime.now()
+        val dataAtual = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
 
         transferenciaRepositoryWrite.save(
             TransferenciaWrite(

@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 const PORT = process.env.PORT;
+const invalidatedTokens = new Set();
 
 // ─── OpenAPI 3.0 Spec ────────────────────────────────────────────────────────
 const swaggerSpec = {
@@ -402,6 +403,7 @@ function verifyJWT(req, res, next) {
   
   const token = authHeader.split(' ')[1]; // "Bearer XXXXX"
   if (!token) return res.status(401).json({ erro: 'Token mal formatado' });
+  if (invalidatedTokens.has(token)) return res.status(401).json({ erro: 'Token inválido ou expirado' });
   
   jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ erro: 'Token inválido ou expirado' });
@@ -522,6 +524,46 @@ app.get('/clientes', async (req, res, next) => {
         } catch (error) {
             console.error('Erro ao listar top 3 clientes:', error.message);
             return res.status(500).json({ erro: 'Falha ao listar top 3 clientes' });
+        }
+    }
+
+    if (!filtro && req.user?.tipo === 'GERENTE') {
+        try {
+            const config = configFrom(req);
+            const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${req.user.cpf}`, config);
+
+            const clientesPromises = contas.map(async (conta) => {
+                try {
+                    const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
+                    return {
+                        cpf: cliente.cpf,
+                        nome: cliente.nome,
+                        telefone: cliente.telefone,
+                        email: cliente.email,
+                        salario: cliente.salario,
+                        endereco: cliente.endereco,
+                        cep: cliente.cep,
+                        cidade: cliente.cidade,
+                        estado: cliente.estado,
+                        conta: conta.numero,
+                        saldo: conta.saldo,
+                        limite: conta.limite,
+                        gerente: conta.gerente
+                    };
+                } catch (err) {
+                    console.error(`Falha ao buscar cliente ${conta.cliente}:`, err.message);
+                    return null;
+                }
+            });
+
+            const clientes = (await Promise.all(clientesPromises))
+                .filter(c => c !== null)
+                .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
+            return res.json(clientes);
+        } catch (error) {
+            console.error('Erro ao listar clientes do gerente:', error.message);
+            return res.status(500).json({ erro: 'Falha ao listar clientes do gerente' });
         }
     }
 
@@ -775,6 +817,10 @@ app.post('/login', express.json(), async (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (token) {
+        invalidatedTokens.add(token);
+    }
     return res.status(200).json({ email: req.user?.login });
 });
 
