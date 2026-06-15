@@ -14,6 +14,8 @@ services:
       - GERENTES_URI=http://ms-gerente:8082
       - CLIENTES_URI=http://ms-cliente:8086
       - CONTAS_URI=http://ms-conta:8083
+      - SAGA_URI=http://ms-saga:8085
+      - SECRET=super-secret-key-for-jwt
     networks:
       - backend
     depends_on:

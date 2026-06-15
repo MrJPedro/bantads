@@ -26,11 +26,12 @@ export interface LoginContaData {
 }
 
 export interface LoginResponse {
-    cpf: string
-    nome: string
-    email: string
-    tipo: TipoUsuario
-    token: string
-    cliente?: LoginClienteData
-    conta?: LoginContaData
+  access_token: string;
+  token_type: string;
+  tipo: TipoUsuario;
+  usuario: {
+    nome: string;
+    cpf: string;
+    email: string;
+  };
 }

@@ -24,46 +24,51 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(String cpfUsuario, String tipoUsuario, String loginUsuario, String nomeUsuario, String hashSenhaUsuario){
-        this.cpf = cpfUsuario;
-        this.tipo = tipoUsuario;
-        this.login = loginUsuario;
-        this.nome = nomeUsuario;
-        this.hashSenha = hashSenhaUsuario;
+    public Usuario(String cpf, String tipo, String login, String nome, String hashSenha){
+        this.cpf = cpf;
+        this.tipo = tipo;
+        this.login = login;
+        this.nome = nome;
+        this.hashSenha = hashSenha;
     }
 
-    public String getCpfUsuario() {
+    public String getCpf() {
         return cpf;
     }
 
-    public void setCpfUsuario(String cpfUsuario) {
-        this.cpf = cpfUsuario;
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 
-    public String getTipoUsuario() {
+    public String getTipo() {
         return tipo;
     }
-    public void setTipoUsuario(String tipoUsuario) {
-        this.tipo = tipoUsuario;
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
+
     public String getLogin() {
         return login;
     }
-    public void setLogin(String loginUsuario) {
-        this.login = loginUsuario;
+
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public String getNome() {
         return nome;
     }
-    public void setNome(String nomeUsuario) {
-        this.login = nomeUsuario;
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String getHashSenha() {
         return hashSenha;
     }
-    public void setHashSenha(String hashSenhaUsuario) {
-        this.hashSenha = hashSenhaUsuario;
+
+    public void setHashSenha(String hashSenha) {
+        this.hashSenha = hashSenha;
     }
 }

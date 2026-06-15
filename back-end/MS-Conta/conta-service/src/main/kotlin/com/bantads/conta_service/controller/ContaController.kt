@@ -65,7 +65,29 @@ class ContaController(
         @RequestParam(required = false) dataFim: String?
     ): ResponseEntity<Any> {
         val transferencias = transferenciaService.obterExtrato(numero, dataInicio, dataFim)
-        return ResponseEntity.ok(transferencias)
+        val saldo = transferenciaService.obterSaldo(numero)
+        val items = transferencias.map {
+            val tipoMapeado = when (it.tipo.uppercase()) {
+                "DEPOSITO" -> "depósito"
+                "SAQUE" -> "saque"
+                "TRANSFERENCIA" -> "transferência"
+                else -> it.tipo.lowercase()
+            }
+            ExtratoItemDTO(
+                data = it.data.toString(),
+                tipo = tipoMapeado,
+                origem = if (it.contaOrigem.isNullOrBlank()) null else it.contaOrigem,
+                destino = if (it.contaDestino.isNullOrBlank()) null else it.contaDestino,
+                valor = it.valor
+            )
+        }
+        return ResponseEntity.ok(ExtratoResponse(numero, saldo, items))
+    }
+
+    @GetMapping("/reboot")
+    fun reboot(): ResponseEntity<Void> {
+        contaService.reboot()
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/cliente/{cpf}")

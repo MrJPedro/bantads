@@ -99,4 +99,10 @@ class ClienteController (
         val response = clienteService.rejeitar(cpf, request)
         return ResponseEntity.ok(response)
     }
+
+    @GetMapping("/reboot")
+    fun reboot(): ResponseEntity<Void> {
+        clienteService.reboot()
+        return ResponseEntity.noContent().build()
+    }
 }

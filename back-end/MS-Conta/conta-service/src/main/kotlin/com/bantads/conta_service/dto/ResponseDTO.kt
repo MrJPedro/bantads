@@ -37,3 +37,17 @@ data class TransferenciaResponse(
     val saldo: Double,
     val valor: Double
 )
+
+data class ExtratoResponse(
+    val conta: String,
+    val saldo: BigDecimal,
+    val movimentacoes: List<ExtratoItemDTO>
+)
+
+data class ExtratoItemDTO(
+    val data: String,
+    val tipo: String,
+    val origem: String?,
+    val destino: String?,
+    val valor: BigDecimal
+)

@@ -116,7 +116,7 @@ export class AuthService {
 
   getCpf() {
     const usuarioLogado = this.getUsuarioLogado();
-    return usuarioLogado?.cpf ?? usuarioLogado?.usuario?.cpf ?? null;
+    return usuarioLogado?.usuario?.cpf ?? null;
   }
 
   getContaNumero() {
@@ -126,7 +126,7 @@ export class AuthService {
 
   getToken() {
     const usuarioLogado = this.getUsuarioLogado();
-    return usuarioLogado?.token ?? usuarioLogado?.access_token ?? null;
+    return usuarioLogado?.access_token ?? null;
   }
 }
 //

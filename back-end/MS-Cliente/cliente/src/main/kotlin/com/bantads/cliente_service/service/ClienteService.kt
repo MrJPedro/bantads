@@ -72,7 +72,7 @@ class ClienteService(
             telefone = dto.telefone,
             salario = salario.setScale(2, RoundingMode.HALF_EVEN),
             endereco = dto.endereco,
-            cep = dto.cep,
+            cep = dto.CEP,
             cidade = dto.cidade,
             estado = dto.estado,
             gerenteCpf = gerenteCpf,
@@ -275,6 +275,80 @@ class ClienteService(
             estado = entity.estado,
             gerenteCpf = entity.gerenteCpf
         )
+    }
+
+    @Transactional
+    fun reboot() {
+        clienteRepository.deleteAll()
+        clienteRepository.flush()
+        val clientesIniciais = listOf(
+            ClienteEntity(
+                nome = "Catharyna",
+                email = "cli1@bantads.com.br",
+                cpf = "12912861012",
+                telefone = "(41) 99999-9991",
+                salario = BigDecimal("10000.00"),
+                endereco = "Rua X, nr 10",
+                cep = "80000000",
+                cidade = "Curitiba",
+                estado = "PR",
+                gerenteCpf = "98574307084",
+                status = "APROVADO"
+            ),
+            ClienteEntity(
+                nome = "Cleuddônio",
+                email = "cli2@bantads.com.br",
+                cpf = "09506382000",
+                telefone = "(41) 99999-9992",
+                salario = BigDecimal("20000.00"),
+                endereco = "Rua B, 200",
+                cep = "80000000",
+                cidade = "Curitiba",
+                estado = "PR",
+                gerenteCpf = "64065268052",
+                status = "APROVADO"
+            ),
+            ClienteEntity(
+                nome = "Catianna",
+                email = "cli3@bantads.com.br",
+                cpf = "85733854057",
+                telefone = "(41) 99999-9993",
+                salario = BigDecimal("3000.00"),
+                endereco = "Rua C, 300",
+                cep = "80000000",
+                cidade = "Curitiba",
+                estado = "PR",
+                gerenteCpf = "23862179060",
+                status = "APROVADO"
+            ),
+            ClienteEntity(
+                nome = "Cutardo",
+                email = "cli4@bantads.com.br",
+                cpf = "58872160006",
+                telefone = "(41) 99999-9994",
+                salario = BigDecimal("500.00"),
+                endereco = "Rua D, 400",
+                cep = "80000000",
+                cidade = "Curitiba",
+                estado = "PR",
+                gerenteCpf = "98574307084",
+                status = "APROVADO"
+            ),
+            ClienteEntity(
+                nome = "Coândrya",
+                email = "cli5@bantads.com.br",
+                cpf = "76179646090",
+                telefone = "(41) 99999-9995",
+                salario = BigDecimal("1500.00"),
+                endereco = "Rua E, 500",
+                cep = "80000000",
+                cidade = "Curitiba",
+                estado = "PR",
+                gerenteCpf = "64065268052",
+                status = "APROVADO"
+            )
+        )
+        clienteRepository.saveAll(clientesIniciais)
     }
 }
 

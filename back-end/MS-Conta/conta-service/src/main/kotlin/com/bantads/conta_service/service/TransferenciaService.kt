@@ -213,7 +213,9 @@ class TransferenciaService(
         contaRepositoryRead.findByNumero(numero)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada")
 
-        val transferencias = transferenciaRepositoryRead.findByContaOrigem(numero)
+        val doOrigem = transferenciaRepositoryRead.findByContaOrigem(numero)
+        val doDestino = transferenciaRepositoryRead.findByContaDestino(numero)
+        val transferencias = (doOrigem + doDestino).distinctBy { it.id }.sortedBy { it.data }
 
         return if (!dataInicio.isNullOrBlank() && !dataFim.isNullOrBlank()) {
             val inicio = try {
