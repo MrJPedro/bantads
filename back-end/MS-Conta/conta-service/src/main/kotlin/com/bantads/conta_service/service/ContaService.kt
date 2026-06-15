@@ -123,9 +123,9 @@ class ContaService(
     fun calcularLimite(salario: BigDecimal): BigDecimal {
         val metadeSalario = salario.setScale(2, RoundingMode.HALF_EVEN).divide(BigDecimal(2), RoundingMode.HALF_EVEN)
         return if (metadeSalario > BigDecimal(2000).setScale(2, RoundingMode.HALF_EVEN)) {
-            BigDecimal(2000).setScale(2, RoundingMode.HALF_EVEN)
-        } else {
             metadeSalario
+        } else {
+            0.toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
         }
     }
 

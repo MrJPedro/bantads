@@ -12,14 +12,15 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfig {
 
     public static final String SAGA_EXCHANGE = "saga-exchange";
-    
+    public static final String NOTIFICATION_EXCHANGE = "notification-exchange";
+
     // Fila onde o SAGA recebe os pedidos para INICIAR uma nova orquestração
     public static final String SAGA_REQUEST_QUEUE = "saga-request-queue";
 
     // Fila onde o SAGA escuta as respostas dos microsserviços
     public static final String SAGA_REPLY_QUEUE = "saga-reply-queue";
-    
-    // Filas para onde o SAGA envia os comandos (e cada MS escuta a sua)
+
+    // Filas para onde o SAGA envia os comandos
     public static final String CLIENTE_COMMAND_QUEUE = "cliente-command-queue";
     public static final String CONTA_COMMAND_QUEUE = "conta-command-queue";
     public static final String GERENTE_COMMAND_QUEUE = "gerente-command-queue";
@@ -30,7 +31,13 @@ public class RabbitConfig {
         return new DirectExchange(SAGA_EXCHANGE);
     }
 
-    // Configurando as Filas
+    // A Saga declara a TopicExchange apenas para garantir que o nó exista no RabbitMQ na hora do disparo
+    @Bean
+    public TopicExchange notificationExchange() {
+        return new TopicExchange(NOTIFICATION_EXCHANGE);
+    }
+
+    // Configurando as Filas do domínio da Saga
     @Bean public Queue sagaRequestQueue() { return new Queue(SAGA_REQUEST_QUEUE, true); }
     @Bean public Queue sagaReplyQueue() { return new Queue(SAGA_REPLY_QUEUE, true); }
     @Bean public Queue clienteCommandQueue() { return new Queue(CLIENTE_COMMAND_QUEUE, true); }
@@ -38,7 +45,7 @@ public class RabbitConfig {
     @Bean public Queue gerenteCommandQueue() { return new Queue(GERENTE_COMMAND_QUEUE, true); }
     @Bean public Queue authCommandQueue() { return new Queue(AUTH_COMMAND_QUEUE, true); }
 
-    // Bindings: Cada MS terá sua routing key
+    // Bindings de Request/Reply e Comandos da Saga
     @Bean public Binding requestBinding(Queue sagaRequestQueue, DirectExchange sagaExchange) {
         return BindingBuilder.bind(sagaRequestQueue).to(sagaExchange).with("saga.request");
     }

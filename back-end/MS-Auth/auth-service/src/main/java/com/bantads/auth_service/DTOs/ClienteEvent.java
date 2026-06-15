@@ -1,0 +1,16 @@
+package com.bantads.auth_service.DTOs;
+
+import java.math.BigDecimal;
+
+public record ClienteEvent(
+    String tipo,
+    String cpf,
+    String nome,
+    String email,
+    String telefone,
+    BigDecimal salario,
+    String status,
+    String motivo,
+    String gerenteCpf
+    ) {
+}

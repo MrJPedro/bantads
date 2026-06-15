@@ -2,6 +2,7 @@ package com.bantads.conta_service.config
 
 import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
+import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.core.TopicExchange
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
@@ -21,6 +22,7 @@ const val CQRS_EVENT_ROUTING_KEY = "cqrs.event.#"
 
 const val CONTA_COMMAND_QUEUE = "conta-command-queue"
 const val SAGA_EXCHANGE = "saga-exchange"
+const val CONTA_COMMAND_ROUTING_KEY = "conta.command"
 
 @Configuration
 class RabbitConfig {
@@ -31,8 +33,15 @@ class RabbitConfig {
     }
 
     @Bean
-    fun sagaExchange(): TopicExchange {
-        return TopicExchange(SAGA_EXCHANGE)
+    fun sagaExchange(): DirectExchange {
+        return DirectExchange(SAGA_EXCHANGE)
+    }
+
+    @Bean
+    fun contaCommandBinding(contaCommandQueue: Queue, sagaExchange: DirectExchange): Binding {
+        return BindingBuilder.bind(contaCommandQueue)
+            .to(sagaExchange)
+            .with(CONTA_COMMAND_ROUTING_KEY)
     }
 
     @Bean

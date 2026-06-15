@@ -17,12 +17,13 @@ class ClienteSagaListener(
 
     @RabbitListener(queues = ["cliente-command-queue"])
     fun onClienteCommand(command: SagaMessage) {
-        println("[MS-CLIENTE] Comando SAGA recebido: \${command.acao}")
+        println("[MS-CLIENTE] Comando SAGA recebido: ${command.acao}")
 
         try {
             when (command.acao) {
                 "ROLLBACK_CLIENTE" -> {
                     // Desfazer o cliente que ficou travado por erro do Auth/Gerente
+                    println("[MS-CLIENTE] ${objectMapper.writeValueAsString(command)}")
                     val clienteDto = objectMapper.readValue(command.payload, DadosClienteResponse::class.java)
                     val clienteEntity = clienteRepository.findByCpf(clienteDto.cpf)
                     
@@ -36,12 +37,12 @@ class ClienteSagaListener(
                 }
                 // Adicionar futuras ações como ATUALIZAR_LIMITE, etc
                 else -> {
-                    println("[MS-CLIENTE] Ação desconhecida: \${command.acao}")
+                    println("[MS-CLIENTE] Ação desconhecida: ${command.acao}")
                 }
             }
         } catch (e: Exception) {
-            println("[MS-CLIENTE] Erro ao processar comando SAGA: \${e.message}")
-            responderSaga(command, sucesso = false, motivo = "Erro interno MS-Cliente: \${e.message}")
+            println("[MS-CLIENTE] Erro ao processar comando SAGA: ${e.message}")
+            responderSaga(command, sucesso = false)
         }
     }
 
@@ -51,7 +52,7 @@ class ClienteSagaListener(
             tipoSaga = command.tipoSaga,
             acao = command.acao,
             sucesso = sucesso,
-            payload = motivo ?: command.payload
+            payload = command.payload
         )
         // O orquestrador esta escutando o saga-reply-queue
         rabbitTemplate.convertAndSend("saga-exchange", "saga.reply", reply)

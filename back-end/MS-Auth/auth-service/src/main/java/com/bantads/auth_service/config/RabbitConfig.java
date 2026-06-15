@@ -1,6 +1,6 @@
 package com.bantads.auth_service.config;
 
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -12,11 +12,35 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfig {
 
     public static final String AUTH_COMMAND_QUEUE = "auth-command-queue";
+    public static final String AUTH_CLIENTE_EVENT_QUEUE = "auth-cliente-event-queue";
     public static final String SAGA_EXCHANGE = "saga-exchange";
+    public static final String NOTIFICATION_EXCHANGE = "notification-exchange";
 
     @Bean
     public Queue authCommandQueue() {
         return new Queue(AUTH_COMMAND_QUEUE, true);
+    }
+
+    @Bean
+    public Queue authClienteEventQueue() {
+        return new Queue(AUTH_CLIENTE_EVENT_QUEUE, true); // Fila exclusiva do auth
+    }
+
+    @Bean
+    public Binding bindingAuthClienteEvent(Queue authClienteEventQueue, TopicExchange clienteEventExchange) {
+        return BindingBuilder.bind(authClienteEventQueue)
+                .to(clienteEventExchange)
+                .with("cliente.event.#"); // Escuta tudo que for evento de cliente
+    }
+
+    @Bean
+    public TopicExchange clienteEventExchange() {
+        return new TopicExchange("cliente-event-exchange");
+    }
+
+    @Bean
+    public TopicExchange notificationExchange() {
+        return new TopicExchange(NOTIFICATION_EXCHANGE);
     }
 
     @Bean

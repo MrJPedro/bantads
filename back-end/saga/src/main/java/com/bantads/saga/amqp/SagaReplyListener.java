@@ -37,7 +37,7 @@ public class SagaReplyListener {
 
         SagaState sagaState = stateOpt.get();
 
-        if (AutocadastroSagaOrchestrator.TIPO_SAGA.equals(message.getTipoSaga())) {
+        if (AutocadastroSagaOrchestrator.TIPO_SAGA.name().equals(message.getTipoSaga())) {
             autocadastroSagaOrchestrator.handleReply(sagaState, message);
         }
         

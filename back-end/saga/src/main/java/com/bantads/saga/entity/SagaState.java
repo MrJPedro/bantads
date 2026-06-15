@@ -31,6 +31,9 @@ public class SagaState {
     @Column(nullable = false)
     private String estadoAtual; // Ex: CRIACAO_AUTH_PENDENTE
 
+    @Column(nullable = false)
+    private String payload; // JSON contendo os dados relevantes para a saga (Ex: DTO de Cliente)
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SagaStatus status; // PENDENTE, SUCESSO, ERRO, REVERTIDO

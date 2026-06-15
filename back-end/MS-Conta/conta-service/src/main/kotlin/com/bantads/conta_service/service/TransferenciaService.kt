@@ -7,9 +7,7 @@ import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
 import com.bantads.conta_service.dto.TransferenciaWriteDTO
 import com.bantads.conta_service.entity.comando.TransferenciaWrite
-import com.bantads.conta_service.entity.comando.ContaWrite
 import com.bantads.conta_service.entity.leitura.TransferenciaRead
-import com.bantads.conta_service.entity.leitura.ContaRead
 import com.bantads.conta_service.repository.leitura.ContaRepositoryRead
 import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
 import com.bantads.conta_service.repository.comando.ContaRepositoryWrite

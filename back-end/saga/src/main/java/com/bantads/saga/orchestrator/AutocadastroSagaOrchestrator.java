@@ -1,23 +1,29 @@
 package com.bantads.saga.orchestrator;
 
 import com.bantads.saga.config.RabbitConfig;
+import com.bantads.saga.dto.EmailDTO;
 import com.bantads.saga.dto.SagaMessage;
 import com.bantads.saga.entity.SagaState;
+import com.bantads.saga.entity.TipoEmail;
 import com.bantads.saga.entity.TipoSaga;
 import com.bantads.saga.entity.SagaStatus;
 import com.bantads.saga.repository.SagaStateRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
 @Service
 public class AutocadastroSagaOrchestrator {
 
+    private final ObjectMapper objectMapper;
     private final SagaStateRepository sagaStateRepository;
     private final RabbitTemplate rabbitTemplate;
 
-    public AutocadastroSagaOrchestrator(SagaStateRepository sagaStateRepository, RabbitTemplate rabbitTemplate) {
+    public AutocadastroSagaOrchestrator(ObjectMapper objectMapper, SagaStateRepository sagaStateRepository, RabbitTemplate rabbitTemplate) {
+        this.objectMapper = objectMapper;
         this.sagaStateRepository = sagaStateRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
@@ -51,6 +57,7 @@ public class AutocadastroSagaOrchestrator {
         state.setTipoSaga(TIPO_SAGA);
         state.setEstadoAtual(ESTADO_AUTH_PENDENTE);
         state.setStatus(SagaStatus.PENDENTE);
+        state.setPayload(clientePayload); // Salva o payload atualizado (ex: com ID do cliente criado)
         sagaStateRepository.save(state);
 
         System.out.println("[SAGA AUTOCADASTRO] Iniciando saga " + sagaId + ". Enviando comando para MS-Auth.");
@@ -67,6 +74,15 @@ public class AutocadastroSagaOrchestrator {
         System.out.println("[SAGA AUTOCADASTRO] Processando estado atual: " + state.getEstadoAtual() + " | Sucesso: " + reply.getSucesso());
 
         if (!reply.getSucesso()) {
+            System.out.println("[SAGA AUTOCADASTRO] Resposta de falha recebida. Iniciando rollback...");
+
+            JsonNode jsonNode = objectMapper.readTree(reply.getPayload());
+
+            String nome = jsonNode.path("nome").asString(null);
+            String email = jsonNode.path("email").asString(null);
+            EmailDTO emailDTO = new EmailDTO(nome, email, TipoEmail.ERRO, "");
+            rabbitTemplate.convertAndSend(RabbitConfig.NOTIFICATION_EXCHANGE,
+                    "notification.email.cliente", emailDTO);
             iniciarRollback(state, reply);
             return;
         }
@@ -75,6 +91,7 @@ public class AutocadastroSagaOrchestrator {
             case ESTADO_AUTH_PENDENTE:
                 // MS-Auth criou com sucesso. Próximo passo: Pedir um gerente para o MS-Gerente ou MS-Conta.
                 state.setEstadoAtual(ESTADO_GERENTE_PENDENTE);
+                state.setPayload(reply.getPayload()); // Salva o payload atualizado (ex: com ID do cliente criado)
                 sagaStateRepository.save(state);
                 
                 System.out.println("[SAGA AUTOCADASTRO] Auth concluído. Solicitando MS-Gerente...");
@@ -84,21 +101,12 @@ public class AutocadastroSagaOrchestrator {
 
             case ESTADO_GERENTE_PENDENTE:
                 // Gerente obtido. Próximo passo: Criar a Conta (Status PENDENTE DE APROVAÇÃO)
-                state.setEstadoAtual(ESTADO_CONTA_PENDENTE);
-                sagaStateRepository.save(state);
-
-                System.out.println("[SAGA AUTOCADASTRO] Gerente definido. Solicitando criação ao MS-Conta...");
-                SagaMessage comandoConta = new SagaMessage(state.getSagaId(), TIPO_SAGA.name(), ACAO_CRIAR_CONTA, null, reply.getPayload());
-                rabbitTemplate.convertAndSend(RabbitConfig.SAGA_EXCHANGE, "conta.command", comandoConta);
-                break;
-
-            case ESTADO_CONTA_PENDENTE:
-                // Conta criada e aguardando aprovação. A Saga terminou com sucesso.
                 state.setEstadoAtual(ESTADO_SUCESSO);
+                state.setPayload(reply.getPayload()); // Salva o payload atualizado (ex: com ID do cliente criado)
                 state.setStatus(SagaStatus.SUCESSO);
                 sagaStateRepository.save(state);
 
-                System.out.println("[SAGA AUTOCADASTRO] Concluída com SUCESSO! Saga ID: " + state.getSagaId());
+                System.out.println("[SAGA AUTOCADASTRO] Gerente definido. Saga finalizada.  Saga ID: " + state.getSagaId());
                 break;
 
             default:

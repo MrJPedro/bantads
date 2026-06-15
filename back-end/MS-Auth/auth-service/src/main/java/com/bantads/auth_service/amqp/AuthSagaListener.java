@@ -65,7 +65,7 @@ public class AuthSagaListener {
             }
         } catch (Exception e) {
             System.err.println("[MS-AUTH] Erro ao processar comando SAGA: " + e.getMessage());
-            responderSaga(command, false, "Erro interno MS-Auth: " + e.getMessage());
+            responderSaga(command, false, command.getPayload());
         }
     }
 
