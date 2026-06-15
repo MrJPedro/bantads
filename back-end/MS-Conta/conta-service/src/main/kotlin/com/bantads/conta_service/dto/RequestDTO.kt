@@ -1,5 +1,6 @@
 package com.bantads.conta_service.dto
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -12,6 +13,7 @@ data class SaqueRequestDTO(
 )
 
 data class TransferenciaRequestDTO(
+    @JsonAlias("destino")
     val contaDestino: String,
     val valor: BigDecimal
 )
