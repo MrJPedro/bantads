@@ -506,6 +506,42 @@ app.get('/clientes', async (req, res, next) => {
         }
     }
 
+    // Quando GERENTE chama GET /clientes sem filtro: retorna apenas os clientes dele
+    if (!filtro && req.user && req.user.tipo === 'GERENTE') {
+        try {
+            const config = configFrom(req);
+            const gerenteCpf = req.user.cpf;
+            const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${gerenteCpf}`, config);
+
+            const clientesPromises = contas.map(async (conta) => {
+                try {
+                    const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}`, config);
+                    return {
+                        cpf: cliente.cpf,
+                        nome: cliente.nome,
+                        email: cliente.email,
+                        cidade: cliente.cidade,
+                        estado: cliente.estado,
+                        salario: cliente.salario,
+                        saldo: conta.saldo,
+                        limite: conta.limite
+                    };
+                } catch (err) {
+                    return null;
+                }
+            });
+
+            const clientesCompostos = (await Promise.all(clientesPromises))
+                .filter(c => c !== null)
+                .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
+            return res.json(clientesCompostos);
+        } catch (error) {
+            console.error('Erro ao listar clientes do gerente:', error.message);
+            return res.status(500).json({ erro: 'Falha ao listar clientes' });
+        }
+    }
+
     if (filtro !== 'adm_relatorio_clientes') {
         return next();
     }
@@ -552,8 +588,8 @@ app.get('/clientes/:cpf/perfil', autorizar('CLIENTE'), async (req, res) => {
     }
 });
 
-// Rota: Detalhe de Cliente (Composição de Cliente + Conta + Gerente)
-app.get('/clientes/:cpf', autorizar('GERENTE', 'ADMINISTRADOR'), async (req, res) => {
+// Rota: Detalhe de Cliente (Composição de Cliente + Conta + Gerente) — GERENTE, ADMINISTRADOR e o próprio CLIENTE
+app.get('/clientes/:cpf', autorizar('GERENTE', 'ADMINISTRADOR', 'CLIENTE'), async (req, res) => {
     const { cpf } = req.params;
 
     try {
@@ -720,6 +756,15 @@ app.get('/contas/top3', autorizar('GERENTE'), async (req, res) => {
     }
 });
 
+
+// Rota: Logout (stateless JWT — apenas confirma o email do token)
+app.post('/logout', express.json(), (req, res) => {
+    const email = req.user?.login;
+    if (!email) {
+        return res.status(401).json({ erro: 'Não autenticado' });
+    }
+    return res.status(200).json({ email });
+});
 
 app.post('/login', express.json(), async (req, res) => {
     try {

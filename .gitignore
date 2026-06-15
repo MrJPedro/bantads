@@ -1,5 +1,6 @@
 .idea/
 .vscode/
+.test_bantads/
 
 # Angular specific
 /dist/

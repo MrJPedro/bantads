@@ -36,12 +36,17 @@ class ClienteService(
 
   fun listarTodos(): List<DadosClienteResponse> {
     return clienteRepository.findAll()
+      .filter { it.status == "APROVADO" }
       .sortedBy { it.nome }
       .map { toDTO(it) }
   }
 
   fun buscarPorCpf(cpf: String): DadosClienteResponse {
     val cliente = clienteRepository.findByCpf(cpf) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
+
+    if (cliente.status == "REJEITADO") {
+      throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
+    }
 
     return toDTO(cliente)
   }

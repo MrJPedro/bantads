@@ -166,14 +166,14 @@ public class AuthController {
             System.out.println(exception);
             return new ResponseEntity<String>(
                 exception.getMessage(),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.UNAUTHORIZED
             );
 
         } catch (NoSuchElementException exception){
             System.out.println(exception);
             return new ResponseEntity<String>(
                 exception.getMessage(),
-                HttpStatus.NOT_FOUND
+                HttpStatus.UNAUTHORIZED
             );
 
         } catch (LoginException exception){
