@@ -16,12 +16,19 @@ import java.math.RoundingMode
 import kotlin.random.Random
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import com.bantads.conta_service.config.CQRS_EVENT_EXCHANGE
+import com.bantads.conta_service.entity.comando.TransferenciaWrite
+import com.bantads.conta_service.entity.leitura.TransferenciaRead
+import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
+import com.bantads.conta_service.repository.leitura.TransferenciaRepositoryRead
+import java.time.LocalDateTime
 
 @Service
 @Transactional
 class ContaService(
     private val contaRepositoryRead: ContaRepositoryRead,
     private val contaRepositoryWrite: ContaRepositoryWrite,
+    private val transferenciaRepositoryRead: TransferenciaRepositoryRead,
+    private val transferenciaRepositoryWrite: TransferenciaRepositoryWrite,
     private val rabbitTemplate: RabbitTemplate
 ) {
 
@@ -122,7 +129,7 @@ class ContaService(
 
     fun calcularLimite(salario: BigDecimal): BigDecimal {
         val metadeSalario = salario.setScale(2, RoundingMode.HALF_EVEN).divide(BigDecimal(2), RoundingMode.HALF_EVEN)
-        return if (metadeSalario > BigDecimal(2000).setScale(2, RoundingMode.HALF_EVEN)) {
+        return if (salario >= BigDecimal(2000).setScale(2, RoundingMode.HALF_EVEN)) {
             metadeSalario
         } else {
             0.toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
@@ -178,6 +185,222 @@ class ContaService(
                     gerente = conta.gerente,
                     criacao = conta.criacao.toString()
                 )
-            }
+    }
+    }
+
+    data class TxSeed(
+        val dateTime: LocalDateTime,
+        val tipo: String,
+        val origin: Pair<String, String>,
+        val destination: Pair<String?, String?>
+    )
+
+    @Transactional
+    fun reboot() {
+        transferenciaRepositoryWrite.deleteAll()
+        transferenciaRepositoryRead.deleteAll()
+        contaRepositoryWrite.deleteAll()
+        contaRepositoryRead.deleteAll()
+
+        transferenciaRepositoryWrite.flush()
+        transferenciaRepositoryRead.flush()
+        contaRepositoryWrite.flush()
+        contaRepositoryRead.flush()
+
+        val accountsWrite = listOf(
+            ContaWrite(
+                cliente = "12912861012",
+                numero = "1291",
+                saldo = BigDecimal("800.00"),
+                limite = BigDecimal("5000.00"),
+                gerente = "98574307084",
+                criacao = LocalDateTime.of(2000, 1, 1, 0, 0)
+            ),
+            ContaWrite(
+                cliente = "09506382000",
+                numero = "0950",
+                saldo = BigDecimal("-10000.00"),
+                limite = BigDecimal("10000.00"),
+                gerente = "64065268052",
+                criacao = LocalDateTime.of(1990, 10, 10, 0, 0)
+            ),
+            ContaWrite(
+                cliente = "85733854057",
+                numero = "8573",
+                saldo = BigDecimal("-1000.00"),
+                limite = BigDecimal("1500.00"),
+                gerente = "23862179060",
+                criacao = LocalDateTime.of(2012, 12, 12, 0, 0)
+            ),
+            ContaWrite(
+                cliente = "58872160006",
+                numero = "5887",
+                saldo = BigDecimal("150000.00"),
+                limite = BigDecimal("0.00"),
+                gerente = "98574307084",
+                criacao = LocalDateTime.of(2022, 2, 22, 0, 0)
+            ),
+            ContaWrite(
+                cliente = "76179646090",
+                numero = "7617",
+                saldo = BigDecimal("1500.00"),
+                limite = BigDecimal("0.00"),
+                gerente = "64065268052",
+                criacao = LocalDateTime.of(2025, 1, 1, 0, 0)
+            )
+        )
+        val savedAccounts = contaRepositoryWrite.saveAll(accountsWrite).associateBy { it.numero }
+
+        val accountsRead = listOf(
+            ContaLeitura(
+                numero = "1291",
+                cliente = "12912861012",
+                saldo = BigDecimal("800.00"),
+                limite = BigDecimal("5000.00"),
+                gerente = "98574307084",
+                criacao = LocalDateTime.of(2000, 1, 1, 0, 0)
+            ),
+            ContaLeitura(
+                numero = "0950",
+                cliente = "09506382000",
+                saldo = BigDecimal("-10000.00"),
+                limite = BigDecimal("10000.00"),
+                gerente = "64065268052",
+                criacao = LocalDateTime.of(1990, 10, 10, 0, 0)
+            ),
+            ContaLeitura(
+                numero = "8573",
+                cliente = "85733854057",
+                saldo = BigDecimal("-1000.00"),
+                limite = BigDecimal("1500.00"),
+                gerente = "23862179060",
+                criacao = LocalDateTime.of(2012, 12, 12, 0, 0)
+            ),
+            ContaLeitura(
+                numero = "5887",
+                cliente = "58872160006",
+                saldo = BigDecimal("150000.00"),
+                limite = BigDecimal("0.00"),
+                gerente = "98574307084",
+                criacao = LocalDateTime.of(2022, 2, 22, 0, 0)
+            ),
+            ContaLeitura(
+                numero = "7617",
+                cliente = "76179646090",
+                saldo = BigDecimal("1500.00"),
+                limite = BigDecimal("0.00"),
+                gerente = "64065268052",
+                criacao = LocalDateTime.of(2025, 1, 1, 0, 0)
+            )
+        )
+        contaRepositoryRead.saveAll(accountsRead)
+
+        val txs = listOf(
+            TxSeed(LocalDateTime.of(2020, 1, 1, 10, 0), "DEPOSITO", Pair("1291", "Catharyna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2020, 1, 1, 11, 0), "DEPOSITO", Pair("1291", "Catharyna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2020, 1, 1, 12, 0), "SAQUE", Pair("1291", "Catharyna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2020, 1, 1, 13, 0), "SAQUE", Pair("1291", "Catharyna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2020, 1, 10, 15, 0), "DEPOSITO", Pair("1291", "Catharyna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2020, 1, 15, 8, 0), "SAQUE", Pair("1291", "Catharyna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2020, 1, 20, 12, 0), "TRANSFERENCIA", Pair("1291", "Catharyna"), Pair("0950", "Cleuddônio")),
+            TxSeed(LocalDateTime.of(2025, 1, 1, 12, 0), "DEPOSITO", Pair("0950", "Cleuddônio"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 1, 2, 10, 0), "DEPOSITO", Pair("0950", "Cleuddônio"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 1, 10, 10, 0), "SAQUE", Pair("0950", "Cleuddônio"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 2, 5, 10, 0), "DEPOSITO", Pair("0950", "Cleuddônio"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 5, 5, 0, 0), "DEPOSITO", Pair("8573", "Catianna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 5, 6, 0, 0), "SAQUE", Pair("8573", "Catianna"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 6, 1, 0, 0), "DEPOSITO", Pair("5887", "Cutardo"), Pair(null, null)),
+            TxSeed(LocalDateTime.of(2025, 7, 1, 0, 0), "DEPOSITO", Pair("7617", "Coândrya"), Pair(null, null))
+        )
+
+        val values = listOf(
+            BigDecimal("1000.00"),
+            BigDecimal("900.00"),
+            BigDecimal("550.00"),
+            BigDecimal("350.00"),
+            BigDecimal("2000.00"),
+            BigDecimal("500.00"),
+            BigDecimal("1700.00"),
+            BigDecimal("1000.00"),
+            BigDecimal("5000.00"),
+            BigDecimal("200.00"),
+            BigDecimal("7000.00"),
+            BigDecimal("1000.00"),
+            BigDecimal("2000.00"),
+            BigDecimal("150000.00"),
+            BigDecimal("1500.00")
+        )
+
+        val readSaldosOrigemAnterior = listOf(
+            BigDecimal("0.00"), 
+            BigDecimal("1000.00"), 
+            BigDecimal("1900.00"), 
+            BigDecimal("1350.00"), 
+            BigDecimal("1000.00"), 
+            BigDecimal("3000.00"), 
+            BigDecimal("2500.00"), 
+            BigDecimal("1700.00"), 
+            BigDecimal("2700.00"), 
+            BigDecimal("7700.00"), 
+            BigDecimal("7500.00"), 
+            BigDecimal("0.00"), 
+            BigDecimal("1000.00"), 
+            BigDecimal("0.00"), 
+            BigDecimal("0.00") 
+        )
+
+        val readSaldosOrigemFinal = listOf(
+            BigDecimal("1000.00"),
+            BigDecimal("1900.00"),
+            BigDecimal("1350.00"),
+            BigDecimal("1000.00"),
+            BigDecimal("3000.00"),
+            BigDecimal("2500.00"),
+            BigDecimal("800.00"),
+            BigDecimal("2700.00"),
+            BigDecimal("7700.00"),
+            BigDecimal("7500.00"),
+            BigDecimal("14500.00"),
+            BigDecimal("1000.00"),
+            BigDecimal("-1000.00"),
+            BigDecimal("150000.00"),
+            BigDecimal("1500.00")
+        )
+
+        for (i in txs.indices) {
+            val tx = txs[i]
+            val valUnit = values[i]
+            val date = tx.dateTime
+            val tipo = tx.tipo
+            val orgPair = tx.origin
+            val destPair = tx.destination
+
+            val contaOrigem = savedAccounts[orgPair.first]!!
+            val contaDestino = if (destPair.first != null) savedAccounts[destPair.first!!] else null
+
+            transferenciaRepositoryWrite.save(
+                TransferenciaWrite(
+                    contaOrigem = contaOrigem,
+                    contaDestino = contaDestino,
+                    valor = valUnit,
+                    tipo = tipo,
+                    data = date
+                )
+            )
+
+            transferenciaRepositoryRead.save(
+                TransferenciaRead(
+                    contaOrigem = orgPair.first,
+                    contaOrigemNome = orgPair.second,
+                    contaDestino = destPair.first ?: "",
+                    contaDestinoNome = destPair.second ?: "",
+                    valor = valUnit,
+                    tipo = tipo,
+                    data = date,
+                    saldoanterior = readSaldosOrigemAnterior[i],
+                    saldofinal = readSaldosOrigemFinal[i]
+                )
+            )
+        }
     }
 }

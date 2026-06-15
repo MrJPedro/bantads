@@ -177,4 +177,34 @@ class GerenteService(
             quantidadeClientes = entity.quantidadeClientes
         )
     }
+
+    @Transactional
+    fun reboot() {
+        gerenteRepository.deleteAll()
+        gerenteRepository.flush()
+        val gerentesIniciais = listOf(
+            GerenteEntity(
+                cpf = "98574307084",
+                nome = "Geniéve",
+                email = "ger1@bantads.com.br",
+                telefone = "(41) 98765-4321",
+                quantidadeClientes = 2
+            ),
+            GerenteEntity(
+                cpf = "64065268052",
+                nome = "Godophredo",
+                email = "ger2@bantads.com.br",
+                telefone = "(11) 89765-1234",
+                quantidadeClientes = 2
+            ),
+            GerenteEntity(
+                cpf = "23862179060",
+                nome = "Gyândula",
+                email = "ger3@bantads.com.br",
+                telefone = "(42) 98888-9999",
+                quantidadeClientes = 1
+            )
+        )
+        gerenteRepository.saveAll(gerentesIniciais)
+    }
 }

@@ -50,4 +50,10 @@ class GerenteController(
         val gerenteRemovido = gerenteService.remover(cpf)
         return ResponseEntity.ok(gerenteRemovido)
     }
+
+    @GetMapping("/reboot")
+    fun reboot(): ResponseEntity<Void> {
+        gerenteService.reboot()
+        return ResponseEntity.noContent().build()
+    }
 }

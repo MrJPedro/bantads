@@ -35,7 +35,6 @@ public class LoginService {
         
         String emailEntrada = loginReq.login();
         String senhaEntrada = loginReq.senha();
-        String hashSenhaEntrada = authUtil.hashearSenha(senhaEntrada);
         
         boolean loginEhValido = emailUtil.validarEmail(loginReq.login());
         if(!loginEhValido) throw new IllegalArgumentException("Login inválido!");
@@ -43,6 +42,8 @@ public class LoginService {
         Usuario loginCadastrado = usuarioRepository.findByLogin(loginReq.login()).orElseThrow(() -> new NoSuchElementException(
             "Login não encontrado!"
         ));
+
+        String hashSenhaEntrada = authUtil.hashearSenha(senhaEntrada, loginCadastrado.getCpf());
 
         if (
             emailEntrada.equals(loginCadastrado.getLogin()) &&

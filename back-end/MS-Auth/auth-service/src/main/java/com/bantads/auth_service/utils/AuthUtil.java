@@ -16,15 +16,9 @@ public class AuthUtil {
         return false;
     }*/
 
-    public String hashearSenha(String senha) {
+    public String hashearSenha(String senha, String salt) {
         
-
-        ArrayList<String> salts = new ArrayList();
-        salts.add("Abacate");
-        salts.add("Banana");
-        salts.add("Caqui");
-
-        String senhaSalt = senha + salts.get(senha.length() % salts.size());
+        String senhaSalt = senha + salt;
         String hashBase64 = "";
 
         try {

@@ -21,10 +21,10 @@ public class UsuarioMapper {
 
     public UsuarioDTO toDTO(Usuario usuario) {
     return new UsuarioDTO(
-        usuario.getCpfUsuario(),
-        usuario.getTipoUsuario(),
-        usuario.getNome(),
+        usuario.getCpf(),
+        usuario.getTipo(),
         usuario.getLogin(),
+        usuario.getNome(),
         null);
 }
 
@@ -42,8 +42,8 @@ public class UsuarioMapper {
         return new Usuario(
             usuarioDTO.cpf(),
             usuarioDTO.tipo(),
-            usuarioDTO.nome(),
             usuarioDTO.login(),
+            usuarioDTO.nome(),
             null);
     }
 

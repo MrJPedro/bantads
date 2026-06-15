@@ -82,8 +82,9 @@ public class UsuarioService {
         if(cpfUsuarioJaExiste) throw new JaExisteException("CPF já cadastrado!");
 
         Usuario u = usuarioMapper.toUsuario(usuarioDTO);
-        u.setCpfUsuario(cpfUsuarioFormatado);
-        u.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha()));
+        System.out.println("email: " + u.getLogin() + "/ nome: " + u.getNome());
+        u.setCpf(cpfUsuarioFormatado);
+        u.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha(), cpfUsuarioFormatado));
         usuarioRepository.insert(u);
 
         return usuarioMapper.toDTO(u);
@@ -105,8 +106,8 @@ public class UsuarioService {
         if(!tipoUsuarioEhValido) throw new IllegalArgumentException("Tipo Usuário inválido!");
 
         Usuario uNovo = usuarioMapper.toUsuario(usuarioDTO);
-        uNovo.setCpfUsuario(cpfUsuarioFormatado);
-        uNovo.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha()));
+        uNovo.setCpf(cpfUsuarioFormatado);
+        uNovo.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha(), cpfUsuarioFormatado));
 
         Usuario uAntigo = usuarioRepository.findByCpf(cpfUsuarioFormatado).orElseThrow(() -> new NoSuchElementException("Usuário não cadastrado!"));
         try {
@@ -141,13 +142,13 @@ public class UsuarioService {
         try {
             this.insertUsuario(new UsuarioDTO("12912861012", "CLIENTE", "cli1@bantads.com.br", "Catharyna", "tads"));
             this.insertUsuario(new UsuarioDTO("09506382000", "CLIENTE", "cli2@bantads.com.br", "Cleuddônio", "tads"));
-            this.insertUsuario(new UsuarioDTO("85733854057", "CLIENTE", "cli3@bantads.com.br", "CLIENTE 3", "tads"));
-            this.insertUsuario(new UsuarioDTO("58872160006", "CLIENTE", "cli4@bantads.com.br", "CLIENTE 4", "tads"));
-            this.insertUsuario(new UsuarioDTO("76179646090", "CLIENTE", "cli5@bantads.com.br", "CLIENTE 5", "tads"));
-            this.insertUsuario(new UsuarioDTO("98574307084", "GERENTE", "ger1@bantads.com.br", "GERENTE 1", "tads"));
-            this.insertUsuario(new UsuarioDTO("64065268052", "GERENTE", "ger2@bantads.com.br", "GERENTE 2", "tads"));
-            this.insertUsuario(new UsuarioDTO("23862179060", "GERENTE", "ger3@bantads.com.br", "GERENTE 3", "tads"));
-            this.insertUsuario(new UsuarioDTO("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "Administrador 1", "tads"));
+            this.insertUsuario(new UsuarioDTO("85733854057", "CLIENTE", "cli3@bantads.com.br", "Catianna", "tads"));
+            this.insertUsuario(new UsuarioDTO("58872160006", "CLIENTE", "cli4@bantads.com.br", "Cutardo", "tads"));
+            this.insertUsuario(new UsuarioDTO("76179646090", "CLIENTE", "cli5@bantads.com.br", "Coândrya", "tads"));
+            this.insertUsuario(new UsuarioDTO("98574307084", "GERENTE", "ger1@bantads.com.br", "Geniéve", "tads"));
+            this.insertUsuario(new UsuarioDTO("64065268052", "GERENTE", "ger2@bantads.com.br", "Godophredo", "tads"));
+            this.insertUsuario(new UsuarioDTO("23862179060", "GERENTE", "ger3@bantads.com.br", "Gyândula", "tads"));
+            this.insertUsuario(new UsuarioDTO("40501740066", "ADMINISTRADOR", "adm1@bantads.com.br", "Adamântio", "tads"));
         } catch(Exception e){
             System.out.println(e);
         }

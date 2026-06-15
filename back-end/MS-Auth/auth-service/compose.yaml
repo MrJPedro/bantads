@@ -22,6 +22,8 @@ services:
   ms-auth-db:
     image: mongodb/mongodb-community-server:latest
     container_name: ms-auth-db
+    ports:
+      - "27017:27017"
     networks:
       - backend
     volumes:
