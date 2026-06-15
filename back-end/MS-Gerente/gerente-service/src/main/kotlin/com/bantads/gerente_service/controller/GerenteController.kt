@@ -11,7 +11,7 @@ class GerenteController(
     private val gerenteService: GerenteService
 ) {
 
-    /*GET /gerentes*/
+    /*GET /gerentes R19 - LISTAGEM DE GERENTES*/ 
     @GetMapping
     fun listarGerentes(
         @RequestParam(name = "cpf", required = false) cpf: String?
@@ -20,21 +20,21 @@ class GerenteController(
         return ResponseEntity.ok(gerentes)
     }
 
-    /*GET /gerentes/{cpf}*/
+    /*GET /gerentes/{cpf} R19 - LISTAGEM DE GERENTES POR CPF*/
     @GetMapping("/{cpf}")
     fun buscarGerente(@PathVariable cpf: String): ResponseEntity<DadoGerente> {
         val gerente = gerenteService.buscarPorCpf(cpf)
         return ResponseEntity.ok(gerente)
     }
 
-    /*POST /gerentes*/
+    /*POST /gerentes R17 - INSERCAO DE GERENTE*/
     @PostMapping
     fun inserirGerente(@RequestBody request: DadoGerenteInsercao): ResponseEntity<DadoGerente> {
         val novoGerente = gerenteService.inserir(request)
         return ResponseEntity.ok(novoGerente)
     }
 
-    /*PUT /gerentes/{cpf}*/
+    /*PUT /gerentes/{cpf} R20 - ALTERACAO DE GERENTE*/
     @PutMapping("/{cpf}")
     fun alterarGerente(
         @PathVariable cpf: String,
@@ -44,7 +44,7 @@ class GerenteController(
         return ResponseEntity.ok(gerenteAtualizado)
     }
 
-    /*DELETE /gerentes/{cpf}*/
+    /*DELETE /gerentes/{cpf} R18 - REMOCAO DE GERENTE*/
     @DeleteMapping("/{cpf}")
     fun removerGerente(@PathVariable cpf: String): ResponseEntity<DadoGerente> {
         val gerenteRemovido = gerenteService.remover(cpf)
