@@ -143,7 +143,7 @@ const swaggerSpec = {
       },
     },
     '/clientes/{cpf}/aprovar': {
-      patch: {
+      post: {
         tags: ['Clientes'],
         summary: 'Aprovar cadastro de cliente (GERENTE)',
         parameters: [{ in: 'path', name: 'cpf', required: true, schema: { type: 'string' } }],
@@ -154,7 +154,7 @@ const swaggerSpec = {
       },
     },
     '/clientes/{cpf}/rejeitar': {
-      patch: {
+      post: {
         tags: ['Clientes'],
         summary: 'Rejeitar cadastro de cliente (GERENTE)',
         parameters: [{ in: 'path', name: 'cpf', required: true, schema: { type: 'string' } }],
@@ -455,8 +455,8 @@ app.post('/contas/:cpf/transferir', autorizar('CLIENTE'), (req, res, next) => ne
 app.get('/contas/:cpf/extrato', autorizar('CLIENTE'), (req, res, next) => next());
 app.get('/contas/:cpf/saldo', autorizar('CLIENTE'), (req, res, next) => next());
 
-app.patch('/clientes/:cpf/aprovar', autorizar('GERENTE'), (req, res, next) => next());
-app.patch('/clientes/:cpf/rejeitar', autorizar('GERENTE'), (req, res, next) => next());
+app.post('/clientes/:cpf/aprovar', autorizar('GERENTE'), (req, res, next) => next());
+app.post('/clientes/:cpf/rejeitar', autorizar('GERENTE'), (req, res, next) => next());
 
 
 // Rota: Relatório do Administrador (Composição de Clientes + Conta + Gerente)
@@ -619,6 +619,10 @@ app.use((req, res, next) => {
         if (req.method === 'GET' && path === '/gerentes' && req.query.numero === 'dashboard') {
             return next();
         }
+        // Exceção 3: GET /gerentes com ?cpf=... -> Permitido para obter nome do gerente
+        if (req.method === 'GET' && path === '/gerentes' && req.query.cpf) {
+            return next();
+        }
         // Para qualquer outra rota /gerentes, exige ADMINISTRADOR
         return autorizar('ADMINISTRADOR')(req, res, next);
     }
@@ -633,13 +637,13 @@ app.get('/gerentes', async (req, res, next) => {
     try {
         const config = configFrom(req);
 
-        // 1. Busca comum: Ambos os fluxos precisam da lista de gerentes
-        const { data: gerentes } = await axios.get(`${process.env.GERENTES_URI}/gerentes`, config);
-
-        // 2. Condicional: Se NÃO for solicitado o dashboard, retorna logo a lista simples
+        // 1. Condicional: Se NÃO for solicitado o dashboard, deixa o proxy (http-proxy-middleware) lidar com isso para repassar query params etc.
         if (numero !== 'dashboard') {
-            return res.json(gerentes);
+            return next();
         }
+
+        // 2. Busca comum para o Dashboard
+        const { data: gerentes } = await axios.get(`${process.env.GERENTES_URI}/gerentes`, config);
 
         // 3. Fluxo do Dashboard: Se chegou aqui, é porque numero === 'dashboard'
         const dashboardPromises = gerentes.map(async (gerente) => {

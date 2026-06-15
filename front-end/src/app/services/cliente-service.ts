@@ -57,7 +57,7 @@ export class Cliente {
   // R07: Transferência
   transferir(cpf: string, valor: number, destino: string): Observable<TransferenciaResponse> {
     return this.httpClient.post<TransferenciaResponse>(
-      API_URL + "/contas/" + cpf + "/transferir", { destino, valor }, this.httpOptions
+      API_URL + "/contas/" + cpf + "/transferir", { contaDestino: destino, valor }, this.httpOptions
     ) 
   }
 
