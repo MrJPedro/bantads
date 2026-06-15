@@ -19,6 +19,10 @@ const val CLIENTE_EMAIL_QUEUE = "cliente-email-notification-queue"
 const val NOTIFICATION_EXCHANGE = "notification-exchange"
 const val CLIENTE_EMAIL_ROUTING_KEY = "notification.email.cliente"
 
+const val CLIENTE_GERENTE_EVENT_QUEUE = "cliente-gerente-event-queue"
+const val GERENTE_EVENT_EXCHANGE = "gerente-event-exchange"
+const val GERENTE_EVENT_ROUTING_KEY = "gerente.event.#"
+
 @Configuration
 class RabbitConfig {
 
@@ -60,6 +64,23 @@ class RabbitConfig {
         return BindingBuilder.bind(clienteEmailQueue)
             .to(notificationExchange)
             .with(CLIENTE_EMAIL_ROUTING_KEY)
+    }
+
+    @Bean
+    fun clienteGerenteEventQueue(): Queue {
+        return Queue(CLIENTE_GERENTE_EVENT_QUEUE, true)
+    }
+
+    @Bean
+    fun gerenteEventExchange(): TopicExchange {
+        return TopicExchange(GERENTE_EVENT_EXCHANGE)
+    }
+
+    @Bean
+    fun bindingClienteGerenteEvent(clienteGerenteEventQueue: Queue, gerenteEventExchange: TopicExchange): Binding {
+        return BindingBuilder.bind(clienteGerenteEventQueue)
+            .to(gerenteEventExchange)
+            .with(GERENTE_EVENT_ROUTING_KEY)
     }
 
     @Bean

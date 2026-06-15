@@ -119,6 +119,24 @@ class ContaService(
         )
     }
 
+    fun remanejarContas(cpfAntigo: String, cpfNovo: String) {
+        val contasWrite = contaRepositoryWrite.findByGerente(cpfAntigo)
+        for (conta in contasWrite) {
+            conta.gerente = cpfNovo
+            contaRepositoryWrite.save(conta)
+
+            val eventoCqrs = ContaWriteDTO(
+                cliente = conta.cliente,
+                numero = conta.numero,
+                saldo = conta.saldo,
+                limite = conta.limite,
+                gerente = conta.gerente,
+                criacao = conta.criacao
+            )
+            rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.conta", eventoCqrs)
+        }
+    }
+
     fun gerarNumeroContaUnico(): String {
         var numero: String
         do {

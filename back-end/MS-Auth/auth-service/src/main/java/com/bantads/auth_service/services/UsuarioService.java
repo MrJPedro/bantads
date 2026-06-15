@@ -136,6 +136,40 @@ public class UsuarioService {
         return uDTO;
     }
 
+    public void deleteUsuarioByCpf(String cpf){
+        String cpfUsuarioFormatado = cpfUtil.formatarCPF(cpf);
+        Usuario u = usuarioRepository.findByCpf(cpfUsuarioFormatado).orElse(null);
+        if(u != null) {
+            usuarioRepository.delete(u);
+        }
+    }
+    
+    @Transactional
+    public UsuarioDTO editUsuarioGerente(UsuarioDTO usuarioDTO) throws Exception {
+        String cpfUsuarioFormatado = cpfUtil.formatarCPF(usuarioDTO.cpf());
+        Usuario uAntigo = usuarioRepository.findByCpf(cpfUsuarioFormatado).orElse(null);
+        
+        Usuario uNovo = usuarioMapper.toUsuario(usuarioDTO);
+        uNovo.setCpf(cpfUsuarioFormatado);
+        
+        if (usuarioDTO.senha() == null || usuarioDTO.senha().isBlank()) {
+            if (uAntigo != null) {
+                uNovo.setHashSenha(uAntigo.getHashSenha());
+            } else {
+                throw new IllegalArgumentException("Senha é obrigatória para novos gerentes");
+            }
+        } else {
+            uNovo.setHashSenha(authUtil.hashearSenha(usuarioDTO.senha(), cpfUsuarioFormatado));
+        }
+
+        if (uAntigo != null) {
+            usuarioRepository.delete(uAntigo);
+        }
+        usuarioRepository.save(uNovo);
+        
+        return usuarioMapper.toDTO(uNovo);
+    }
+
     public void reboot(){
         usuarioRepository.deleteAll();
 

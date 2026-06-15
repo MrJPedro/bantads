@@ -108,6 +108,15 @@ class ClienteService(
     }
 
     @Transactional
+    fun remanejarClientes(cpfAntigo: String, cpfNovo: String) {
+        val clientes = clienteRepository.findByGerenteCpf(cpfAntigo)
+        for (cliente in clientes) {
+            cliente.gerenteCpf = cpfNovo
+        }
+        clienteRepository.saveAll(clientes)
+    }
+
+    @Transactional
     fun alterar(cpf: String, dto: PerfilInfo): DadosClienteResponse {
         val cliente = clienteRepository.findByCpf(cpf) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
 

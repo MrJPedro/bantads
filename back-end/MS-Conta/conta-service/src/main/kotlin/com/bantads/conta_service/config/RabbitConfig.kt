@@ -24,6 +24,10 @@ const val CONTA_COMMAND_QUEUE = "conta-command-queue"
 const val SAGA_EXCHANGE = "saga-exchange"
 const val CONTA_COMMAND_ROUTING_KEY = "conta.command"
 
+const val CONTA_GERENTE_EVENT_QUEUE = "conta-gerente-event-queue"
+const val GERENTE_EVENT_EXCHANGE = "gerente-event-exchange"
+const val GERENTE_EVENT_ROUTING_KEY = "gerente.event.#"
+
 @Configuration
 class RabbitConfig {
 
@@ -76,6 +80,23 @@ class RabbitConfig {
         return BindingBuilder.bind(cqrsEventQueue)
             .to(cqrsEventExchange)
             .with(CQRS_EVENT_ROUTING_KEY)
+    }
+
+    @Bean
+    fun contaGerenteEventQueue(): Queue {
+        return Queue(CONTA_GERENTE_EVENT_QUEUE, true)
+    }
+
+    @Bean
+    fun gerenteEventExchange(): TopicExchange {
+        return TopicExchange(GERENTE_EVENT_EXCHANGE)
+    }
+
+    @Bean
+    fun bindingContaGerenteEvent(contaGerenteEventQueue: Queue, gerenteEventExchange: TopicExchange): Binding {
+        return BindingBuilder.bind(contaGerenteEventQueue)
+            .to(gerenteEventExchange)
+            .with(GERENTE_EVENT_ROUTING_KEY)
     }
 
     @Bean

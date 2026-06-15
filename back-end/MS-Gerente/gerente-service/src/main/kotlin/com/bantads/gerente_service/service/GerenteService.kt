@@ -52,7 +52,7 @@ class GerenteService(
             cpf = dto.cpf,
             nome = dto.nome,
             email = dto.email,
-            telefone = dto.telefone,
+            telefone = dto.telefone ?: "",
             quantidadeClientes = 0
         )
         
@@ -130,8 +130,8 @@ class GerenteService(
 
     /*Validacoes da insercao de gerente*/
     private fun validarDadosInsercao(dto: DadoGerenteInsercao) {
-        if (dto.cpf.isBlank() || dto.nome.isBlank() || dto.email.isBlank() || dto.telefone.isBlank() || dto.senha.isBlank()) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF, nome, email, telefone e senha são obrigatórios")
+        if (dto.cpf.isBlank() || dto.nome.isBlank() || dto.email.isBlank() || dto.senha.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF, nome, email e senha são obrigatórios")
         }
         if (!validarCpf(dto.cpf)) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF inválido")

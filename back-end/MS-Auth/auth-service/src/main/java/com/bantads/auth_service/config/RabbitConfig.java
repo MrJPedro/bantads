@@ -13,6 +13,7 @@ public class RabbitConfig {
 
     public static final String AUTH_COMMAND_QUEUE = "auth-command-queue";
     public static final String AUTH_CLIENTE_EVENT_QUEUE = "auth-cliente-event-queue";
+    public static final String AUTH_GERENTE_EVENT_QUEUE = "auth-gerente-event-queue";
     public static final String SAGA_EXCHANGE = "saga-exchange";
     public static final String NOTIFICATION_EXCHANGE = "notification-exchange";
 
@@ -34,8 +35,25 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue authGerenteEventQueue() {
+        return new Queue(AUTH_GERENTE_EVENT_QUEUE, true);
+    }
+
+    @Bean
+    public Binding bindingAuthGerenteEvent(Queue authGerenteEventQueue, TopicExchange gerenteEventExchange) {
+        return BindingBuilder.bind(authGerenteEventQueue)
+                .to(gerenteEventExchange)
+                .with("gerente.event.#"); // Escuta tudo que for evento de gerente
+    }
+
+    @Bean
     public TopicExchange clienteEventExchange() {
         return new TopicExchange("cliente-event-exchange");
+    }
+
+    @Bean
+    public TopicExchange gerenteEventExchange() {
+        return new TopicExchange("gerente-event-exchange");
     }
 
     @Bean
