@@ -374,6 +374,34 @@ async function buscarContaPorCliente(cpf, config) {
     }
 }
 
+async function transferirClienteParaNovoGerente(cpfNovoGerente, config) {
+    const { data: gerentes } = await axios.get(`${process.env.GERENTES_URI}/gerentes`, config);
+
+    const candidatos = await Promise.all(
+        gerentes
+            .filter(gerente => gerente.cpf !== cpfNovoGerente)
+            .map(async (gerente) => {
+                const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${gerente.cpf}`, config);
+                return { gerente, contas };
+            })
+    );
+
+    const doador = candidatos
+        .filter(candidato => candidato.contas.length > 0)
+        .sort((a, b) =>
+            b.contas.length - a.contas.length ||
+            b.gerente.nome.localeCompare(a.gerente.nome, 'pt-BR', { sensitivity: 'base' })
+        )[0];
+
+    if (!doador) {
+        return;
+    }
+
+    const conta = doador.contas[0];
+    await axios.put(`${process.env.CONTAS_URI}/contas/${conta.numero}/gerente`, { gerente: cpfNovoGerente }, config);
+    await axios.put(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}/gerente`, { gerenteCpf: cpfNovoGerente }, config);
+}
+
 app.use(cors({
     origin: process.env.FRONT, 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -688,6 +716,44 @@ app.use((req, res, next) => {
         return autorizar('ADMINISTRADOR')(req, res, next);
     }
     next();
+});
+
+app.post('/gerentes', express.json(), async (req, res) => {
+    const gerente = req.body;
+    const config = configFrom(req);
+
+    try {
+        try {
+            await axios.get(`${process.env.GERENTES_URI}/gerentes/${gerente.cpf}`, config);
+            return res.status(409).json({ erro: 'CPF já cadastrado' });
+        } catch (error) {
+            if (error.response?.status !== 404) {
+                throw error;
+            }
+        }
+
+        const payloadGerente = {
+            ...gerente,
+            telefone: gerente.telefone ?? ''
+        };
+
+        const { data: novoGerente } = await axios.post(`${process.env.GERENTES_URI}/gerentes`, payloadGerente, config);
+
+        await axios.post(`${process.env.AUTH_URI}/usuarios`, {
+            cpf: gerente.cpf,
+            tipo: 'GERENTE',
+            login: gerente.email,
+            nome: gerente.nome,
+            senha: gerente.senha
+        }, { timeout: 10000 });
+
+        await transferirClienteParaNovoGerente(novoGerente.cpf, config);
+
+        return res.status(201).json(novoGerente);
+    } catch (error) {
+        const status = error.response?.status ?? 500;
+        return res.status(status).json(error.response?.data ?? { erro: 'Falha ao inserir gerente' });
+    }
 });
 
 // Rota: Dashboard do Gerente/Admin (Composição de Gerente + Contas/Saldos)

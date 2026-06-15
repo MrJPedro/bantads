@@ -2,6 +2,7 @@ package com.bantads.gerente_service.controller
 
 import com.bantads.gerente_service.dto.*
 import com.bantads.gerente_service.service.GerenteService
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -31,7 +32,7 @@ class GerenteController(
     @PostMapping
     fun inserirGerente(@RequestBody request: DadoGerenteInsercao): ResponseEntity<DadoGerente> {
         val novoGerente = gerenteService.inserir(request)
-        return ResponseEntity.ok(novoGerente)
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoGerente)
     }
 
     /*PUT /gerentes/{cpf} R20 - ALTERACAO DE GERENTE*/

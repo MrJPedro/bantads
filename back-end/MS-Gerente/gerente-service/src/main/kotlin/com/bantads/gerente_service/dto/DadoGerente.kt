@@ -16,7 +16,7 @@ data class DadoGerenteInsercao(
     val cpf: String,
     val nome: String,
     val email: String,
-    val telefone: String,
+    val telefone: String? = null,
     val tipo: String? = null,
     val senha: String
 )
