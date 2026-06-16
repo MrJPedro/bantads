@@ -1,5 +1,7 @@
 package com.bantads.cliente_service.dto
 
+import java.time.LocalDateTime
+
 data class DadosClienteResponse(
     val id: Long,
     val nome: String,
@@ -11,5 +13,7 @@ data class DadosClienteResponse(
     val cep: String? = null,
     val cidade: String? = null,
     val estado: String? = null,
-    val gerenteCpf: String? = null
+    val gerenteCpf: String? = null,
+    val motivoRejeicao: String? = null,
+    val dataRejeicao: LocalDateTime? = null
 )

@@ -121,7 +121,18 @@ export class AuthService {
 
   getContaNumero() {
     const usuarioLogado = this.getUsuarioLogado();
-    return usuarioLogado?.conta?.numero ?? usuarioLogado?.cliente?.conta?.numero ?? null;
+    const conta = usuarioLogado?.conta;
+    const contaCliente = usuarioLogado?.cliente?.conta;
+
+    if (typeof conta === 'string') {
+      return conta;
+    }
+
+    if (typeof contaCliente === 'string') {
+      return contaCliente;
+    }
+
+    return conta?.numero ?? contaCliente?.numero ?? null;
   }
 
   getToken() {

@@ -1,6 +1,7 @@
 package com.bantads.cliente_service.dto
 
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 data class ClienteEvent(
     val tipo: String,
@@ -11,5 +12,6 @@ data class ClienteEvent(
     val salario: BigDecimal?,
     val status: String?,
     val motivo: String?,
+    val dataRejeicao: LocalDateTime? = null,
     val gerenteCpf: String? = null
 )

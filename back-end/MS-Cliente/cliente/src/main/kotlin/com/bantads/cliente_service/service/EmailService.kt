@@ -21,6 +21,7 @@ class EmailService(
     private val logger = LoggerFactory.getLogger(EmailService::class.java)
 
     fun notificarClienteEmail(tipo: TipoEmail, email: String, nome: String, atributo: String) {
+        val atributoSeguro = escapeHtml(atributo)
         val dados = mutableMapOf<String, Any>(
             "nome" to nome,
             "emailSuporte" to email_suporte
@@ -37,12 +38,22 @@ class EmailService(
                 "Cadastro aprovado"
             }
             TipoEmail.REJEICAO -> {
-                dados["mensagem"] = "Seu cadadastro foi rejeitado no sistema Bantads :("
+                dados["mensagem"] = "Seu cadastro foi rejeitado no sistema Bantads :(\n\n" +
+                        "Motivo informado: $atributoSeguro"
                 "Cadastro rejeitado"
             }
         }
 
         sendEmail(email, assunto, dados)
+    }
+
+    private fun escapeHtml(valor: String): String {
+        return valor
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;")
     }
 
     private fun sendEmail(

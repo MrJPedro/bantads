@@ -7,6 +7,19 @@ const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 const PORT = process.env.PORT;
+const FRONT_ORIGINS = (process.env.FRONT || 'http://localhost:8080')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+if (!FRONT_ORIGINS.includes('http://localhost:8080')) {
+    FRONT_ORIGINS.push('http://localhost:8080');
+}
+
+if (!FRONT_ORIGINS.includes('http://127.0.0.1:8080')) {
+    FRONT_ORIGINS.push('http://127.0.0.1:8080');
+}
+
 const invalidatedTokens = new Set();
 
 // ─── OpenAPI 3.0 Spec ────────────────────────────────────────────────────────
@@ -342,23 +355,29 @@ async function buscarGerente(cpf, config) {
 }
 
 async function comporClienteComConta(cliente, conta, config) {
-    const gerente = await buscarGerente(conta?.gerente, config);
+    const gerenteCpf = conta?.gerente ?? cliente.gerenteCpf ?? cliente.gerente_cpf ?? null;
+    const gerente = await buscarGerente(gerenteCpf, config);
 
     return {
+        id: cliente.id,
         cpf: cliente.cpf,
         nome: cliente.nome,
         telefone: cliente.telefone,
         email: cliente.email,
         salario: cliente.salario,
         endereco: cliente.endereco,
-        cep: cliente.cep,
+        cep: cliente.cep ?? cliente.CEP ?? null,
+        CEP: cliente.CEP ?? cliente.cep ?? null,
         cidade: cliente.cidade,
         estado: cliente.estado,
+        motivoRejeicao: cliente.motivoRejeicao ?? cliente.motivo_rejeicao ?? null,
+        dataRejeicao: cliente.dataRejeicao ?? cliente.data_rejeicao ?? null,
         conta: conta?.numero ?? null,
         saldo: conta?.saldo ?? null,
         limite: conta?.limite ?? null,
-        gerente: gerente?.cpf ?? conta?.gerente ?? cliente.gerenteCpf ?? null,
-        gerente_cpf: gerente?.cpf ?? conta?.gerente ?? cliente.gerenteCpf ?? null,
+        gerente: gerente?.cpf ?? gerenteCpf,
+        gerente_cpf: gerente?.cpf ?? gerenteCpf,
+        gerenteCpf: gerente?.cpf ?? gerenteCpf,
         gerente_nome: gerente?.nome ?? null,
         gerente_email: gerente?.email ?? null
     };
@@ -403,10 +422,16 @@ async function transferirClienteParaNovoGerente(cpfNovoGerente, config) {
 }
 
 app.use(cors({
-    origin: process.env.FRONT, 
+    origin: (origin, callback) => {
+        if (!origin || FRONT_ORIGINS.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['*'], 
-    credentials: true     
+    credentials: true,
+    optionsSuccessStatus: 204
 }));
 
 function verifyJWT(req, res, next) {
@@ -861,7 +886,7 @@ app.post('/login', express.json(), async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        return res.status(200).json({
+        const loginResponse = {
             access_token: token,
             token_type: "bearer",
             tipo: usuario.tipo,
@@ -870,7 +895,29 @@ app.post('/login', express.json(), async (req, res) => {
                 cpf: usuario.cpf,
                 email: usuario.login
             }
-        });
+        };
+
+        if (usuario.tipo === 'CLIENTE' && usuario.cpf) {
+            const config = { timeout: 5000 };
+            const conta = await buscarContaPorCliente(usuario.cpf, config);
+
+            try {
+                const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${usuario.cpf}`, config);
+                loginResponse.cliente = {
+                    ...cliente,
+                    CEP: cliente.CEP ?? cliente.cep,
+                    gerente_cpf: cliente.gerente_cpf ?? cliente.gerenteCpf
+                };
+            } catch (err) {
+                console.error(`Falha ao buscar cliente ${usuario.cpf} no login:`, err.message);
+            }
+
+            if (conta) {
+                loginResponse.conta = conta;
+            }
+        }
+
+        return res.status(200).json(loginResponse);
     } catch (error) {
         if (error.response) {
             const status = error.response.status === 400 ? 401 : error.response.status;
@@ -925,9 +972,27 @@ app.get('/reboot', async (req, res) => {
 // Rota: Autocadastro de cliente (público — sem autenticação)
 app.post('/clientes', express.json(), async (req, res) => {
     try {
+        const endereco = req.body.endereco ?? [
+            req.body.logradouro,
+            req.body.numero,
+            req.body.complemento
+        ].filter(Boolean).join(', ');
+
+        const payloadAutocadastro = {
+            nome: req.body.nome,
+            email: req.body.email,
+            cpf: String(req.body.cpf ?? '').replace(/\D/g, ''),
+            telefone: String(req.body.telefone ?? '').replace(/\D/g, ''),
+            salario: Number(req.body.salario),
+            endereco,
+            CEP: String(req.body.CEP ?? req.body.cep ?? '').replace(/\D/g, ''),
+            cidade: req.body.cidade,
+            estado: req.body.estado
+        };
+
         const response = await axios.post(
             `${process.env.CLIENTES_URI}/clientes`,
-            req.body,
+            payloadAutocadastro,
             { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
         );
         return res.status(response.status).json(response.data);

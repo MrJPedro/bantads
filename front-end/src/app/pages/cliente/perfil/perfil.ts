@@ -98,7 +98,7 @@ export class Perfil implements OnInit {
 
         if (!this.perfil.gerenteNome) {
           const usuarioLogado = this.authService.getUsuarioLogado();
-          const gerenteCpf = usuarioLogado?.cliente?.gerente_cpf;
+          const gerenteCpf = dados.gerente_cpf ?? dados.gerenteCpf ?? usuarioLogado?.cliente?.gerente_cpf ?? usuarioLogado?.cliente?.gerenteCpf;
           this.carregarNomeGerentePorCpf(gerenteCpf);
         }
       },
@@ -135,8 +135,8 @@ export class Perfil implements OnInit {
       cpf: cliente?.cpf ?? usuarioLogado?.cpf ?? usuarioLegado?.cpf ?? '',
       salario: Number(cliente?.salario ?? 0),
       cidade: cliente?.cidade ?? '',
-      CEP: cliente?.CEP ?? '',
-      gerenteNome: usuarioLogado?.gerente_nome ?? '',
+      CEP: cliente?.CEP ?? cliente?.cep ?? '',
+      gerenteNome: usuarioLogado?.gerente_nome ?? usuarioLogado?.gerenteNome ?? '',
       saldo: Number(usuarioLogado?.conta?.saldo ?? 0),
       limite: Number(usuarioLogado?.conta?.limite ?? 0)
     };
@@ -145,7 +145,7 @@ export class Perfil implements OnInit {
     this.perfilOriginal = { ...perfilCarregado };
 
     if (!this.perfil.gerenteNome) {
-      this.carregarNomeGerentePorCpf(cliente?.gerente_cpf);
+      this.carregarNomeGerentePorCpf(cliente?.gerente_cpf ?? cliente?.gerenteCpf);
     }
   }
 
@@ -163,8 +163,8 @@ export class Perfil implements OnInit {
       cpf: dados.cpf ?? usuarioLogado?.cpf ?? usuarioLegado?.cpf ?? '',
       salario: Number(dados.salario ?? 0),
       cidade: dados.cidade ?? cliente?.cidade ?? '',
-      CEP: cliente?.CEP ?? '',
-      gerenteNome: dados.gerente_nome ?? usuarioLogado?.gerente_nome ?? '',
+      CEP: dados.CEP ?? dados.cep ?? cliente?.CEP ?? cliente?.cep ?? '',
+      gerenteNome: dados.gerente_nome ?? usuarioLogado?.gerente_nome ?? usuarioLogado?.gerenteNome ?? '',
       saldo: Number(dados.saldo ?? usuarioLogado?.conta?.saldo ?? 0),
       limite: Number(dados.limite ?? usuarioLogado?.conta?.limite ?? 0)
     };
@@ -198,6 +198,7 @@ export class Perfil implements OnInit {
     const payload: DTO.PerfilInfo = {
       nome: this.perfil.nome,
       email: this.perfil.email,
+      telefone: this.perfil.telefone,
       salario: this.perfil.salario,
       endereco: this.perfil.endereco,
       CEP: this.perfil.CEP,
@@ -259,6 +260,7 @@ export class Perfil implements OnInit {
         telefone: this.perfil.telefone,
         salario: this.perfil.salario,
         endereco: this.perfil.endereco,
+        cep: this.perfil.CEP,
         CEP: this.perfil.CEP,
         cidade: this.perfil.cidade,
         estado: this.perfil.estado
