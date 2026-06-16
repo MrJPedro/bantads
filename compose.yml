@@ -1,0 +1,15 @@
+include:
+  - ./front-end/docker-compose.yml
+  # Se os microsserviços estiverem soltos na raiz:
+  - ./back-end/API-Gateway/compose.yaml
+  - ./back-end/MS-Auth/auth-service/compose.yaml
+  - ./back-end/MS-Cliente/compose.yaml
+  - ./back-end/MS-Conta/compose.yaml
+  - ./back-end/MS-Gerente/compose.yaml
+  - ./back-end/RabbitMQ/compose.yaml
+  - ./back-end/PostgreSQL/compose.yaml
+  - ./back-end/saga/compose.yaml
+
+networks:
+  backend:
+    driver: bridge

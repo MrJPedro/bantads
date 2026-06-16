@@ -1,0 +1,9 @@
+services:
+  frontend:
+    build: .
+    container_name: angular-frontend-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/front
+      - /front/node_modules
