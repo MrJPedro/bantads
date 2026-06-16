@@ -10,6 +10,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { SaldoResponse } from '../../../DTO/conta/saldo-response';
 import { AuthService } from '../../../services/auth-service';
+import { DadosClienteResponse } from '../../../DTO/cliente';
 import { Cliente } from '../../../services/cliente-service';
 import { CpfPipe } from '../../../shared/pipes/cpf.pipe';
 
@@ -50,21 +51,18 @@ export class TelaInicialCliente {
     carregarSaldo(){
         const numeroConta = this.authService.getContaNumero();
 
-        if (!numeroConta) {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Erro',
-                detail: 'Conta do usuário não encontrada.'
-            });
+        if (numeroConta) {
+            this.buscarSaldo(numeroConta);
             return;
         }
 
+        this.carregarSaldoPeloPerfil();
+      }
+
+    private buscarSaldo(numeroConta: string) {
         this.clienteService.saldo(numeroConta).subscribe({
             next: (saldo: SaldoResponse) => {
-  
-                // se encontrou
-                this.conta.set(saldo);
-                this.cor.set(this.conta().saldo >= 0.0 ? 'green' : 'red');
+                this.atualizarSaldo(saldo);
             },
   
             error: (err) => {
@@ -83,6 +81,52 @@ export class TelaInicialCliente {
                 });
             }
         });
+      }
+
+    private carregarSaldoPeloPerfil() {
+        const cpf = this.authService.getCpf();
+
+        if (!cpf) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Conta do usuário não encontrada.'
+            });
+            return;
+        }
+
+        this.clienteService.consultarPerfil(cpf).subscribe({
+            next: (perfil: DadosClienteResponse) => {
+                if (!perfil.conta) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Erro',
+                        detail: 'Conta do usuário não encontrada.'
+                    });
+                    return;
+                }
+
+                this.atualizarSaldo({
+                    cliente: perfil.cpf,
+                    conta: perfil.conta,
+                    saldo: Number(perfil.saldo ?? 0)
+                });
+            },
+
+            error: (err) => {
+                console.error(err);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Não foi possível carregar os dados da conta.'
+                });
+            }
+        });
+      }
+
+    private atualizarSaldo(saldo: SaldoResponse) {
+        this.conta.set(saldo);
+        this.cor.set(this.conta().saldo >= 0.0 ? 'green' : 'red');
       }
 /*  mockDados() {
         this.conta.set({ 

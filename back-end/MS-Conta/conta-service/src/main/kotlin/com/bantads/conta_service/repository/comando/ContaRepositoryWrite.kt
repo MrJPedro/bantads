@@ -10,4 +10,6 @@ interface ContaRepositoryWrite: JpaRepository<ContaWrite, Long> {
     fun save(conta: ContaWrite): ContaWrite
 
     fun findByNumero(numero: String): ContaWrite?
+
+    fun findFirstByCliente(cliente: String): ContaWrite?
 }

@@ -9,4 +9,6 @@ export interface ClienteResponse {
     conta: string
     saldo: number
     limite: number
+    motivoRejeicao?: string | null
+    dataRejeicao?: string | null
 }

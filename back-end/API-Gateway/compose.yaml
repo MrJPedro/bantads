@@ -9,7 +9,7 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
-      - FRONT=http://localhost:4200
+      - FRONT=http://localhost:8080
       - AUTH_URI=http://ms-auth:8080
       - GERENTES_URI=http://ms-gerente:8082
       - CLIENTES_URI=http://ms-cliente:8086

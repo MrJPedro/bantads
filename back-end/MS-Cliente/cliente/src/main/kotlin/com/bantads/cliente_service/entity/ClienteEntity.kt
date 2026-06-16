@@ -2,6 +2,7 @@ package com.bantads.cliente_service.entity
 
 import jakarta.persistence.*
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "tb_cliente")
@@ -40,6 +41,12 @@ class ClienteEntity (
 
     @Column(nullable = true, length = 11)
     var gerenteCpf: String? = null,
+
+    @Column(nullable = true, columnDefinition = "TEXT")
+    var motivoRejeicao: String? = null,
+
+    @Column(nullable = true)
+    var dataRejeicao: LocalDateTime? = null,
 
     @Column(nullable = false)
     var status: String = "AGUARDANDO_APROVACAO" // AGUARDANDO_APROVACAO, APROVADO, REJEITADO

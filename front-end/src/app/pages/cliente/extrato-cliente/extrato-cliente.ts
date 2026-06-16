@@ -76,8 +76,17 @@ export class ExtratoCliente implements OnInit {
   filtrar() {
     if (!this.dataInicio || !this.dataFim || !this.numeroConta) return;
 
-    const dataInicioHistoricoStr = new Date(1970, 0, 1).toISOString();
-    const dataFimStr = this.dataFim.toISOString();
+    if (this.dataFim < this.dataInicio) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Período inválido',
+        detail: 'A data final deve ser maior ou igual à data inicial.'
+      });
+      return;
+    }
+
+    const dataInicioHistoricoStr = this.formatarLocalDateTime(new Date(1970, 0, 1));
+    const dataFimStr = this.formatarLocalDateTime(this.dataFim, true);
 
     this.clienteService.consultaExtrato(this.numeroConta, dataInicioHistoricoStr, dataFimStr)
       .subscribe({
@@ -97,6 +106,18 @@ export class ExtratoCliente implements OnInit {
           });
         }
       });
+  }
+
+  private formatarLocalDateTime(data: Date, fimDoDia = false): string {
+    const pad = (valor: number) => valor.toString().padStart(2, '0');
+    const ano = data.getFullYear();
+    const mes = pad(data.getMonth() + 1);
+    const dia = pad(data.getDate());
+    const hora = fimDoDia ? '23' : '00';
+    const minuto = fimDoDia ? '59' : '00';
+    const segundo = fimDoDia ? '59' : '00';
+
+    return `${ano}-${mes}-${dia}T${hora}:${minuto}:${segundo}`;
   }
 
   private calcularDeltaSaldo(movimentacao: ItemExtratoResponse): number {

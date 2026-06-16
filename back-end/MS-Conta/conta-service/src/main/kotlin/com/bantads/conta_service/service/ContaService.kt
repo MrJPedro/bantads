@@ -119,6 +119,44 @@ class ContaService(
         )
     }
 
+    fun atualizarLimitePorCliente(cliente: String, salario: BigDecimal): ContaDetalhesDTO? {
+        val conta = contaRepositoryWrite.findFirstByCliente(cliente) ?: return null
+
+        val limiteCalculado = calcularLimite(salario)
+        val saldoNegativo = if (conta.saldo < BigDecimal.ZERO) {
+            conta.saldo.abs().setScale(2, RoundingMode.HALF_EVEN)
+        } else {
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN)
+        }
+
+        conta.limite = if (limiteCalculado < saldoNegativo) {
+            saldoNegativo
+        } else {
+            limiteCalculado
+        }.setScale(2, RoundingMode.HALF_EVEN)
+
+        val contaAtualizada = contaRepositoryWrite.save(conta)
+
+        val eventoCqrs = ContaWriteDTO(
+            cliente = contaAtualizada.cliente,
+            numero = contaAtualizada.numero,
+            saldo = contaAtualizada.saldo,
+            limite = contaAtualizada.limite,
+            gerente = contaAtualizada.gerente,
+            criacao = contaAtualizada.criacao
+        )
+        rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.conta", eventoCqrs)
+
+        return ContaDetalhesDTO(
+            cliente = contaAtualizada.cliente,
+            numero = contaAtualizada.numero,
+            saldo = contaAtualizada.saldo.setScale(2, RoundingMode.HALF_EVEN),
+            limite = contaAtualizada.limite.setScale(2, RoundingMode.HALF_EVEN),
+            gerente = contaAtualizada.gerente,
+            criacao = contaAtualizada.criacao.toString()
+        )
+    }
+
     fun gerarNumeroContaUnico(): String {
         var numero: String
         do {

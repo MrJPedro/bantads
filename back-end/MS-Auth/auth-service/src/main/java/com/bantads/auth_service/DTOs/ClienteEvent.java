@@ -1,6 +1,7 @@
 package com.bantads.auth_service.DTOs;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public record ClienteEvent(
     String tipo,
@@ -11,6 +12,7 @@ public record ClienteEvent(
     BigDecimal salario,
     String status,
     String motivo,
+    LocalDateTime dataRejeicao,
     String gerenteCpf
     ) {
 }

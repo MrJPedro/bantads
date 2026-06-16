@@ -1,10 +1,12 @@
 package com.bantads.conta_service.service
 
 import com.bantads.conta_service.config.CQRS_EVENT_EXCHANGE
+import com.bantads.conta_service.dto.ContaOperacaoResponse
 import com.bantads.conta_service.dto.ContaWriteDTO
 import com.bantads.conta_service.dto.DepositoRequestDTO
 import com.bantads.conta_service.dto.SaqueRequestDTO
 import com.bantads.conta_service.dto.TransferenciaRequestDTO
+import com.bantads.conta_service.dto.TransferenciaResponse
 import com.bantads.conta_service.dto.TransferenciaWriteDTO
 import com.bantads.conta_service.entity.comando.TransferenciaWrite
 import com.bantads.conta_service.entity.leitura.TransferenciaRead
@@ -15,6 +17,7 @@ import com.bantads.conta_service.repository.comando.TransferenciaRepositoryWrite
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import jakarta.transaction.Transactional
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.http.HttpStatus
@@ -53,7 +56,7 @@ class TransferenciaService(
         return conta.saldo.setScale(2, RoundingMode.HALF_EVEN)
     }
 
-    fun depositar(numero: String, request: DepositoRequestDTO) {
+    fun depositar(numero: String, request: DepositoRequestDTO): ContaOperacaoResponse {
         val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
         if (valor <= BigDecimal.ZERO) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor do depósito deve ser maior que zero")
@@ -71,7 +74,7 @@ class TransferenciaService(
 
         val contaSalva = contaRepositoryWrite.save(contaWrite)
 
-        val dataAtual = LocalDateTime.now()
+        val dataAtual = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
 
         transferenciaRepositoryWrite.save(
             TransferenciaWrite(
@@ -79,7 +82,7 @@ class TransferenciaService(
                 contaDestino = null,
                 valor = valor,
                 tipo = "DEPOSITO",
-                data = LocalDateTime.now()
+                data = dataAtual
             )
         )
 
@@ -97,9 +100,15 @@ class TransferenciaService(
             data = dataAtual
         )
         rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.transferencia", eventoTransferencia)
+
+        return ContaOperacaoResponse(
+            conta = contaSalva.numero,
+            saldo = contaSalva.saldo,
+            data = dataAtual.toString()
+        )
     }
 
-    fun sacar(numero: String, request: SaqueRequestDTO) {
+    fun sacar(numero: String, request: SaqueRequestDTO): ContaOperacaoResponse {
         val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
         if (valor <= BigDecimal.ZERO) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor do saque deve ser maior que zero")
@@ -121,7 +130,7 @@ class TransferenciaService(
         contaWrite.saldo = novoSaldo
 
         val contaSalva = contaRepositoryWrite.save(contaWrite)
-        val dataAtual = LocalDateTime.now()
+        val dataAtual = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
 
         transferenciaRepositoryWrite.save(
             TransferenciaWrite(
@@ -147,9 +156,15 @@ class TransferenciaService(
             data = dataAtual
         )
         rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.transferencia", eventoTransferencia)
+
+        return ContaOperacaoResponse(
+            conta = contaSalva.numero,
+            saldo = contaSalva.saldo,
+            data = dataAtual.toString()
+        )
     }
 
-    fun transferir(numero: String, request: TransferenciaRequestDTO) {
+    fun transferir(numero: String, request: TransferenciaRequestDTO): TransferenciaResponse {
         val valor = request.valor.setScale(2, RoundingMode.HALF_EVEN)
         if (valor <= BigDecimal.ZERO) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Valor da transferência deve ser maior que zero")
@@ -179,7 +194,7 @@ class TransferenciaService(
 
         val contaOrigemAtualizada = contaRepositoryWrite.save(contaOrigem)
         val contaDestinoAtualizada = contaRepositoryWrite.save(contaDestino)
-        val dataAtual = LocalDateTime.now()
+        val dataAtual = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)
 
         transferenciaRepositoryWrite.save(
             TransferenciaWrite(
@@ -206,6 +221,14 @@ class TransferenciaService(
             data = dataAtual
         )
         rabbitTemplate.convertAndSend(CQRS_EVENT_EXCHANGE, "cqrs.event.transferencia", eventoTransferencia)
+
+        return TransferenciaResponse(
+            conta = contaOrigemAtualizada.numero,
+            data = dataAtual.toString(),
+            destino = contaDestinoAtualizada.numero,
+            saldo = contaOrigemAtualizada.saldo.toDouble(),
+            valor = valor.toDouble()
+        )
     }
 
 

@@ -6,6 +6,7 @@ import * as DTO from '../DTO/cliente';
 import { OperacaoResponse } from '../DTO/conta/operacao-response';
 import { SaldoResponse } from '../DTO/conta/saldo-response';
 import { TransferenciaResponse } from '../DTO/conta/transferencia-response';
+import { ExtratoResponse } from '../DTO/conta/extrato-response';
 
 
 const API_URL = "http://localhost:3001"
@@ -28,7 +29,7 @@ export class Cliente {
   // R04: Alteração de Perfil
   consultarPerfil(cpf: string): Observable<DTO.DadosClienteResponse> {
     return this.httpClient.get<DTO.DadosClienteResponse>(
-      API_URL + "/clientes/" + cpf,
+      API_URL + "/clientes/" + cpf + "/perfil",
       this.httpOptions
     )
   }
@@ -62,8 +63,8 @@ export class Cliente {
   }
 
   //   R08: Consulta de extrato
-  consultaExtrato(cpf: string, dataInicio: string, dataFim: string): Observable<DTO.ClienteResponse> {
-    return this.httpClient.get<DTO.ClienteResponse>(
+  consultaExtrato(cpf: string, dataInicio: string, dataFim: string): Observable<ExtratoResponse> {
+    return this.httpClient.get<ExtratoResponse>(
       API_URL + "/contas/" + cpf + "/extrato",
       {
         ...this.httpOptions, 

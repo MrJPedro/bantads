@@ -8,7 +8,9 @@ import { Dialog } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { Subject } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
+import { debounceTime, finalize, takeUntil } from 'rxjs/operators';
+import { AutocadastroInfo } from '../../../DTO/cliente/autocadastro-info.dto';
+import { AutocadastroService } from '../../../services/autocadastro-service';
 import { CepService } from '../../../services/cep-service';
 
 @Component({
@@ -29,6 +31,7 @@ import { CepService } from '../../../services/cep-service';
 })
 export class Autocadastro implements OnInit, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly autocadastroService = inject(AutocadastroService);
   private readonly cepService = inject(CepService);
   private readonly router = inject(Router);
 
@@ -37,6 +40,7 @@ export class Autocadastro implements OnInit, OnDestroy {
 
   visible = false;
   showConfirmation = false;
+  cadastrando = false;
 
   readonly formularioCadastro = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -116,6 +120,10 @@ export class Autocadastro implements OnInit, OnDestroy {
   }
 
   cadastrar(): void {
+    if (this.cadastrando) {
+      return;
+    }
+
     if (this.formularioCadastro.invalid) {
       this.formularioCadastro.markAllAsTouched();
       return;
@@ -127,10 +135,50 @@ export class Autocadastro implements OnInit, OnDestroy {
       return;
     }
 
-    this.showConfirmation = true;
+    const payload = this.montarPayloadAutocadastro();
+
+    this.cadastrando = true;
+    this.autocadastroService.cadastrarCliente(payload)
+      .pipe(finalize(() => this.cadastrando = false))
+      .subscribe({
+        next: () => {
+          this.showConfirmation = true;
+          this.formularioCadastro.reset();
+          this.formularioEndereco.reset();
+        },
+        error: (erro) => {
+          console.error('Erro ao realizar autocadastro:', erro);
+          alert(erro?.error?.erro ?? erro?.error?.message ?? 'Não foi possível realizar o autocadastro.');
+        }
+      });
   }
 
   voltar(): void {
     this.router.navigate(['/']);
+  }
+
+  private montarPayloadAutocadastro(): AutocadastroInfo {
+    const cadastro = this.formularioCadastro.getRawValue();
+    const endereco = this.formularioEndereco.getRawValue();
+    const enderecoCompleto = [
+      endereco.logradouro,
+      endereco.numero,
+      endereco.complemento
+    ].filter(Boolean).join(', ');
+
+    return {
+      nome: cadastro.nome.trim(),
+      email: cadastro.email.trim(),
+      cpf: cadastro.cpf.replace(/\D/g, ''),
+      telefone: cadastro.telefone.replace(/\D/g, ''),
+      salario: Number(cadastro.salario),
+      logradouro: endereco.logradouro.trim(),
+      numero: endereco.numero.trim(),
+      complemento: endereco.complemento?.trim() || undefined,
+      endereco: enderecoCompleto,
+      CEP: endereco.cep.replace(/\D/g, ''),
+      cidade: endereco.cidade.trim(),
+      estado: endereco.estado.trim()
+    };
   }
 }

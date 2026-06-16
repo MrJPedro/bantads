@@ -17,19 +17,36 @@ class ClienteEventListener(
     fun receberEvento(evento: ClienteEvent) {
         println("[RABBITMQ] Evento recebido em MS-Conta: tipo=${evento.tipo}, cpf=${evento.cpf}")
 
-        if (evento.tipo == "aprovacao") {
-            val numeroConta = contaService.gerarNumeroContaUnico()
-            val limite = evento.salario?.let { contaService.calcularLimite(it) } ?: BigDecimal.ZERO
-            val request = ContaDTO(
-                cliente = evento.cpf,
-                numero = numeroConta,
-                saldo = BigDecimal.ZERO.setScale(2),
-                limite = limite.setScale(2, RoundingMode.HALF_EVEN),
-                gerente = evento.gerenteCpf ?: "SEM_GERENTE",
-                criacao = LocalDateTime.now()
-            )
-            contaService.criar(numeroConta, request)
-            println("[RABBITMQ] Conta criada para cliente aprovado ${evento.cpf}: $numeroConta")
+        when (evento.tipo) {
+            "aprovacao" -> {
+                val numeroConta = contaService.gerarNumeroContaUnico()
+                val limite = evento.salario?.let { contaService.calcularLimite(it) } ?: BigDecimal.ZERO
+                val request = ContaDTO(
+                    cliente = evento.cpf,
+                    numero = numeroConta,
+                    saldo = BigDecimal.ZERO.setScale(2),
+                    limite = limite.setScale(2, RoundingMode.HALF_EVEN),
+                    gerente = evento.gerenteCpf ?: "SEM_GERENTE",
+                    criacao = LocalDateTime.now()
+                )
+                contaService.criar(numeroConta, request)
+                println("[RABBITMQ] Conta criada para cliente aprovado ${evento.cpf}: $numeroConta")
+            }
+
+            "perfil-alterado" -> {
+                val salario = evento.salario
+                if (salario == null) {
+                    println("[RABBITMQ] Evento perfil-alterado sem salario para cliente ${evento.cpf}")
+                    return
+                }
+
+                val conta = contaService.atualizarLimitePorCliente(evento.cpf, salario)
+                if (conta == null) {
+                    println("[RABBITMQ] Conta não encontrada para atualizar limite do cliente ${evento.cpf}")
+                } else {
+                    println("[RABBITMQ] Limite atualizado para cliente ${evento.cpf}: ${conta.limite}")
+                }
+            }
         }
     }
 }

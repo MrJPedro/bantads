@@ -107,10 +107,11 @@
     <button
       pButton
       (click)="cadastrar()"
+      [disabled]="cadastrando"
       class="w-full py-2 rounded-lg flex justify-center items-center gap-2"
     >
       <i pButtonIcon class="pi pi-check-circle text-base! leading-normal!"></i>
-      <span pButtonLabel>Cadastrar</span>
+      <span pButtonLabel>{{ cadastrando ? 'Enviando...' : 'Cadastrar' }}</span>
     </button>
 
   </div>
