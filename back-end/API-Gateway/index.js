@@ -7,6 +7,20 @@ const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 const PORT = process.env.PORT;
+const FRONT_ORIGINS = (process.env.FRONT || 'http://localhost:8080')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+if (!FRONT_ORIGINS.includes('http://localhost:8080')) {
+    FRONT_ORIGINS.push('http://localhost:8080');
+}
+
+if (!FRONT_ORIGINS.includes('http://127.0.0.1:8080')) {
+    FRONT_ORIGINS.push('http://127.0.0.1:8080');
+}
+
+const invalidatedTokens = new Set();
 
 // ─── OpenAPI 3.0 Spec ────────────────────────────────────────────────────────
 const swaggerSpec = {
@@ -307,6 +321,25 @@ function configFrom(req) {
     };
 }
 
+function isDashboardRequest(req) {
+    return req.query.numero === 'dashboard' || req.query.filtro === 'dashboard';
+}
+
+function withProxyPrefix(prefix) {
+    return (path) => {
+        if (path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`)) {
+            return path;
+        }
+        if (path === '/') {
+            return prefix;
+        }
+        if (path.startsWith('/?')) {
+            return `${prefix}${path.substring(1)}`;
+        }
+        return `${prefix}${path}`;
+    };
+}
+
 async function buscarGerente(cpf, config) {
     if (!cpf) {
         return null;
@@ -322,23 +355,29 @@ async function buscarGerente(cpf, config) {
 }
 
 async function comporClienteComConta(cliente, conta, config) {
-    const gerente = await buscarGerente(conta?.gerente, config);
+    const gerenteCpf = conta?.gerente ?? cliente.gerenteCpf ?? cliente.gerente_cpf ?? null;
+    const gerente = await buscarGerente(gerenteCpf, config);
 
     return {
+        id: cliente.id,
         cpf: cliente.cpf,
         nome: cliente.nome,
         telefone: cliente.telefone,
         email: cliente.email,
         salario: cliente.salario,
         endereco: cliente.endereco,
-        cep: cliente.cep,
+        cep: cliente.cep ?? cliente.CEP ?? null,
+        CEP: cliente.CEP ?? cliente.cep ?? null,
         cidade: cliente.cidade,
         estado: cliente.estado,
+        motivoRejeicao: cliente.motivoRejeicao ?? cliente.motivo_rejeicao ?? null,
+        dataRejeicao: cliente.dataRejeicao ?? cliente.data_rejeicao ?? null,
         conta: conta?.numero ?? null,
         saldo: conta?.saldo ?? null,
         limite: conta?.limite ?? null,
-        gerente: gerente?.cpf ?? conta?.gerente ?? cliente.gerenteCpf ?? null,
-        gerente_cpf: gerente?.cpf ?? conta?.gerente ?? cliente.gerenteCpf ?? null,
+        gerente: gerente?.cpf ?? gerenteCpf,
+        gerente_cpf: gerente?.cpf ?? gerenteCpf,
+        gerenteCpf: gerente?.cpf ?? gerenteCpf,
         gerente_nome: gerente?.nome ?? null,
         gerente_email: gerente?.email ?? null
     };
@@ -354,11 +393,45 @@ async function buscarContaPorCliente(cpf, config) {
     }
 }
 
+async function transferirClienteParaNovoGerente(cpfNovoGerente, config) {
+    const { data: gerentes } = await axios.get(`${process.env.GERENTES_URI}/gerentes`, config);
+
+    const candidatos = await Promise.all(
+        gerentes
+            .filter(gerente => gerente.cpf !== cpfNovoGerente)
+            .map(async (gerente) => {
+                const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${gerente.cpf}`, config);
+                return { gerente, contas };
+            })
+    );
+
+    const doador = candidatos
+        .filter(candidato => candidato.contas.length > 0)
+        .sort((a, b) =>
+            b.contas.length - a.contas.length ||
+            b.gerente.nome.localeCompare(a.gerente.nome, 'pt-BR', { sensitivity: 'base' })
+        )[0];
+
+    if (!doador) {
+        return;
+    }
+
+    const conta = doador.contas[0];
+    await axios.put(`${process.env.CONTAS_URI}/contas/${conta.numero}/gerente`, { gerente: cpfNovoGerente }, config);
+    await axios.put(`${process.env.CLIENTES_URI}/clientes/${conta.cliente}/gerente`, { gerenteCpf: cpfNovoGerente }, config);
+}
+
 app.use(cors({
-    origin: process.env.FRONT, 
+    origin: (origin, callback) => {
+        if (!origin || FRONT_ORIGINS.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['*'], 
-    credentials: true     
+    credentials: true,
+    optionsSuccessStatus: 204
 }));
 
 function verifyJWT(req, res, next) {
@@ -383,6 +456,7 @@ function verifyJWT(req, res, next) {
   
   const token = authHeader.split(' ')[1]; // "Bearer XXXXX"
   if (!token) return res.status(401).json({ erro: 'Token mal formatado' });
+  if (invalidatedTokens.has(token)) return res.status(401).json({ erro: 'Token inválido ou expirado' });
   
   jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ erro: 'Token inválido ou expirado' });
@@ -506,12 +580,10 @@ app.get('/clientes', async (req, res, next) => {
         }
     }
 
-    // Quando GERENTE chama GET /clientes sem filtro: retorna apenas os clientes dele
-    if (!filtro && req.user && req.user.tipo === 'GERENTE') {
+    if (!filtro && req.user?.tipo === 'GERENTE') {
         try {
             const config = configFrom(req);
-            const gerenteCpf = req.user.cpf;
-            const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${gerenteCpf}`, config);
+            const { data: contas } = await axios.get(`${process.env.CONTAS_URI}/contas/gerente/${req.user.cpf}`, config);
 
             const clientesPromises = contas.map(async (conta) => {
                 try {
@@ -519,26 +591,32 @@ app.get('/clientes', async (req, res, next) => {
                     return {
                         cpf: cliente.cpf,
                         nome: cliente.nome,
+                        telefone: cliente.telefone,
                         email: cliente.email,
+                        salario: cliente.salario,
+                        endereco: cliente.endereco,
+                        cep: cliente.cep,
                         cidade: cliente.cidade,
                         estado: cliente.estado,
-                        salario: cliente.salario,
+                        conta: conta.numero,
                         saldo: conta.saldo,
-                        limite: conta.limite
+                        limite: conta.limite,
+                        gerente: conta.gerente
                     };
                 } catch (err) {
+                    console.error(`Falha ao buscar cliente ${conta.cliente}:`, err.message);
                     return null;
                 }
             });
 
-            const clientesCompostos = (await Promise.all(clientesPromises))
+            const clientes = (await Promise.all(clientesPromises))
                 .filter(c => c !== null)
                 .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
-            return res.json(clientesCompostos);
+            return res.json(clientes);
         } catch (error) {
             console.error('Erro ao listar clientes do gerente:', error.message);
-            return res.status(500).json({ erro: 'Falha ao listar clientes' });
+            return res.status(500).json({ erro: 'Falha ao listar clientes do gerente' });
         }
     }
 
@@ -588,8 +666,8 @@ app.get('/clientes/:cpf/perfil', autorizar('CLIENTE'), async (req, res) => {
     }
 });
 
-// Rota: Detalhe de Cliente (Composição de Cliente + Conta + Gerente) — GERENTE, ADMINISTRADOR e o próprio CLIENTE
-app.get('/clientes/:cpf', autorizar('GERENTE', 'ADMINISTRADOR', 'CLIENTE'), async (req, res) => {
+// Rota: Detalhe de Cliente (Composição de Cliente + Conta + Gerente)
+app.get('/clientes/:cpf', autorizar('CLIENTE', 'GERENTE', 'ADMINISTRADOR'), async (req, res) => {
     const { cpf } = req.params;
 
     try {
@@ -651,8 +729,8 @@ app.use((req, res, next) => {
         if (req.method === 'GET' && /^\/gerentes\/[^/]+\/clientes\/?$/.test(path)) {
             return next();
         }
-        // Exceção 2: GET /gerentes com ?numero=dashboard -> Permitido para GERENTE e ADMINISTRADOR
-        if (req.method === 'GET' && path === '/gerentes' && req.query.numero === 'dashboard') {
+        // Exceção 2: GET /gerentes com ?numero=dashboard ou ?filtro=dashboard -> Permitido para GERENTE e ADMINISTRADOR
+        if (req.method === 'GET' && path === '/gerentes' && isDashboardRequest(req)) {
             return next();
         }
         // Exceção 3: GET /gerentes com ?cpf=... -> Permitido para obter nome do gerente
@@ -665,16 +743,52 @@ app.use((req, res, next) => {
     next();
 });
 
+app.post('/gerentes', express.json(), async (req, res) => {
+    const gerente = req.body;
+    const config = configFrom(req);
+
+    try {
+        try {
+            await axios.get(`${process.env.GERENTES_URI}/gerentes/${gerente.cpf}`, config);
+            return res.status(409).json({ erro: 'CPF já cadastrado' });
+        } catch (error) {
+            if (error.response?.status !== 404) {
+                throw error;
+            }
+        }
+
+        const payloadGerente = {
+            ...gerente,
+            telefone: gerente.telefone ?? ''
+        };
+
+        const { data: novoGerente } = await axios.post(`${process.env.GERENTES_URI}/gerentes`, payloadGerente, config);
+
+        await axios.post(`${process.env.AUTH_URI}/usuarios`, {
+            cpf: gerente.cpf,
+            tipo: 'GERENTE',
+            login: gerente.email,
+            nome: gerente.nome,
+            senha: gerente.senha
+        }, { timeout: 10000 });
+
+        await transferirClienteParaNovoGerente(novoGerente.cpf, config);
+
+        return res.status(201).json(novoGerente);
+    } catch (error) {
+        const status = error.response?.status ?? 500;
+        return res.status(status).json(error.response?.data ?? { erro: 'Falha ao inserir gerente' });
+    }
+});
+
 // Rota: Dashboard do Gerente/Admin (Composição de Gerente + Contas/Saldos)
 // Rota: Gerentes (Lista Simples) OU Dashboard (Composição se numero === 'dashboard')
 app.get('/gerentes', async (req, res, next) => {
-    const { numero } = req.query;
-
     try {
         const config = configFrom(req);
 
         // 1. Condicional: Se NÃO for solicitado o dashboard, deixa o proxy (http-proxy-middleware) lidar com isso para repassar query params etc.
-        if (numero !== 'dashboard') {
+        if (!isDashboardRequest(req)) {
             return next();
         }
 
@@ -757,15 +871,6 @@ app.get('/contas/top3', autorizar('GERENTE'), async (req, res) => {
 });
 
 
-// Rota: Logout (stateless JWT — apenas confirma o email do token)
-app.post('/logout', express.json(), (req, res) => {
-    const email = req.user?.login;
-    if (!email) {
-        return res.status(401).json({ erro: 'Não autenticado' });
-    }
-    return res.status(200).json({ email });
-});
-
 app.post('/login', express.json(), async (req, res) => {
     try {
         const { login, senha } = req.body;
@@ -781,7 +886,7 @@ app.post('/login', express.json(), async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        return res.status(200).json({
+        const loginResponse = {
             access_token: token,
             token_type: "bearer",
             tipo: usuario.tipo,
@@ -790,15 +895,46 @@ app.post('/login', express.json(), async (req, res) => {
                 cpf: usuario.cpf,
                 email: usuario.login
             }
-        });
+        };
+
+        if (usuario.tipo === 'CLIENTE' && usuario.cpf) {
+            const config = { timeout: 5000 };
+            const conta = await buscarContaPorCliente(usuario.cpf, config);
+
+            try {
+                const { data: cliente } = await axios.get(`${process.env.CLIENTES_URI}/clientes/${usuario.cpf}`, config);
+                loginResponse.cliente = {
+                    ...cliente,
+                    CEP: cliente.CEP ?? cliente.cep,
+                    gerente_cpf: cliente.gerente_cpf ?? cliente.gerenteCpf
+                };
+            } catch (err) {
+                console.error(`Falha ao buscar cliente ${usuario.cpf} no login:`, err.message);
+            }
+
+            if (conta) {
+                loginResponse.conta = conta;
+            }
+        }
+
+        return res.status(200).json(loginResponse);
     } catch (error) {
         if (error.response) {
-            return res.status(error.response.status).json(error.response.data);
+            const status = error.response.status === 400 ? 401 : error.response.status;
+            return res.status(status).json(error.response.data);
         } else {
             console.error("Erro no login do Gateway:", error.message);
             return res.status(500).json({ erro: "Erro interno no servidor" });
         }
     }
+});
+
+app.post('/logout', (req, res) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (token) {
+        invalidatedTokens.add(token);
+    }
+    return res.status(200).json({ email: req.user?.login });
 });
 
 // Rota: Reboot - reseta todos os microsserviços para o estado inicial (sem autenticação)
@@ -836,9 +972,27 @@ app.get('/reboot', async (req, res) => {
 // Rota: Autocadastro de cliente (público — sem autenticação)
 app.post('/clientes', express.json(), async (req, res) => {
     try {
+        const endereco = req.body.endereco ?? [
+            req.body.logradouro,
+            req.body.numero,
+            req.body.complemento
+        ].filter(Boolean).join(', ');
+
+        const payloadAutocadastro = {
+            nome: req.body.nome,
+            email: req.body.email,
+            cpf: String(req.body.cpf ?? '').replace(/\D/g, ''),
+            telefone: String(req.body.telefone ?? '').replace(/\D/g, ''),
+            salario: Number(req.body.salario),
+            endereco,
+            CEP: String(req.body.CEP ?? req.body.cep ?? '').replace(/\D/g, ''),
+            cidade: req.body.cidade,
+            estado: req.body.estado
+        };
+
         const response = await axios.post(
             `${process.env.CLIENTES_URI}/clientes`,
-            req.body,
+            payloadAutocadastro,
             { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
         );
         return res.status(response.status).json(response.data);
@@ -855,16 +1009,19 @@ app.post('/clientes', express.json(), async (req, res) => {
 app.use('/gerentes', createProxyMiddleware({
     target: process.env.GERENTES_URI,
     changeOrigin: true,
+    pathRewrite: withProxyPrefix('/gerentes'),
 }));
 
 app.use('/clientes', createProxyMiddleware({
     target: process.env.CLIENTES_URI,
     changeOrigin: true,
+    pathRewrite: withProxyPrefix('/clientes'),
 }));
 
 app.use('/contas', createProxyMiddleware({
     target: process.env.CONTAS_URI,
     changeOrigin: true,
+    pathRewrite: withProxyPrefix('/contas'),
 }));
 
 app.listen(PORT, () => {

@@ -1,18 +1,20 @@
 export type TipoUsuario = 'CLIENTE' | 'GERENTE' | 'ADMINISTRADOR'
 
 export interface LoginClienteData {
-    id: number
+    id?: number
     cpf: string
     nome: string
     email: string
     telefone: string
     salario: number
     endereco: string
+    cep?: string
     CEP: string
     cidade: string
     estado: string
-    status: string
-    gerente_cpf: string
+    status?: string
+    gerente_cpf?: string
+    gerenteCpf?: string
 }
 
 export interface LoginContaData {
@@ -34,4 +36,6 @@ export interface LoginResponse {
     cpf: string;
     email: string;
   };
+  cliente?: LoginClienteData;
+  conta?: LoginContaData | string;
 }

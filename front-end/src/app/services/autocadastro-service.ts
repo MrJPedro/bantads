@@ -1,6 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AutocadastroInfo } from '../DTO/cliente/autocadastro-info.dto';
+import { DadosClienteResponse } from '../DTO/cliente/dados-cliente-response.dto';
 
 
 const API_URL = "http://localhost:3001"
@@ -20,13 +22,10 @@ export class AutocadastroService {
     private httpClient: HttpClient
   ) {}
 
-  cadastrarCliente(dados: AutocadastroInfo) {
-
-    let body: AutocadastroInfo = dados
-
-    return this.httpClient.post(
+  cadastrarCliente(dados: AutocadastroInfo): Observable<DadosClienteResponse> {
+    return this.httpClient.post<DadosClienteResponse>(
       API_URL + "/clientes",
-      body,
+      dados,
       this.httpOptions
     )
   }

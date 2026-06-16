@@ -9,6 +9,18 @@ data class SaldoResponseDTO(
     val saldo: BigDecimal
 )
 
+data class SaldoContaResponseDTO(
+    val cliente: String,
+    val conta: String,
+    val saldo: BigDecimal
+)
+
+data class ContaOperacaoResponse(
+    val conta: String,
+    val saldo: BigDecimal,
+    val data: String
+)
+
 data class MovimentacaoDTO(
     val dataHora: LocalDateTime,
     val tipoOperacao: String,

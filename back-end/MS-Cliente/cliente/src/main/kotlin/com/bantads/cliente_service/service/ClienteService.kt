@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDateTime
 
 @Service
 class ClienteService(
@@ -118,7 +119,11 @@ class ClienteService(
 
         cliente.nome = dto.nome
         cliente.email = dto.email
-        cliente.telefone = dto.telefone
+        dto.telefone?.let { cliente.telefone = it }
+        dto.endereco?.let { cliente.endereco = it }
+        (dto.CEP ?: dto.cep)?.let { cliente.cep = it }
+        dto.cidade?.let { cliente.cidade = it }
+        dto.estado?.let { cliente.estado = it }
 
         val novoSalario = dto.salario.toString().toBigDecimalOrNull()
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Salário inválido")
@@ -156,12 +161,19 @@ class ClienteService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente não está aguardando aprovação")
         }
 
+        val motivo = dto.motivo.trim()
+        if (motivo.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Motivo da rejeição é obrigatório")
+        }
+
         cliente.status = "REJEITADO"
+        cliente.motivoRejeicao = motivo
+        cliente.dataRejeicao = LocalDateTime.now()
         clienteRepository.save(cliente)
 
-        emailService.notificarClienteEmail(TipoEmail.REJEICAO, cliente.email, cliente.nome, "")
+        emailService.notificarClienteEmail(TipoEmail.REJEICAO, cliente.email, cliente.nome, motivo)
 
-        enviarEvento("rejeicao", cliente, dto.motivo)
+        enviarEvento("rejeicao", cliente, motivo)
 
         return toDTO(cliente)
     }
@@ -258,7 +270,8 @@ class ClienteService(
             telefone = cliente.telefone,
             salario = cliente.salario,
             status = cliente.status,
-            motivo = motivo,
+            motivo = motivo ?: cliente.motivoRejeicao,
+            dataRejeicao = cliente.dataRejeicao,
             gerenteCpf = cliente.gerenteCpf
         )
 
@@ -278,7 +291,9 @@ class ClienteService(
             cep = entity.cep,
             cidade = entity.cidade,
             estado = entity.estado,
-            gerenteCpf = entity.gerenteCpf
+            gerenteCpf = entity.gerenteCpf,
+            motivoRejeicao = entity.motivoRejeicao,
+            dataRejeicao = entity.dataRejeicao
         )
     }
 
@@ -356,4 +371,3 @@ class ClienteService(
         clienteRepository.saveAll(clientesIniciais)
     }
 }
-

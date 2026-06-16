@@ -27,8 +27,8 @@ class ContaController(
     fun getSaldo(
         @PathVariable numero: String
         ): ResponseEntity<Any> {
-        val saldo = transferenciaService.obterSaldo(numero)
-        return ResponseEntity.ok(SaldoResponseDTO(numero, saldo))
+        val conta = contaService.obterContaPorNumero(numero) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(SaldoContaResponseDTO(conta.cliente, conta.numero, conta.saldo))
     }
 
     @PostMapping("/{numero}/depositar")
@@ -36,8 +36,7 @@ class ContaController(
         @PathVariable numero: String, 
         @Valid @RequestBody request: DepositoRequestDTO
         ): ResponseEntity<Any> {
-        transferenciaService.depositar(numero, request)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.ok(transferenciaService.depositar(numero, request))
     }
 
     @PostMapping("/{numero}/sacar") 
@@ -45,8 +44,7 @@ class ContaController(
         @PathVariable numero: String, 
         @Valid @RequestBody request: SaqueRequestDTO
         ): ResponseEntity<Any> {
-        transferenciaService.sacar(numero, request)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.ok(transferenciaService.sacar(numero, request))
     }
 
     @PostMapping("/{numero}/transferir")
@@ -54,8 +52,7 @@ class ContaController(
     @PathVariable numero: String, 
     @Valid @RequestBody request: TransferenciaRequestDTO
     ): ResponseEntity<Any> {
-        transferenciaService.transferir(numero, request)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.ok(transferenciaService.transferir(numero, request))
     }
 
     @GetMapping("/{numero}/extrato")
